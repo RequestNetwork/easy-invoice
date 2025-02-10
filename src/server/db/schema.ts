@@ -3,6 +3,7 @@ import CryptoJS from "crypto-js";
 import { InferSelectModel } from "drizzle-orm";
 import {
 	customType,
+	json,
 	pgTableCreator,
 	text,
 	timestamp,
@@ -44,6 +45,20 @@ export const userTable = createTable("user", {
 export const requestTable = createTable("request", {
 	id: text().primaryKey().notNull(),
 	type: text().notNull(),
+	dueDate: text().notNull(),
+	clientName: text().notNull(),
+	clientEmail: text().notNull(),
+	invoiceNumber: text().notNull(),
+	items: json().notNull(),
+	notes: text(),
+	amount: text().notNull(),
+	currency: text().notNull(),
+	status: text().notNull(),
+	payer: text().notNull(),
+	payee: text().notNull(),
+	requestId: text().notNull(),
+	paymentReference: text().notNull(),
+	createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const sessionTable = createTable("session", {
