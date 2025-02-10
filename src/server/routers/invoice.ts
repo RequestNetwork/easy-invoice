@@ -1,21 +1,28 @@
-import { CURRENCY_VALUE } from "@/lib/currency";
+import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import { requestTable } from "@/server/db/schema";
-import { ethers } from "ethers";
-import { protectedProcedure, router } from "../trpc";
 import { ulid } from "ulid";
+import { protectedProcedure, router } from "../trpc";
 
 export const invoiceRouter = router({
 	create: protectedProcedure
 		.input(invoiceFormSchema)
 		.mutation(async ({ ctx, input }) => {
 			try {
-				const { user, db } = ctx;
+				const { db } = ctx;
 
 				const totalAmount = input.items.reduce(
 					(acc, item) => acc + item.price * item.quantity,
 					0,
 				);
+
+				const response = await apiClient.post("/v1/request", {
+					amount: totalAmount.toString(),
+					payer: input.clientWallet,
+					payee: input.walletAddress,
+					invoiceCurrency: "ETH-sepolia-sepolia",
+					paymentCurrency: "ETH-sepolia-sepolia",
+				});
 
 				await db.insert(requestTable).values({
 					id: ulid(),
@@ -26,13 +33,14 @@ export const invoiceRouter = router({
 					payer: input.clientWallet,
 					payee: input.walletAddress,
 					dueDate: new Date(input.dueDate).toISOString(),
-					requestId: ulid(),
-					paymentReference: ulid(),
+					requestId: response.data.requestID as string,
+					paymentReference: response.data.paymentReference as string,
 					clientName: input.clientName,
 					clientEmail: input.clientEmail,
 					invoiceNumber: input.invoiceNumber,
 					items: input.items,
 					notes: input.notes,
+					userId: ctx.user?.id as string,
 				});
 
 				return { success: true };

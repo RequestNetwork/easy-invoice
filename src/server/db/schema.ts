@@ -1,6 +1,6 @@
 import { type EncryptionVersion, getEncryptionKey } from "@/lib/encryption";
 import CryptoJS from "crypto-js";
-import { InferSelectModel } from "drizzle-orm";
+import { InferSelectModel, relations } from "drizzle-orm";
 import {
 	customType,
 	json,
@@ -59,6 +59,11 @@ export const requestTable = createTable("request", {
 	requestId: text().notNull(),
 	paymentReference: text().notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
+	userId: text()
+		.notNull()
+		.references(() => userTable.id, {
+			onDelete: "cascade",
+		}),
 });
 
 export const sessionTable = createTable("session", {
@@ -73,6 +78,27 @@ export const sessionTable = createTable("session", {
 		mode: "date",
 	}).notNull(),
 });
+
+// Relationships
+
+export const userRelations = relations(userTable, ({ many }) => ({
+	requests: many(requestTable),
+	session: many(sessionTable),
+}));
+
+export const requestRelations = relations(requestTable, ({ one }) => ({
+	user: one(userTable, {
+		fields: [requestTable.userId],
+		references: [userTable.id],
+	}),
+}));
+
+export const sessionRelations = relations(sessionTable, ({ one }) => ({
+	user: one(userTable, {
+		fields: [sessionTable.userId],
+		references: [userTable.id],
+	}),
+}));
 
 export type Request = InferSelectModel<typeof requestTable>;
 export type User = InferSelectModel<typeof userTable>;
