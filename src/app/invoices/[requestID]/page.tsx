@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, CheckCircle, Clock, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 // Mock data for demonstration
 const invoiceData = {
@@ -225,7 +223,10 @@ export default function PaymentPage() {
                     </thead>
                     <tbody>
                       {invoiceData.items.map((item, index) => (
-                        <tr key={index} className="border-b">
+                        <tr
+                          key={`invoice-item-${item.description}-${index}`}
+                          className="border-b"
+                        >
                           <td className="py-2">{item.description}</td>
                           <td className="text-right py-2">{item.quantity}</td>
                           <td className="text-right py-2">

@@ -10,6 +10,7 @@
     "db:push": "dotenv -e .env -- drizzle-kit push",
     "db:studio": "dotenv -e .env -- drizzle-kit studio",
     "format": "biome format --write",
+    "check": "biome check --write .",
     "lint": "biome lint --write",
     "lint-staged": "lint-staged",
     "prepare": "husky"

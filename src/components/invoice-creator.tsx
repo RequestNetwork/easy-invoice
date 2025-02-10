@@ -1,17 +1,14 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { InvoiceFormValues, invoiceFormSchema } from "@/lib/schemas/invoice";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvoiceForm } from "@/components/invoice-form";
 import { InvoicePreview } from "@/components/invoice-preview";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InvoiceFormValues, invoiceFormSchema } from "@/lib/schemas/invoice";
 import { api } from "@/trpc/react";
-import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 export function InvoiceCreator() {
-  const router = useRouter();
-
   const { mutate: createInvoice, isLoading } = api.invoice.create.useMutation();
 
   const form = useForm<InvoiceFormValues>({

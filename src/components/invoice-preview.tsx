@@ -1,5 +1,5 @@
-import { InvoiceFormValues } from "@/lib/schemas/invoice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InvoiceFormValues } from "@/lib/schemas/invoice";
 
 interface InvoicePreviewProps {
   data: Partial<InvoiceFormValues>;
@@ -9,7 +9,7 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
   const calculateTotal = () => {
     return (data.items || []).reduce(
       (total, item) => total + (item.quantity || 0) * (item.price || 0),
-      0
+      0,
     );
   };
 
@@ -43,7 +43,10 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
             </thead>
             <tbody>
               {(data.items || []).map((item, index) => (
-                <tr key={index} className="border-b">
+                <tr
+                  key={`invoice-item-${item.description}-${index}`}
+                  className="border-b"
+                >
                   <td className="py-2">{item.description || "---"}</td>
                   <td className="text-right py-2">{item.quantity || 0}</td>
                   <td className="text-right py-2">
