@@ -3,7 +3,7 @@ version: "3.3"
 services:
   # postgresql://easy-invoice:easy-invoice@localhost:7406/easy-invoice
   postgres:
-    image: postgres:latest
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: easy-invoice
       POSTGRES_PASSWORD: easy-invoice
