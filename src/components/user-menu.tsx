@@ -9,13 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut } from "lucide-react";
 import { type User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface UserMenuProps {
-  user: Pick<User, "name" | "googleId" | "walletAddress">;
+  user: Pick<User, "name" | "id">;
 }
 
 export function UserMenu({ user }: UserMenuProps) {

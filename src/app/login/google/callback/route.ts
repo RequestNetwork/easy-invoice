@@ -1,18 +1,17 @@
 // app/login/google/callback/route.ts
 import {
-  generateSessionToken,
   createSession,
+  generateSessionToken,
   setSessionTokenCookie,
 } from "@/server/auth";
 import { google } from "@/server/auth";
-import { cookies } from "next/headers";
-import { decodeIdToken } from "arctic";
-import { ulid } from "ulid";
-import type { OAuth2Tokens } from "arctic";
 import { db } from "@/server/db";
 import { userTable } from "@/server/db/schema";
+import { decodeIdToken } from "arctic";
+import type { OAuth2Tokens } from "arctic";
 import { eq } from "drizzle-orm";
-import { ethers } from "ethers";
+import { cookies } from "next/headers";
+import { ulid } from "ulid";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -40,14 +39,21 @@ export async function GET(request: Request): Promise<Response> {
   let tokens: OAuth2Tokens;
   try {
     tokens = await google.validateAuthorizationCode(code, codeVerifier);
-  } catch (e) {
+  } catch (_) {
     return new Response(null, {
       status: 400,
     });
   }
-  const claims = decodeIdToken(tokens.idToken());
-  const googleUserId = claims?.sub!;
-  const username = claims?.name!;
+  interface GoogleClaims {
+    sub?: string;
+    name?: string;
+  }
+  const claims = decodeIdToken(tokens.idToken()) as GoogleClaims;
+  if (!claims?.sub || !claims?.name) {
+    return new Response(null, { status: 400 });
+  }
+  const googleUserId = claims.sub;
+  const username = claims.name;
 
   const existingUser = await db.query.userTable.findFirst({
     where: eq(userTable.googleId, googleUserId),
@@ -57,7 +63,7 @@ export async function GET(request: Request): Promise<Response> {
     const sessionToken = generateSessionToken();
     const session = await createSession(
       sessionToken,
-      existingUser?.id as string
+      existingUser?.id as string,
     );
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
@@ -69,18 +75,13 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const userId = ulid();
-  const wallet = ethers.Wallet.createRandom();
 
-  const user = await db
+  await db
     .insert(userTable)
     .values({
       id: userId,
       googleId: googleUserId,
       name: username,
-      mnemonic: wallet.mnemonic.phrase,
-      privateKey: wallet.privateKey,
-      publicKey: wallet.publicKey,
-      walletAddress: wallet.address,
     })
     .returning();
 
