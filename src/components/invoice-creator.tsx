@@ -46,7 +46,6 @@ export function InvoiceCreator() {
       invoiceCurrency: "USD",
       paymentCurrency: "",
       walletAddress: "",
-      clientWallet: "",
     },
   });
 
