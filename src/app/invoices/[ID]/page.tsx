@@ -22,6 +22,14 @@ export default async function PaymentPage({
 		notFound();
 	}
 
+	const formatDate = (date: string) => {
+		return new Date(date).toLocaleDateString("en-US", {
+			year: "2-digit",
+			month: "2-digit",
+			day: "2-digit",
+		});
+	};
+
 	return (
 		<div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
 			{/* Decorative elements */}
@@ -69,67 +77,143 @@ export default async function PaymentPage({
 						<PaymentSection invoice={invoice} />
 
 						{/* Invoice Preview */}
-						<Card className="w-full">
-							<CardHeader>
-								<CardTitle>Invoice Preview</CardTitle>
-							</CardHeader>
-							<CardContent className="space-y-6">
-								<div className="border-b pb-4">
-									<h2 className="text-2xl font-bold mb-2">
-										Invoice #{invoice.invoiceNumber}
-									</h2>
-									<p>Due Date: {new Date(invoice.dueDate).toLocaleDateString()}</p>
+						<Card className="w-full bg-white shadow-sm border-0">
+							<CardContent className="p-8">
+								{/* Header Section */}
+								<div className="mb-12">
+									<div className="grid grid-cols-12 gap-4">
+										<div className="col-span-4">
+											<div className="text-xs text-neutral-500 mb-1">
+												INVOICE NO
+											</div>
+											<div className="text-sm font-medium">
+												{invoice.invoiceNumber}
+											</div>
+										</div>
+										<div className="col-span-4">
+											<div className="text-xs text-neutral-500 mb-1">
+												ISSUED
+											</div>
+											<div className="text-sm">
+												{formatDate(new Date().toISOString())}
+											</div>
+										</div>
+										<div className="col-span-4">
+											<div className="text-xs text-neutral-500 mb-1">
+												DUE DATE
+											</div>
+											<div className="text-sm">
+												{formatDate(invoice.dueDate)}
+											</div>
+										</div>
+									</div>
 								</div>
-								<div className="space-y-2">
-									<h3 className="font-semibold">Bill To:</h3>
-									<p>{invoice.clientName}</p>
-									<p>{invoice.clientEmail}</p>
+
+								{/* From/To Section */}
+								<div className="grid grid-cols-2 gap-16 mb-12">
+									<div>
+										<div className="text-xs text-neutral-500 mb-3">FROM</div>
+										<div className="space-y-1">
+											<div className="text-sm">PAYABLE TO:</div>
+											<div className="text-sm text-neutral-600 font-mono break-all">
+												{invoice.payee}
+											</div>
+										</div>
+									</div>
+									<div>
+										<div className="text-xs text-neutral-500 mb-3">TO</div>
+										<div className="space-y-1">
+											<div className="text-sm">{invoice.clientName}</div>
+											<div className="text-sm text-neutral-600">
+												{invoice.clientEmail}
+											</div>
+										</div>
+									</div>
 								</div>
-								<div>
-									<h3 className="font-semibold mb-2">Items:</h3>
+
+								{/* Items Table */}
+								<div className="mb-12">
 									<table className="w-full">
 										<thead>
-											<tr className="border-b">
-												<th className="text-left pb-2">Description</th>
-												<th className="text-right pb-2">Qty</th>
-												<th className="text-right pb-2">Price</th>
-												<th className="text-right pb-2">Total</th>
+											<tr>
+												<th className="text-xs text-neutral-500 text-left pb-3">
+													DESCRIPTION
+												</th>
+												<th className="text-xs text-neutral-500 text-right pb-3">
+													QTY
+												</th>
+												<th className="text-xs text-neutral-500 text-right pb-3">
+													PRICE
+												</th>
+												<th className="text-xs text-neutral-500 text-right pb-3">
+													AMOUNT
+												</th>
 											</tr>
 										</thead>
-										<tbody>
+										<tbody className="border-y border-neutral-200">
 											{(invoice.items as InvoiceItem[]).map((item, index) => (
-												<tr key={index} className="border-b">
-													<td className="py-2">{item.description}</td>
-													<td className="text-right py-2">{item.quantity}</td>
-													<td className="text-right py-2">
-														${item.price.toFixed(2)}
+												<tr key={index}>
+													<td className="py-3">
+														<div className="text-sm">{item.description}</div>
 													</td>
-													<td className="text-right py-2">
-														${(item.quantity * item.price).toFixed(2)}
+													<td className="py-3 text-right text-sm">
+														{item.quantity}
+													</td>
+													<td className="py-3 text-right text-sm">
+														{item.price.toFixed(2)}
+													</td>
+													<td className="py-3 text-right text-sm">
+														{(item.quantity * item.price).toFixed(2)}
 													</td>
 												</tr>
 											))}
 										</tbody>
-										<tfoot>
-											<tr>
-												<td
-													colSpan={3}
-													className="text-right font-semibold pt-4"
-												>
-													Total:
-												</td>
-												<td className="text-right font-bold pt-4">
-													${Number(invoice.amount).toFixed(2)}
-												</td>
-											</tr>
-										</tfoot>
 									</table>
+
+									{/* Totals */}
+									<div className="flex justify-end mt-6">
+										<div className="w-48">
+											<div className="flex justify-between py-2">
+												<span className="text-sm text-neutral-600">
+													Subtotal
+												</span>
+												<span className="text-sm">
+													{Number(invoice.amount).toFixed(2)}
+												</span>
+											</div>
+											<div className="flex justify-between py-2 border-t border-neutral-200">
+												<span className="text-sm font-medium">Total</span>
+												<div>
+													<div className="text-sm text-right font-medium">
+														{Number(invoice.amount).toFixed(2)}
+													</div>
+													<div className="text-xs text-neutral-500">
+														{formatCurrencyLabel(invoice.invoiceCurrency)}
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
 								</div>
-								<div className="space-y-2">
-									<h3 className="font-semibold">Payment Details:</h3>
-									<p>Invoice Currency: {formatCurrencyLabel(invoice.invoiceCurrency)}</p>
-									<p>Payment Currency: {formatCurrencyLabel(invoice.paymentCurrency)}</p>
-									<p>Recipient Wallet: {invoice.payee}</p>
+
+								{/* Payment Details and Notes Section */}
+								<div className="grid grid-cols-2 gap-16">
+									<div>
+										<div className="text-xs text-neutral-500 mb-1">
+											PAYABLE IN
+										</div>
+										<div className="text-sm">
+											{formatCurrencyLabel(invoice.paymentCurrency)}
+										</div>
+									</div>
+									{invoice.notes && (
+										<div>
+											<div className="text-xs text-neutral-500 mb-1">NOTES</div>
+											<div className="text-sm text-neutral-600 whitespace-pre-wrap break-words max-w-[300px]">
+												{invoice.notes}
+											</div>
+										</div>
+									)}
 								</div>
 							</CardContent>
 						</Card>
