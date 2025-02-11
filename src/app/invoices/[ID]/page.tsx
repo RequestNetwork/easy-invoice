@@ -1,10 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { PaymentSection } from "@/components/payment-section";
-import { notFound } from "next/navigation";
-import { api } from "@/trpc/server";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
+import { api } from "@/trpc/server";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 type InvoiceItem = {
 	description: string;
