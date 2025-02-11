@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { format, isPast } from "date-fns";
 
 export default async function DashboardPage() {
 	const { user } = await getCurrentSession();
@@ -163,44 +164,49 @@ export default async function DashboardPage() {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{invoices.map((invoice) => (
-											<TableRow key={invoice.id} className="hover:bg-gray-50">
-												<TableCell className="font-medium">
-													{invoice.invoiceNumber}
-												</TableCell>
-												<TableCell>{invoice.clientName}</TableCell>
-												<TableCell>
-													 {Number(invoice.amount).toLocaleString()} {invoice.currency}
-												</TableCell>
-												<TableCell>
-													{new Date(invoice.dueDate).toLocaleDateString()}
-												</TableCell>
-												<TableCell>
-													<span
-														className={`px-3 py-1 rounded-full text-xs font-medium ${
-															invoice.status === "paid"
-																? "bg-green-100 text-green-800"
-																: invoice.status === "pending"
-																? "bg-yellow-100 text-yellow-800"
-																: "bg-red-100 text-red-800"
-														}`}
-													>
-														{invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-													</span>
-												</TableCell>
-												<TableCell>
-													<div className="flex gap-2">
-														<Link
-															href={`/invoices/${invoice.id}`}
-															className="inline-flex items-center justify-center h-9 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+										{invoices.map((invoice) => {
+											const dueDate = new Date(invoice.dueDate);
+											const isOverdue = invoice.status === "pending" && isPast(dueDate);
+											
+											return (
+												<TableRow key={invoice.id} className="hover:bg-gray-50">
+													<TableCell className="font-medium">
+														{invoice.invoiceNumber}
+													</TableCell>
+													<TableCell>{invoice.clientName}</TableCell>
+													<TableCell>
+														{Number(invoice.amount).toLocaleString()} {invoice.currency}
+													</TableCell>
+													<TableCell>
+														{format(dueDate, 'do MMMM yyyy')}
+													</TableCell>
+													<TableCell>
+														<span
+															className={`px-3 py-1 rounded-full text-xs font-medium ${
+																invoice.status === "paid"
+																	? "bg-green-100 text-green-800"
+																	: isOverdue
+																	? "bg-red-100 text-red-800"
+																	: "bg-yellow-100 text-yellow-800"
+															}`}
 														>
-															<Eye className="h-4 w-4" />
-															<span className="sr-only">View</span>
-														</Link>
-													</div>
-												</TableCell>
-											</TableRow>
-										))}
+															{isOverdue ? "Overdue" : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+														</span>
+													</TableCell>
+													<TableCell>
+														<div className="flex gap-2">
+															<Link
+																href={`/invoices/${invoice.id}`}
+																className="inline-flex items-center justify-center h-9 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+															>
+																<Eye className="h-4 w-4" />
+																<span className="sr-only">View</span>
+															</Link>
+														</div>
+													</TableCell>
+												</TableRow>
+											);
+										})}
 									</TableBody>
 								</Table>
 							)}
