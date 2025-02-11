@@ -1,0 +1,14 @@
+name: Deploy to production
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Webhook request
+        run: |
+          curl -X GET https://prod.request.network/api/deploy/${{ secrets.EASYPANEL_DEPLOY_KEY_PRODUCTION }}

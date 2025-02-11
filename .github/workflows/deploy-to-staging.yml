@@ -1,0 +1,14 @@
+name: Deploy to staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Webhook request
+        run: |
+          curl -X GET https://stage.request.network/api/deploy/${{ secrets.EASYPANEL_DEPLOY_KEY_STAGING }}
