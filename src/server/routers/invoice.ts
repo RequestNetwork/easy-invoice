@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import { requestTable } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
@@ -60,6 +60,7 @@ export const invoiceRouter = router({
     const { db } = ctx;
     const invoices = await db.query.requestTable.findMany({
       where: eq(requestTable.userId, ctx.user?.id as string),
+      orderBy: desc(requestTable.createdAt),
     });
 
     const totalPayments = invoices.reduce(
