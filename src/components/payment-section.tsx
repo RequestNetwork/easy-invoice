@@ -7,7 +7,14 @@ import { CheckCircle, Clock, Wallet, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { formatCurrencyLabel } from "@/lib/currencies";
 import { Request } from "@/server/db/schema";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import {
+	useAppKit,
+	useAppKitAccount,
+	useAppKitProvider,
+} from "@reown/appkit/react";
+import { ethers } from "ethers";
+import { api } from "@/trpc/react";
+import { toast } from "sonner";
 
 interface PaymentSectionProps {
 	invoice: NonNullable<Request>;
@@ -15,11 +22,28 @@ interface PaymentSectionProps {
 
 export function PaymentSection({ invoice }: PaymentSectionProps) {
 	const [paymentStatus, setPaymentStatus] = useState(invoice.status);
+	const [paymentProgress, setPaymentProgress] = useState("idle");
 	const [currentStep, setCurrentStep] = useState(1);
 	const [isAppKitReady, setIsAppKitReady] = useState(false);
+	const { mutateAsync: payRequest, isLoading } =
+		api.invoice.payRequest.useMutation();
 
 	const { open } = useAppKit();
 	const { isConnected, address } = useAppKitAccount();
+	const { walletProvider } = useAppKitProvider("eip155");
+
+	const displayPaymentProgress = () => {
+		switch (paymentProgress) {
+			case "idle":
+				return "Start payment";
+			case "getting-transactions":
+				return "Getting payment transactions";
+			case "approving":
+				return "Approving payment";
+			case "paying":
+				return "Sending payment";
+		}
+	};
 
 	useEffect(() => {
 		// Simulate AppKit initialization delay
@@ -40,11 +64,62 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 		}
 	};
 
-	const handlePayment = () => {
-		setPaymentStatus("processing");
-		setTimeout(() => {
+	const handlePayment = async () => {
+		if (paymentProgress !== "idle") return;
+
+		setPaymentProgress("getting-transactions");
+
+		// @ts-ignore
+		const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
+
+		const signer = await ethersProvider.getSigner();
+
+		try {
+			const paymentData = await payRequest(invoice.paymentReference).then(
+				(response) => response.data,
+			);
+
+			const isApprovalNeeded = paymentData.metadata.needsApproval;
+
+			if (isApprovalNeeded) {
+				setPaymentProgress("approving");
+				toast("Payment Approval Required", {
+					description: "Please approve the payment in your wallet",
+				});
+
+				const approvalIndex = paymentData.metadata.approvalTransactionIndex;
+
+				const approvalTransaction = await signer.sendTransaction(
+					paymentData.transactions[approvalIndex],
+				);
+
+				approvalTransaction.wait();
+			}
+
+			setPaymentProgress("paying");
+
+			toast("Initiating payment", {
+				description: "Please confirm the payment in your wallet",
+			});
+
+			const paymentTransaction = await signer.sendTransaction(
+				paymentData.transactions[isApprovalNeeded ? 1 : 0],
+			);
+
+			paymentTransaction.wait();
+
+			toast("Payment completed", {
+				description: "Payment completed successfully",
+			});
+
 			setPaymentStatus("paid");
-		}, 2000);
+		} catch (error) {
+			console.error("Error : ", error);
+			toast("Payment Failed", {
+				description: "Please try again",
+			});
+		}
+		setPaymentProgress("idle");
 	};
 
 	const showCurrencyConversion =
@@ -116,112 +191,120 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 				</div>
 
 				{/* Payment Steps */}
-				<div className="space-y-8">
-					{/* Step indicators */}
-					<div className="flex justify-center">
-						<div className="flex items-center space-x-4">
-							<div
-								className={`flex items-center ${
-									currentStep >= 1 ? "text-black" : "text-zinc-300"
-								}`}
-							>
+				{paymentStatus !== "paid" && (
+					<div className="space-y-8">
+						{/* Step indicators */}
+						<div className="flex justify-center">
+							<div className="flex items-center space-x-4">
 								<div
-									className={`w-8 h-8 rounded-full border-2 flex items-center justify-center
+									className={`flex items-center ${
+										currentStep >= 1 ? "text-black" : "text-zinc-300"
+									}`}
+								>
+									<div
+										className={`w-8 h-8 rounded-full border-2 flex items-center justify-center
                   ${
 										currentStep >= 1
 											? "border-black bg-zinc-50"
 											: "border-zinc-300"
 									}`}
-								>
-									<Wallet className="w-4 h-4" />
+									>
+										<Wallet className="w-4 h-4" />
+									</div>
+									<span className="ml-2 font-medium">Connect Wallet</span>
 								</div>
-								<span className="ml-2 font-medium">Connect Wallet</span>
-							</div>
-							<div
-								className={`w-16 h-0.5 ${
-									currentStep >= 2 ? "bg-black" : "bg-zinc-300"
-								}`}
-							/>
-							<div
-								className={`flex items-center ${
-									currentStep >= 2 ? "text-black" : "text-zinc-300"
-								}`}
-							>
 								<div
-									className={`w-8 h-8 rounded-full border-2 flex items-center justify-center
+									className={`w-16 h-0.5 ${
+										currentStep >= 2 ? "bg-black" : "bg-zinc-300"
+									}`}
+								/>
+								<div
+									className={`flex items-center ${
+										currentStep >= 2 ? "text-black" : "text-zinc-300"
+									}`}
+								>
+									<div
+										className={`w-8 h-8 rounded-full border-2 flex items-center justify-center
                   ${
 										currentStep >= 2
 											? "border-black bg-zinc-50"
 											: "border-zinc-300"
 									}`}
-								>
-									<CheckCircle className="w-4 h-4" />
+									>
+										<CheckCircle className="w-4 h-4" />
+									</div>
+									<span className="ml-2 font-medium">Complete Payment</span>
 								</div>
-								<span className="ml-2 font-medium">Complete Payment</span>
 							</div>
 						</div>
-					</div>
 
-					{/* Step Content */}
-					<div className="space-y-4">
-						{currentStep === 1 && (
-							<div className="space-y-4">
-								<p className="text-sm text-zinc-600 text-center">
-									Connect your wallet to proceed with the payment
-								</p>
-								<Button
-									onClick={handleConnectWallet}
-									className="w-full"
-									disabled={!isAppKitReady}
-								>
-									{!isAppKitReady ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Initializing...
-										</>
-									) : (
-										"Connect Wallet"
-									)}
-								</Button>
-							</div>
-						)}
-
-						{currentStep === 2 && (
-							<div className="space-y-4">
-								<div className="space-y-2">
-									<div className="flex justify-between items-center">
-										<Label>Connected Wallet</Label>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={handleConnectWallet}
-											disabled={!isAppKitReady}
-										>
-											Switch Wallet
-										</Button>
-									</div>
-									<div className="font-mono bg-zinc-100 p-2 rounded">
-										{address}
-									</div>
+						{/* Step Content */}
+						<div className="space-y-4">
+							{currentStep === 1 && (
+								<div className="space-y-4">
+									<p className="text-sm text-zinc-600 text-center">
+										Connect your wallet to proceed with the payment
+									</p>
+									<Button
+										onClick={handleConnectWallet}
+										className="w-full"
+										disabled={!isAppKitReady}
+									>
+										{!isAppKitReady ? (
+											<>
+												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+												Initializing...
+											</>
+										) : (
+											"Connect Wallet"
+										)}
+									</Button>
 								</div>
-								<p className="text-sm text-zinc-600">
-									Please confirm the payment amount and recipient address before
-									proceeding.
-									{showCurrencyConversion &&
-										` Payment will be processed in ${formatCurrencyLabel(
-											invoice.paymentCurrency,
-										)}.`}
-								</p>
-								<Button
-									onClick={handlePayment}
-									className="w-full bg-black hover:bg-zinc-800 text-white"
-								>
-									Confirm Payment
-								</Button>
-							</div>
-						)}
+							)}
+
+							{currentStep === 2 && (
+								<div className="space-y-4">
+									<div className="space-y-2">
+										<div className="flex justify-between items-center">
+											<Label>Connected Wallet</Label>
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={handleConnectWallet}
+												disabled={!isAppKitReady}
+											>
+												Switch Wallet
+											</Button>
+										</div>
+										<div className="font-mono bg-zinc-100 p-2 rounded">
+											{address}
+										</div>
+									</div>
+									<p className="text-sm text-zinc-600">
+										Please confirm the payment amount and recipient address
+										before proceeding.
+										{showCurrencyConversion &&
+											` Payment will be processed in ${formatCurrencyLabel(
+												invoice.paymentCurrency,
+											)}.`}
+									</p>
+									<Button
+										onClick={handlePayment}
+										className="w-full bg-black hover:bg-zinc-800 text-white"
+										disabled={paymentProgress !== "idle"}
+									>
+										{paymentProgress !== "idle" && (
+											<>
+												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											</>
+										)}
+										{displayPaymentProgress()}
+									</Button>
+								</div>
+							)}
+						</div>
 					</div>
-				</div>
+				)}
 			</CardContent>
 		</Card>
 	);

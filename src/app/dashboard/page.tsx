@@ -88,41 +88,41 @@ export default async function DashboardPage() {
 
 					{/* Summary Section */}
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-						<Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-none shadow-md">
+						<Card className="bg-white border-none shadow-md">
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-								<CardTitle className="text-sm font-medium text-orange-800">
+								<CardTitle className="text-sm font-medium text-black">
 									Total Invoices
 								</CardTitle>
-								<FileText className="h-4 w-4 text-orange-600" />
+								<FileText className="h-4 w-4 text-black" />
 							</CardHeader>
 							<CardContent>
-								<div className="text-3xl font-bold text-orange-900">
+								<div className="text-3xl font-bold text-black">
 									{totalInvoices}
 								</div>
 							</CardContent>
 						</Card>
-						<Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-none shadow-md">
+						<Card className="bg-white border-none shadow-md">
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-								<CardTitle className="text-sm font-medium text-yellow-800">
+								<CardTitle className="text-sm font-medium text-black">
 									Outstanding Invoices
 								</CardTitle>
-								<AlertCircle className="h-4 w-4 text-yellow-600" />
+								<AlertCircle className="h-4 w-4 text-black" />
 							</CardHeader>
 							<CardContent>
-								<div className="text-3xl font-bold text-yellow-900">
+								<div className="text-3xl font-bold text-black">
 									{outstandingInvoices}
 								</div>
 							</CardContent>
 						</Card>
-						<Card className="bg-gradient-to-br from-green-50 to-green-100 border-none shadow-md">
+						<Card className="bg-white border-none shadow-md">
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-								<CardTitle className="text-sm font-medium text-green-800">
+								<CardTitle className="text-sm font-medium text-black">
 									Total Payments
 								</CardTitle>
-								<DollarSign className="h-4 w-4 text-green-600" />
+								<DollarSign className="h-4 w-4 text-black" />
 							</CardHeader>
 							<CardContent>
-								<div className="text-3xl font-bold text-green-900">
+								<div className="text-3xl font-bold text-black">
 									${totalPayments.toLocaleString()}
 								</div>
 							</CardContent>
@@ -142,8 +142,12 @@ export default async function DashboardPage() {
 							{invoices.length === 0 ? (
 								<div className="text-center py-12">
 									<FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-									<h3 className="text-lg font-medium text-gray-900 mb-2">No invoices found</h3>
-									<p className="text-gray-500">Get started by creating your first invoice.</p>
+									<h3 className="text-lg font-medium text-gray-900 mb-2">
+										No invoices found
+									</h3>
+									<p className="text-gray-500">
+										Get started by creating your first invoice.
+									</p>
 									<Link
 										href="/invoices/create"
 										className="inline-flex items-center mt-4 px-4 py-2 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors"
@@ -168,8 +172,9 @@ export default async function DashboardPage() {
 									<TableBody>
 										{invoices.map((invoice) => {
 											const dueDate = new Date(invoice.dueDate);
-											const isOverdue = invoice.status === "pending" && isPast(dueDate);
-											
+											const isOverdue =
+												invoice.status === "pending" && isPast(dueDate);
+
 											return (
 												<TableRow key={invoice.id} className="hover:bg-gray-50">
 													<TableCell className="font-medium">
@@ -183,7 +188,7 @@ export default async function DashboardPage() {
 														{formatCurrencyLabel(invoice.invoiceCurrency)}
 													</TableCell>
 													<TableCell>
-														{format(dueDate, 'do MMMM yyyy')}
+														{format(dueDate, "do MMMM yyyy")}
 													</TableCell>
 													<TableCell>
 														<span
@@ -191,11 +196,14 @@ export default async function DashboardPage() {
 																invoice.status === "paid"
 																	? "bg-green-100 text-green-800"
 																	: isOverdue
-																	? "bg-red-100 text-red-800"
-																	: "bg-yellow-100 text-yellow-800"
+																	  ? "bg-red-100 text-red-800"
+																	  : "bg-yellow-100 text-yellow-800"
 															}`}
 														>
-															{isOverdue ? "Overdue" : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+															{isOverdue
+																? "Overdue"
+																: invoice.status.charAt(0).toUpperCase() +
+																  invoice.status.slice(1)}
 														</span>
 													</TableCell>
 													<TableCell>

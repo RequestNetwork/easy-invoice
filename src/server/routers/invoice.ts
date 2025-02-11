@@ -26,25 +26,28 @@ export const invoiceRouter = router({
 					paymentCurrency: input.paymentCurrency,
 				});
 
-				const invoice = await db.insert(requestTable).values({
-					id: ulid(),
-					amount: totalAmount.toString(),
-					invoiceCurrency: input.invoiceCurrency,
-					paymentCurrency: input.paymentCurrency,
-					type: "invoice",
-					status: "pending",
-					payer: input.clientWallet,
-					payee: input.walletAddress,
-					dueDate: new Date(input.dueDate).toISOString(),
-					requestId: response.data.requestID as string,
-					paymentReference: response.data.paymentReference as string,
-					clientName: input.clientName,
-					clientEmail: input.clientEmail,
-					invoiceNumber: input.invoiceNumber,
-					items: input.items,
-					notes: input.notes,
-					userId: ctx.user?.id as string,
-				}).returning();
+				const invoice = await db
+					.insert(requestTable)
+					.values({
+						id: ulid(),
+						amount: totalAmount.toString(),
+						invoiceCurrency: input.invoiceCurrency,
+						paymentCurrency: input.paymentCurrency,
+						type: "invoice",
+						status: "pending",
+						payer: input.clientWallet,
+						payee: input.walletAddress,
+						dueDate: new Date(input.dueDate).toISOString(),
+						requestId: response.data.requestID as string,
+						paymentReference: response.data.paymentReference as string,
+						clientName: input.clientName,
+						clientEmail: input.clientEmail,
+						invoiceNumber: input.invoiceNumber,
+						items: input.items,
+						notes: input.notes,
+						userId: ctx.user?.id as string,
+					})
+					.returning();
 
 				return {
 					success: true,
@@ -76,11 +79,35 @@ export const invoiceRouter = router({
 			outstandingInvoices: outstandingInvoices.length,
 		};
 	}),
-	getById: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const { db } = ctx;
-		const invoice = await db.query.requestTable.findFirst({
-			where: eq(requestTable.id, input),
-		});
-		return invoice;
-	}),
+	getById: protectedProcedure
+		.input(z.string())
+		.query(async ({ ctx, input }) => {
+			const { db } = ctx;
+			const invoice = await db.query.requestTable.findFirst({
+				where: eq(requestTable.id, input),
+			});
+			return invoice;
+		}),
+	payRequest: protectedProcedure
+		.input(z.string())
+		.mutation(async ({ ctx, input }) => {
+			const { db } = ctx;
+			const invoice = await db.query.requestTable.findFirst({
+				where: eq(requestTable.paymentReference, input),
+			});
+
+			if (!invoice) {
+				return { success: false, message: "Invoice not found" };
+			}
+
+			const response = await apiClient.get(
+				`/v1/request/${invoice.paymentReference}/pay`,
+			);
+
+			if (response.status !== 200) {
+				return { success: false, message: "Failed to pay invoice" };
+			}
+
+			return { success: true, data: response.data };
+		}),
 });
