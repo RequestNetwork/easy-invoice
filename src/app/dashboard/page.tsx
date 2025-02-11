@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format, isPast } from "date-fns";
+import { formatCurrencyLabel } from "@/lib/currencies";
 
 export default async function DashboardPage() {
 	const { user } = await getCurrentSession();
@@ -158,6 +159,7 @@ export default async function DashboardPage() {
 											<TableHead className="text-gray-600">Invoice #</TableHead>
 											<TableHead className="text-gray-600">Client</TableHead>
 											<TableHead className="text-gray-600">Amount</TableHead>
+											<TableHead className="text-gray-600">Currency</TableHead>
 											<TableHead className="text-gray-600">Due Date</TableHead>
 											<TableHead className="text-gray-600">Status</TableHead>
 											<TableHead className="text-gray-600">Actions</TableHead>
@@ -175,7 +177,10 @@ export default async function DashboardPage() {
 													</TableCell>
 													<TableCell>{invoice.clientName}</TableCell>
 													<TableCell>
-														{Number(invoice.amount).toLocaleString()} {invoice.currency}
+														{Number(invoice.amount).toLocaleString()}
+													</TableCell>
+													<TableCell>
+														{formatCurrencyLabel(invoice.invoiceCurrency)}
 													</TableCell>
 													<TableCell>
 														{format(dueDate, 'do MMMM yyyy')}

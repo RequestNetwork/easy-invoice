@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { INVOICE_CURRENCIES, getPaymentCurrenciesForInvoice, formatCurrencyLabel, InvoiceCurrency } from "@/lib/currencies";
 
 interface InvoiceFormProps {
   form: UseFormReturn<InvoiceFormValues>;
@@ -155,28 +156,62 @@ export function InvoiceForm({ form, onSubmit, isLoading }: InvoiceFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="cryptocurrency">Cryptocurrency</Label>
+        <Label htmlFor="invoiceCurrency">Invoice Currency</Label>
         <Select
-          onValueChange={(value) =>
-            form.setValue("cryptocurrency", value as "eth" | "usdc" | "fau")
-          }
-          defaultValue={form.getValues("cryptocurrency")}
+          onValueChange={(value) => {
+            const currency = value as InvoiceCurrency;
+            form.setValue("invoiceCurrency", currency);
+            // If not USD, set payment currency to same as invoice currency
+            if (currency !== 'USD') {
+              form.setValue("paymentCurrency", currency);
+            }
+          }}
+          defaultValue={form.getValues("invoiceCurrency")}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select cryptocurrency" />
+            <SelectValue placeholder="Select invoice currency" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="eth">Ethereum (ETH)</SelectItem>
-            <SelectItem value="usdc">USD Coin (USDC)</SelectItem>
-            <SelectItem value="fau">Faucet Token (FAU)</SelectItem>
+            {INVOICE_CURRENCIES.map((currency) => (
+              <SelectItem key={currency} value={currency}>
+                {formatCurrencyLabel(currency)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        {form.formState.errors.cryptocurrency && (
+        {form.formState.errors.invoiceCurrency && (
           <p className="text-sm text-red-500">
-            {form.formState.errors.cryptocurrency.message}
+            {form.formState.errors.invoiceCurrency.message}
           </p>
         )}
       </div>
+
+      {/* Only show payment currency selector for USD invoices */}
+      {form.watch("invoiceCurrency") === "USD" && (
+        <div className="space-y-2">
+          <Label htmlFor="paymentCurrency">Payment Currency</Label>
+          <Select
+            onValueChange={(value) => form.setValue("paymentCurrency", value)}
+            defaultValue={form.getValues("paymentCurrency")}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select payment currency" />
+            </SelectTrigger>
+            <SelectContent>
+              {getPaymentCurrenciesForInvoice("USD").map((currency) => (
+                <SelectItem key={currency} value={currency}>
+                  {formatCurrencyLabel(currency)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {form.formState.errors.paymentCurrency && (
+            <p className="text-sm text-red-500">
+              {form.formState.errors.paymentCurrency.message}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="walletAddress">Your Wallet Address</Label>

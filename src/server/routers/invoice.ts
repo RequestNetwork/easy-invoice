@@ -21,14 +21,15 @@ export const invoiceRouter = router({
 					amount: totalAmount.toString(),
 					payer: input.clientWallet,
 					payee: input.walletAddress,
-					invoiceCurrency: "ETH-sepolia-sepolia",
-					paymentCurrency: "ETH-sepolia-sepolia",
+					invoiceCurrency: input.invoiceCurrency,
+					paymentCurrency: input.paymentCurrency,
 				});
 
 				const invoice = await db.insert(requestTable).values({
 					id: ulid(),
 					amount: totalAmount.toString(),
-					currency: input.cryptocurrency,
+					invoiceCurrency: input.invoiceCurrency,
+					paymentCurrency: input.paymentCurrency,
 					type: "invoice",
 					status: "pending",
 					payer: input.clientWallet,

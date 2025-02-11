@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { INVOICE_CURRENCIES, PAYMENT_CURRENCIES } from "@/lib/currencies";
 
 export const invoiceFormSchema = z.object({
   invoiceNumber: z.string().min(1, "Invoice number is required"),
@@ -15,9 +16,10 @@ export const invoiceFormSchema = z.object({
     )
     .min(1, "At least one item is required"),
   notes: z.string().optional(),
-  cryptocurrency: z.enum(["eth", "usdc", "fau"], {
-    required_error: "Please select a cryptocurrency",
+  invoiceCurrency: z.enum(INVOICE_CURRENCIES, {
+    required_error: "Please select an invoice currency",
   }),
+  paymentCurrency: z.string().min(1, "Payment currency is required"),
   walletAddress: z.string().min(1, "Wallet address is required"),
   clientWallet: z.string().min(1, "Client wallet address is required"),
 });

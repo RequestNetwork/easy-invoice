@@ -1,5 +1,6 @@
 import { InvoiceFormValues } from "@/lib/schemas/invoice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrencyLabel } from "@/lib/currencies";
 
 interface InvoicePreviewProps {
   data: Partial<InvoiceFormValues>;
@@ -48,11 +49,11 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
                   <td className="text-right py-2">{item.quantity || 0}</td>
                   <td className="text-right py-2">
                     {(item.price || 0).toFixed(2)}{" "}
-                    {data.cryptocurrency?.toUpperCase() || "---"}
+                    {formatCurrencyLabel(data.invoiceCurrency || "---")}
                   </td>
                   <td className="text-right py-2">
                     {((item.quantity || 0) * (item.price || 0)).toFixed(2)}{" "}
-                    {data.cryptocurrency?.toUpperCase() || "---"}
+                    {formatCurrencyLabel(data.invoiceCurrency || "---")}
                   </td>
                 </tr>
               ))}
@@ -64,7 +65,7 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
                 </td>
                 <td className="text-right font-bold pt-4">
                   {calculateTotal().toFixed(2)}{" "}
-                  {data.cryptocurrency?.toUpperCase() || "---"}
+                  {formatCurrencyLabel(data.invoiceCurrency || "---")}
                 </td>
               </tr>
             </tfoot>
@@ -72,7 +73,10 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
         </div>
         <div className="space-y-2">
           <h3 className="font-semibold">Payment Details:</h3>
-          <p>Cryptocurrency: {data.cryptocurrency || "---"}</p>
+          <p>Invoice Currency: {formatCurrencyLabel(data.invoiceCurrency || "---")}</p>
+          {data.paymentCurrency && data.paymentCurrency !== data.invoiceCurrency && (
+            <p>Payment Currency: {formatCurrencyLabel(data.paymentCurrency)}</p>
+          )}
           <p>Your Wallet: {data.walletAddress || "---"}</p>
           <p>Client's Wallet: {data.clientWallet || "---"}</p>
         </div>
