@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { cookies } from "next/headers";
 import { TRPCReactProvider } from "@/trpc/react";
+import { Toaster } from "@/components/ui/sonner"
+
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +35,7 @@ export default function RootLayout({
         <TRPCReactProvider cookies={cookies().toString()}>
           {children}
         </TRPCReactProvider>
+        <Toaster />
       </body>
     </html>
   );

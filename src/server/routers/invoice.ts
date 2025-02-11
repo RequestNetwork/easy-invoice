@@ -25,7 +25,7 @@ export const invoiceRouter = router({
 					paymentCurrency: "ETH-sepolia-sepolia",
 				});
 
-				await db.insert(requestTable).values({
+				const invoice = await db.insert(requestTable).values({
 					id: ulid(),
 					amount: totalAmount.toString(),
 					currency: input.cryptocurrency,
@@ -42,9 +42,12 @@ export const invoiceRouter = router({
 					items: input.items,
 					notes: input.notes,
 					userId: ctx.user?.id as string,
-				});
+				}).returning();
 
-				return { success: true };
+				return {
+					success: true,
+					invoice: invoice[0],
+				};
 			} catch (error) {
 				console.log("Error: ", error);
 				return { success: false };
