@@ -2,8 +2,14 @@ import { PaymentSection } from "@/components/payment-section";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
 import { api } from "@/trpc/server";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Invoice Payment | EasyInvoice",
+  description: "Process payment for your invoice",
+};
 
 type InvoiceItem = {
   description: string;

@@ -4,8 +4,15 @@ import { UserMenu } from "@/components/user-menu";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { AlertCircle, DollarSign, FileText, PlusCircle } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Dashboard | EasyInvoice",
+  description:
+    "View and manage your invoices, track payments, and monitor business performance",
+};
 
 export default async function DashboardPage() {
   const { user } = await getCurrentSession();
