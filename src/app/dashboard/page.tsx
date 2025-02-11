@@ -1,9 +1,8 @@
 import { InvoiceTable } from "@/components/invoice-table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserMenu } from "@/components/user-menu";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
-import { AlertCircle, DollarSign, FileText, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -23,8 +22,6 @@ export default async function DashboardPage() {
   if (!user) {
     redirect("/");
   }
-
-  const totalInvoices = invoices.length;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
@@ -77,68 +74,13 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          {/* Summary Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="bg-white border-none shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-black">
-                  Total Invoices
-                </CardTitle>
-                <FileText className="h-4 w-4 text-black" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-black">
-                  {totalInvoices}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-none shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-black">
-                  Outstanding Invoices
-                </CardTitle>
-                <AlertCircle className="h-4 w-4 text-black" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-black">
-                  {outstandingInvoices}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-none shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-black">
-                  Total Payments
-                </CardTitle>
-                <DollarSign className="h-4 w-4 text-black" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-black">
-                  ${totalPayments.toLocaleString()}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Invoice List */}
-          <Card className="flex-grow">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg font-medium">
-                  Recent Invoices
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="px-6">
-              <InvoiceTable
-                initialInvoices={{
-                  invoices,
-                  totalPayments,
-                  outstandingInvoices,
-                }}
-              />
-            </CardContent>
-          </Card>
+          <InvoiceTable
+            initialInvoices={{
+              invoices,
+              totalPayments,
+              outstandingInvoices,
+            }}
+          />
         </main>
       </div>
     </div>
