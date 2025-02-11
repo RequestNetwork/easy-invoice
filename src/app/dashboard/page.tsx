@@ -1,6 +1,4 @@
-import { getCurrentSession } from "@/server/auth";
-import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Table,
@@ -10,33 +8,30 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { DollarSign, FileText, AlertCircle, PlusCircle } from "lucide-react";
 import { UserMenu } from "@/components/user-menu";
-import { Button } from "@/components/ui/button";
-
-// Mock data for demonstration - In real app, this would come from your database
-const mockInvoices = [
-	{ id: "INV-001", dueDate: "2024-12-01", amount: 1500, status: "Paid" },
-	{ id: "INV-002", dueDate: "2024-12-15", amount: 2000, status: "Pending" },
-	{ id: "INV-003", dueDate: "2024-11-30", amount: 1000, status: "Overdue" },
-	{ id: "INV-004", dueDate: "2024-12-31", amount: 3000, status: "Pending" },
-];
+import { getCurrentSession } from "@/server/auth";
+import { api } from "@/trpc/server";
+import {
+	AlertCircle,
+	DollarSign,
+	Eye,
+	FileText,
+	PlusCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
 	const { user } = await getCurrentSession();
+
+	const { invoices, totalPayments, outstandingInvoices } =
+		await api.invoice.getAll.query();
 
 	if (!user) {
 		redirect("/");
 	}
 
-	const totalInvoices = mockInvoices.length;
-	const outstandingInvoices = mockInvoices.filter(
-		(inv) => inv.status !== "Paid",
-	).length;
-	const totalPayments = mockInvoices.reduce(
-		(sum, inv) => (inv.status === "Paid" ? sum + inv.amount : sum),
-		0,
-	);
+	const totalInvoices = invoices.length;
 
 	return (
 		<div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
@@ -79,15 +74,14 @@ export default async function DashboardPage() {
 				<main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
 					<div className="flex justify-between items-center mb-8">
 						<h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
-						<Button
-							asChild
-							className="bg-black hover:bg-zinc-800 text-white transition-colors"
+
+						<Link
+							href="/invoices/create"
+							className="bg-black hover:bg-zinc-800 text-white transition-colors px-4 py-2 rounded-md flex items-center"
 						>
-							<Link href="/invoices/create">
-								<PlusCircle className="mr-2 h-4 w-4" />
-								Create Invoice
-							</Link>
-						</Button>
+							<PlusCircle className="mr-2 h-4 w-4" />
+							Create Invoice
+						</Link>
 					</div>
 
 					{/* Summary Section */}
@@ -136,43 +130,80 @@ export default async function DashboardPage() {
 					{/* Invoice List */}
 					<Card className="flex-grow">
 						<CardHeader>
-							<CardTitle>Recent Invoices</CardTitle>
+							<div className="flex justify-between items-center">
+								<CardTitle className="text-lg font-medium">
+									Recent Invoices
+								</CardTitle>
+							</div>
 						</CardHeader>
-						<CardContent>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Invoice ID</TableHead>
-										<TableHead>Due Date</TableHead>
-										<TableHead>Amount</TableHead>
-										<TableHead>Status</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{mockInvoices.map((invoice) => (
-										<TableRow key={invoice.id}>
-											<TableCell className="font-medium">
-												{invoice.id}
-											</TableCell>
-											<TableCell>{invoice.dueDate}</TableCell>
-											<TableCell>${invoice.amount.toLocaleString()}</TableCell>
-											<TableCell>
-												<span
-													className={`px-2 py-1 rounded-full text-xs font-medium ${
-														invoice.status === "Paid"
-															? "bg-green-100 text-green-800"
-															: invoice.status === "Pending"
-															  ? "bg-yellow-100 text-yellow-800"
-															  : "bg-red-100 text-red-800"
-													}`}
-												>
-													{invoice.status}
-												</span>
-											</TableCell>
+						<CardContent className="px-6">
+							{invoices.length === 0 ? (
+								<div className="text-center py-12">
+									<FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+									<h3 className="text-lg font-medium text-gray-900 mb-2">No invoices found</h3>
+									<p className="text-gray-500">Get started by creating your first invoice.</p>
+									<Link
+										href="/invoices/create"
+										className="inline-flex items-center mt-4 px-4 py-2 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors"
+									>
+										<PlusCircle className="mr-2 h-4 w-4" />
+										Create Invoice
+									</Link>
+								</div>
+							) : (
+								<Table>
+									<TableHeader>
+										<TableRow className="hover:bg-transparent border-t">
+											<TableHead className="text-gray-600">Invoice #</TableHead>
+											<TableHead className="text-gray-600">Client</TableHead>
+											<TableHead className="text-gray-600">Amount</TableHead>
+											<TableHead className="text-gray-600">Due Date</TableHead>
+											<TableHead className="text-gray-600">Status</TableHead>
+											<TableHead className="text-gray-600">Actions</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+									</TableHeader>
+									<TableBody>
+										{invoices.map((invoice) => (
+											<TableRow key={invoice.id} className="hover:bg-gray-50">
+												<TableCell className="font-medium">
+													{invoice.invoiceNumber}
+												</TableCell>
+												<TableCell>{invoice.clientName}</TableCell>
+												<TableCell>
+													 {Number(invoice.amount).toLocaleString()} {invoice.currency}
+												</TableCell>
+												<TableCell>
+													{new Date(invoice.dueDate).toLocaleDateString()}
+												</TableCell>
+												<TableCell>
+													<span
+														className={`px-3 py-1 rounded-full text-xs font-medium ${
+															invoice.status === "paid"
+																? "bg-green-100 text-green-800"
+																: invoice.status === "pending"
+																? "bg-yellow-100 text-yellow-800"
+																: "bg-red-100 text-red-800"
+														}`}
+													>
+														{invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+													</span>
+												</TableCell>
+												<TableCell>
+													<div className="flex gap-2">
+														<Link
+															href={`/invoices/${invoice.id}`}
+															className="inline-flex items-center justify-center h-9 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+														>
+															<Eye className="h-4 w-4" />
+															<span className="sr-only">View</span>
+														</Link>
+													</div>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							)}
 						</CardContent>
 					</Card>
 				</main>

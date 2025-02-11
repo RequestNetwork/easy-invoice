@@ -3,6 +3,7 @@ import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import { requestTable } from "@/server/db/schema";
 import { ulid } from "ulid";
 import { protectedProcedure, router } from "../trpc";
+import { eq } from "drizzle-orm";
 
 export const invoiceRouter = router({
 	create: protectedProcedure
@@ -49,4 +50,25 @@ export const invoiceRouter = router({
 				return { success: false };
 			}
 		}),
+	getAll: protectedProcedure.query(async ({ ctx }) => {
+		const { db } = ctx;
+		const invoices = await db.query.requestTable.findMany({
+			where: eq(requestTable.userId, ctx.user?.id as string),
+		});
+
+		const totalPayments = invoices.reduce(
+			(acc, invoice) => acc + Number(invoice.amount),
+			0,
+		);
+
+		const outstandingInvoices = invoices.filter(
+			(invoice) => invoice.status !== "paid",
+		);
+
+		return {
+			invoices,
+			totalPayments,
+			outstandingInvoices: outstandingInvoices.length,
+		};
+	}),
 });

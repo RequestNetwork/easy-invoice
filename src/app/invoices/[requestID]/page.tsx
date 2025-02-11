@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, CheckCircle, Clock, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 // Mock data for demonstration
 const invoiceData = {
@@ -103,8 +101,8 @@ export default function PaymentPage() {
 											paymentStatus === "Paid"
 												? "bg-green-100 text-green-800"
 												: paymentStatus === "Processing"
-												  ? "bg-yellow-100 text-yellow-800"
-												  : "bg-blue-100 text-blue-800"
+													? "bg-yellow-100 text-yellow-800"
+													: "bg-blue-100 text-blue-800"
 										}`}
 									>
 										{paymentStatus === "Paid" && (
