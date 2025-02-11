@@ -55,7 +55,6 @@ export const requestTable = createTable("request", {
 	invoiceCurrency: text().notNull(),
 	paymentCurrency: text().notNull(),
 	status: text().notNull(),
-	payer: text().notNull(),
 	payee: text().notNull(),
 	requestId: text().notNull(),
 	paymentReference: text().notNull(),

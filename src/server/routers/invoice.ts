@@ -20,7 +20,6 @@ export const invoiceRouter = router({
 
 				const response = await apiClient.post("/v1/request", {
 					amount: totalAmount.toString(),
-					payer: input.clientWallet,
 					payee: input.walletAddress,
 					invoiceCurrency: input.invoiceCurrency,
 					paymentCurrency: input.paymentCurrency,
@@ -35,7 +34,6 @@ export const invoiceRouter = router({
 						paymentCurrency: input.paymentCurrency,
 						type: "invoice",
 						status: "pending",
-						payer: input.clientWallet,
 						payee: input.walletAddress,
 						dueDate: new Date(input.dueDate).toISOString(),
 						requestId: response.data.requestID as string,
