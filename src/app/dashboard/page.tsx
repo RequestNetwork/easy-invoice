@@ -130,7 +130,13 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="px-6">
-              <InvoiceTable initialInvoices={invoices} />
+              <InvoiceTable
+                initialInvoices={{
+                  invoices,
+                  totalPayments,
+                  outstandingInvoices,
+                }}
+              />
             </CardContent>
           </Card>
         </main>

@@ -40,7 +40,11 @@ interface Invoice {
 }
 
 interface InvoiceTableProps {
-  initialInvoices: Invoice[];
+  initialInvoices: {
+    invoices: Invoice[];
+    totalPayments: number;
+    outstandingInvoices: number;
+  };
 }
 
 export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
@@ -48,12 +52,10 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
 
   // Use initial data and enable real-time updates
   const { data: invoices } = api.invoice.getAll.useQuery(undefined, {
-    initialData: {
-      invoices: initialInvoices,
-      totalPayments: 0,
-      outstandingInvoices: 0,
-    },
-    refetchInterval: 5000,
+    initialData: initialInvoices,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   const totalPages = Math.ceil(invoices.invoices.length / ITEMS_PER_PAGE);
