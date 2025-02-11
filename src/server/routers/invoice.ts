@@ -4,6 +4,7 @@ import { requestTable } from "@/server/db/schema";
 import { ulid } from "ulid";
 import { protectedProcedure, router } from "../trpc";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 export const invoiceRouter = router({
 	create: protectedProcedure
@@ -74,5 +75,12 @@ export const invoiceRouter = router({
 			totalPayments,
 			outstandingInvoices: outstandingInvoices.length,
 		};
+	}),
+	getById: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
+		const { db } = ctx;
+		const invoice = await db.query.requestTable.findFirst({
+			where: eq(requestTable.id, input),
+		});
+		return invoice;
 	}),
 });
