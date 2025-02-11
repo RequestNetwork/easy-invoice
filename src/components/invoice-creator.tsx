@@ -26,10 +26,10 @@ export function InvoiceCreator() {
       }
 
       toast.success("Invoice created successfully", {
-        description: "Redirecting to invoice details in 3 seconds",
+        description: "Redirecting to dashboard in 3 seconds",
       });
       setTimeout(() => {
-        router.push(`/invoices/${data.invoice.id}`);
+        router.push("/dashboard");
       }, 3000);
     },
   });
