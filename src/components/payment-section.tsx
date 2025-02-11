@@ -92,7 +92,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
           paymentData.transactions[approvalIndex],
         );
 
-        approvalTransaction.wait();
+        await approvalTransaction.wait();
       }
 
       setPaymentProgress("paying");
@@ -105,7 +105,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
         paymentData.transactions[isApprovalNeeded ? 1 : 0],
       );
 
-      paymentTransaction.wait();
+      await paymentTransaction.wait();
 
       toast("Payment completed", {
         description: "Payment completed successfully",
