@@ -155,8 +155,8 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
           <h3 className="font-semibold text-green-800 mb-2">Secure Payment</h3>
           <p className="text-sm text-green-700">
-            This payment is secured using blockchain technology. Your
-            transaction will be processed safely and transparently.
+            This payment is secured using Request Network. Your transaction will
+            be processed safely and transparently.
           </p>
         </div>
 
