@@ -20,10 +20,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return response;
   }
 
-  // CSRF protection
-  if (request.method === "GET") {
+  // Skip CSRF check for webhook endpoints
+  if (request.nextUrl.pathname.startsWith("/api/webhook")) {
     return NextResponse.next();
   }
+
+  // CSRF protection for other routes
   const originHeader = request.headers.get("Origin");
   // NOTE: You may need to use `X-Forwarded-Host` instead
   const hostHeader = request.headers.get("Host");
