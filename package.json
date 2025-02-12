@@ -10,6 +10,8 @@
     "lint": "biome lint --write",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "format": "biome format --write",
     "check": "biome check --write .",
     "lint-staged": "lint-staged",

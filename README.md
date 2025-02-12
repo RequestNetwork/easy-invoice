@@ -56,9 +56,17 @@ yarn install
 2. Set up the database:
 
 ```bash
-npm run db:push
+# For development:
+npm run db:push    # Pushes schema changes directly to the database
 # or
 yarn db:push
+
+# For production:
+npm run db:generate  # Generates migration files based on schema changes
+npm run db:migrate   # Applies the generated migrations to the database
+# or
+yarn db:generate
+yarn db:migrate
 ```
 
 3. Start the development server:
