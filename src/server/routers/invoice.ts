@@ -105,7 +105,10 @@ export const invoiceRouter = router({
       );
 
       if (response.status !== 200) {
-        return { success: false, message: "Failed to pay invoice" };
+        return {
+          success: false,
+          message: "Failed to get payment transactions calldata",
+        };
       }
 
       return { success: true, data: response.data };
