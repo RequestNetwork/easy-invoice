@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import { requestTable } from "@/server/db/schema";
+import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
@@ -86,6 +87,14 @@ export const invoiceRouter = router({
     const invoice = await db.query.requestTable.findFirst({
       where: eq(requestTable.id, input),
     });
+
+    if (!invoice) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Invoice not found",
+      });
+    }
+
     return invoice;
   }),
   payRequest: publicProcedure
