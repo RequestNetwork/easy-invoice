@@ -10,47 +10,50 @@ export const invoiceRouter = router({
   create: protectedProcedure
     .input(invoiceFormSchema)
     .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
       try {
-        const { db } = ctx;
+        return await db.transaction(async (tx) => {
+          const totalAmount = input.items.reduce(
+            (acc, item) => acc + item.price * item.quantity,
+            0,
+          );
 
-        const totalAmount = input.items.reduce(
-          (acc, item) => acc + item.price * item.quantity,
-          0,
-        );
-
-        const response = await apiClient.post("/v1/request", {
-          amount: totalAmount.toString(),
-          payee: input.walletAddress,
-          invoiceCurrency: input.invoiceCurrency,
-          paymentCurrency: input.paymentCurrency,
-        });
-
-        const invoice = await db
-          .insert(requestTable)
-          .values({
-            id: ulid(),
+          const response = await apiClient.post("/v1/request", {
             amount: totalAmount.toString(),
+            payee: input.walletAddress,
             invoiceCurrency: input.invoiceCurrency,
             paymentCurrency: input.paymentCurrency,
-            type: "invoice",
-            status: "pending",
-            payee: input.walletAddress,
-            dueDate: new Date(input.dueDate).toISOString(),
-            requestId: response.data.requestID as string,
-            paymentReference: response.data.paymentReference as string,
-            clientName: input.clientName,
-            clientEmail: input.clientEmail,
-            invoiceNumber: input.invoiceNumber,
-            items: input.items,
-            notes: input.notes,
-            userId: ctx.user?.id as string,
-          })
-          .returning();
+          });
 
-        return {
-          success: true,
-          invoice: invoice[0],
-        };
+          const invoice = await tx
+            .insert(requestTable)
+            .values({
+              id: ulid(),
+              issuedDate: new Date().toISOString(),
+              amount: totalAmount.toString(),
+              invoiceCurrency: input.invoiceCurrency,
+              paymentCurrency: input.paymentCurrency,
+              type: "invoice",
+              status: "pending",
+              payee: input.walletAddress,
+              dueDate: new Date(input.dueDate).toISOString(),
+              requestId: response.data.requestID as string,
+              paymentReference: response.data.paymentReference as string,
+              clientName: input.clientName,
+              clientEmail: input.clientEmail,
+              invoiceNumber: input.invoiceNumber,
+              items: input.items,
+              notes: input.notes,
+              userId: ctx.user?.id as string,
+            })
+            .returning();
+
+          return {
+            success: true,
+            invoice: invoice[0],
+          };
+        });
       } catch (error) {
         console.log("Error: ", error);
         return { success: false };

@@ -101,7 +101,7 @@ export default async function PaymentPage({
                         ISSUED
                       </div>
                       <div className="text-sm">
-                        {formatDate(new Date().toISOString())}
+                        {formatDate(invoice.issuedDate)}
                       </div>
                     </div>
                     <div className="col-span-4">

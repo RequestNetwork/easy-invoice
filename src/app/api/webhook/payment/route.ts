@@ -9,8 +9,14 @@ export async function POST(req: Request) {
     const body = await req.json();
     const signature = req.headers.get("x-request-network-signature");
 
+    const webhookSecret = process.env.WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      throw new Error("WEBHOOK_SECRET is not set");
+    }
+
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.WEBHOOK_SECRET as string)
+      .createHmac("sha256", webhookSecret)
       .update(JSON.stringify(body))
       .digest("hex");
 
@@ -20,12 +26,21 @@ export async function POST(req: Request) {
 
     const { paymentReference } = body;
 
-    await db
-      .update(requestTable)
-      .set({
-        status: "paid",
-      })
-      .where(eq(requestTable.paymentReference, paymentReference));
+    await db.transaction(async (tx) => {
+      const result = await tx
+        .update(requestTable)
+        .set({
+          status: "paid",
+        })
+        .where(eq(requestTable.paymentReference, paymentReference))
+        .returning({ id: requestTable.id });
+
+      if (!result.length) {
+        throw new Error(
+          `No request found with payment reference: ${paymentReference}`,
+        );
+      }
+    });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

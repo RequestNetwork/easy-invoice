@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrencyLabel } from "@/lib/currencies";
+import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format, isPast } from "date-fns";
 import { Eye, FileText, PlusCircle } from "lucide-react";
@@ -20,30 +21,9 @@ import { Button } from "./ui/button";
 
 const ITEMS_PER_PAGE = 10;
 
-interface Invoice {
-  id: string;
-  userId: string;
-  type: string;
-  dueDate: string;
-  clientName: string;
-  clientEmail: string;
-  invoiceNumber: string;
-  items: unknown;
-  notes: string | null;
-  amount: string;
-  invoiceCurrency: string;
-  paymentCurrency: string;
-  payee: string;
-  requestId: string;
-  paymentReference: string;
-  status: string;
-  paidAt?: Date | null;
-  createdAt: Date | null;
-}
-
 interface InvoiceTableProps {
   initialInvoices: {
-    invoices: Invoice[];
+    invoices: Request[];
     totalPayments: number;
     outstandingInvoices: number;
   };

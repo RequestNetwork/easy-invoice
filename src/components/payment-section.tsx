@@ -68,8 +68,9 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 
     setPaymentProgress("getting-transactions");
 
-    // @ts-ignore
-    const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
+    const ethersProvider = new ethers.providers.Web3Provider(
+      walletProvider as ethers.providers.ExternalProvider,
+    );
 
     const signer = await ethersProvider.getSigner();
 
