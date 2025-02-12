@@ -17,14 +17,7 @@ export function InvoiceCreator() {
   const router = useRouter();
 
   const { mutate: createInvoice, isLoading } = api.invoice.create.useMutation({
-    onSuccess: (data) => {
-      if (!data.invoice) {
-        toast.error("Failed to create invoice", {
-          description: "Please try again",
-        });
-        return;
-      }
-
+    onSuccess: () => {
       toast.success("Invoice created successfully", {
         description: "Redirecting to dashboard in 3 seconds",
       });
