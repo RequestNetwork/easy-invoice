@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Easy Invoice - Streamlined Invoice Management with Request Network
 
-## Getting Started
+Easy Invoice is a modern, user-friendly web application that demonstrates the power and simplicity of creating and managing invoices using the Request Network API. Built with Next.js and modern web technologies, this application showcases how easy it is to implement crypto-powered payment solutions in your applications.
 
-First, run the development server:
+## ✨ Features
+
+- 🧾 **Simple Invoice Creation**: Create professional invoices in minutes
+- 💰 **Crypto Payments**: Accept payments in various cryptocurrencies
+- 🔄 **Real-time Updates**: Track payment status in real-time
+- 🌐 **Web3 Integration**: Seamless integration with blockchain technology
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL database
+- Google OAuth credentials (for authentication)
+- Request Network API key
+- Reown Project ID
+
+### Environment Setup
+
+1. Clone the repository:
+
+```bash
+git clone git@github.com:RequestNetwork/easy-invoice.git
+cd easy-invoice
+```
+
+2. Copy the environment variables file:
+
+```bash
+cp .env.example .env
+```
+
+3. Fill in the required environment variables in `.env`:
+
+- `DATABASE_URL`: Your PostgreSQL connection string
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth credentials
+- `REQUEST_API_KEY`: Your Request Network API key
+- `REQUEST_API_URL`: Request Network API URL
+- `NEXT_PUBLIC_REOWN_PROJECT_ID`: Your Reown project ID
+- Other required environment variables as specified in `.env.example`
+
+### Installation
+
+1. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+2. Set up the database:
+
+```bash
+npm run db:push
+# or
+yarn db:push
+```
+
+3. Start the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: Next.js 14 with App Router
+- **Authentication**: Google OAuth
+- **Database**: PostgreSQL with Drizzle ORM
+- **Styling**: Tailwind CSS
+- **State Management**: React Query & tRPC
+- **Payment Integration**: Request Network API
+- **Web3**: Ethers.js & Viem
 
-## Learn More
+## 📖 Documentation
 
-To learn more about Next.js, take a look at the following resources:
+For more information about the technologies used:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Request Network Documentation](https://docs.request.network/)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [tRPC Documentation](https://trpc.io/)
+- [Drizzle ORM Documentation](https://orm.drizzle.team/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤝 Contributing
 
-## Deploy on Vercel
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
