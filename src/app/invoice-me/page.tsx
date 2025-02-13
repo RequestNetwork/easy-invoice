@@ -1,36 +1,33 @@
-import { InvoiceTable } from "@/components/invoice-table";
+import { InvoiceMeLinks } from "@/components/invoice-me-links";
 import { UserMenu } from "@/components/user-menu";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
-import { PlusCircle } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Dashboard | EasyInvoice",
-  description:
-    "View and manage your invoices, track payments, and monitor business performance",
+  title: "Invoice Me Links | EasyInvoice",
+  description: "Manage your invoice me links",
 };
 
-export default async function DashboardPage() {
+export default async function InvoiceMePage() {
   const { user } = await getCurrentSession();
-
-  const { invoices, totalPayments, outstandingInvoices } =
-    await api.invoice.getAll.query();
 
   if (!user) {
     redirect("/");
   }
 
+  const links = await api.invoiceMe.getAll.query();
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/2">
-        <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-100 to-orange-200 opacity-30 blur-3xl" />
+        <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-100 to-purple-200 opacity-30 blur-3xl" />
       </div>
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] translate-y-1/2 -translate-x-1/2">
-        <div className="w-full h-full rounded-full bg-gradient-to-tr from-zinc-100 to-zinc-200 opacity-30 blur-3xl" />
+        <div className="w-full h-full rounded-full bg-gradient-to-tr from-blue-100 to-blue-200 opacity-30 blur-3xl" />
       </div>
 
       {/* Dot pattern background */}
@@ -67,34 +64,13 @@ export default async function DashboardPage() {
               >
                 Invoice Me
               </Link>
-
               <UserMenu user={user} />
             </div>
           </nav>
         </header>
 
         {/* Main Content */}
-        <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
-
-            <Link
-              href="/invoices/create"
-              className="bg-black hover:bg-zinc-800 text-white transition-colors px-4 py-2 rounded-md flex items-center"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create Invoice
-            </Link>
-          </div>
-
-          <InvoiceTable
-            initialInvoices={{
-              invoices,
-              totalPayments,
-              outstandingInvoices,
-            }}
-          />
-        </main>
+        <InvoiceMeLinks initialLinks={links} />
       </div>
     </div>
   );

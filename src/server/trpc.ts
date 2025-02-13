@@ -1,8 +1,8 @@
-import { initTRPC, TRPCError } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { getCurrentSession } from "./auth";
+import type { Context } from "./context";
 import { db } from "./db";
-import { type Context } from "./context";
 
 const t = initTRPC.context<Context>().create({
   transformer: superjson,
