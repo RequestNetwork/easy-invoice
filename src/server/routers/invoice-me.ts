@@ -3,7 +3,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { invoiceMeTable } from "../db/schema";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const invoiceMeRouter = router({
   create: protectedProcedure
@@ -63,4 +63,22 @@ export const invoiceMeRouter = router({
           and(eq(invoiceMeTable.id, input), eq(invoiceMeTable.userId, user.id)),
         );
     }),
+  getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    const { db } = ctx;
+
+    const invoiceMeLink = await db.query.invoiceMeTable.findFirst({
+      where: eq(invoiceMeTable.id, input),
+      with: {
+        user: {
+          columns: {
+            name: true,
+            email: true,
+            id: true,
+          },
+        },
+      },
+    });
+
+    return invoiceMeLink;
+  }),
 });

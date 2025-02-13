@@ -1,6 +1,6 @@
-// app/login/google/route.ts
-import { generateState, generateCodeVerifier } from "arctic";
 import { google } from "@/server/auth";
+// app/login/google/route.ts
+import { generateCodeVerifier, generateState } from "arctic";
 import { cookies } from "next/headers";
 
 export async function GET(): Promise<Response> {
@@ -9,6 +9,8 @@ export async function GET(): Promise<Response> {
   const url = google.createAuthorizationURL(state, codeVerifier, [
     "openid",
     "profile",
+    "email",
+    "https://www.googleapis.com/auth/userinfo.email",
   ]);
 
   const cookieStore = await cookies();

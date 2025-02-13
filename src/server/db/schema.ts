@@ -41,6 +41,7 @@ export const userTable = createTable("user", {
   id: text().primaryKey().notNull(),
   googleId: text().unique(),
   name: text(),
+  email: text().unique(),
 });
 
 export const requestTable = createTable("request", {
@@ -66,6 +67,7 @@ export const requestTable = createTable("request", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
+  invoicedTo: text(),
 });
 
 export const sessionTable = createTable("session", {
@@ -97,6 +99,7 @@ export const invoiceMeTable = createTable("invoice_me", {
 export const userRelations = relations(userTable, ({ many }) => ({
   requests: many(requestTable),
   session: many(sessionTable),
+  invoiceMe: many(invoiceMeTable),
 }));
 
 export const requestRelations = relations(requestTable, ({ one }) => ({
@@ -109,6 +112,13 @@ export const requestRelations = relations(requestTable, ({ one }) => ({
 export const sessionRelations = relations(sessionTable, ({ one }) => ({
   user: one(userTable, {
     fields: [sessionTable.userId],
+    references: [userTable.id],
+  }),
+}));
+
+export const invoiceMeRelations = relations(invoiceMeTable, ({ one }) => ({
+  user: one(userTable, {
+    fields: [invoiceMeTable.userId],
     references: [userTable.id],
   }),
 }));

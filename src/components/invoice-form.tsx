@@ -26,9 +26,18 @@ interface InvoiceFormProps {
   form: UseFormReturn<InvoiceFormValues>;
   onSubmit: (data: InvoiceFormValues) => void;
   isLoading: boolean;
+  recipientDetails?: {
+    clientName: string;
+    clientEmail: string;
+  };
 }
 
-export function InvoiceForm({ form, onSubmit, isLoading }: InvoiceFormProps) {
+export function InvoiceForm({
+  form,
+  onSubmit,
+  isLoading,
+  recipientDetails,
+}: InvoiceFormProps) {
   const { fields, append, remove } = useFieldArray({
     name: "items",
     control: form.control,
@@ -63,6 +72,8 @@ export function InvoiceForm({ form, onSubmit, isLoading }: InvoiceFormProps) {
         <Input
           {...form.register("clientName")}
           placeholder="Enter client name"
+          readOnly={!!recipientDetails}
+          className={recipientDetails ? "bg-zinc-50 text-zinc-500" : ""}
         />
         {form.formState.errors.clientName && (
           <p className="text-sm text-red-500">
@@ -77,6 +88,8 @@ export function InvoiceForm({ form, onSubmit, isLoading }: InvoiceFormProps) {
           {...form.register("clientEmail")}
           type="email"
           placeholder="client@example.com"
+          readOnly={!!recipientDetails}
+          className={recipientDetails ? "bg-zinc-50 text-zinc-500" : ""}
         />
         {form.formState.errors.clientEmail && (
           <p className="text-sm text-red-500">
