@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import { requestTable, userTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
@@ -114,25 +114,34 @@ export const invoiceRouter = router({
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const { db } = ctx;
-    const invoices = await db.query.requestTable.findMany({
-      where: eq(requestTable.userId, ctx.user?.id as string),
+    const { db, user } = ctx;
+
+    // Get invoices to receive (issued by me)
+    const receivables = await db.query.requestTable.findMany({
+      where: and(
+        eq(requestTable.userId, user?.id as string),
+        isNull(requestTable.invoicedTo),
+      ),
       orderBy: desc(requestTable.createdAt),
     });
 
-    const totalPayments = invoices.reduce(
-      (acc, invoice) => acc + Number(invoice.amount),
-      0,
-    );
-
-    const outstandingInvoices = invoices.filter(
-      (invoice) => invoice.status !== "paid",
-    );
+    // Get invoices to pay (issued to me)
+    const payables = await db.query.requestTable.findMany({
+      where: eq(requestTable.invoicedTo, user?.id as string),
+      orderBy: desc(requestTable.createdAt),
+    });
 
     return {
-      invoices,
-      totalPayments,
-      outstandingInvoices: outstandingInvoices.length,
+      issuedByMe: {
+        invoices: receivables,
+        total: receivables.reduce((acc, inv) => acc + Number(inv.amount), 0),
+        outstanding: receivables.filter((inv) => inv.status !== "paid").length,
+      },
+      issuedToMe: {
+        invoices: payables,
+        total: payables.reduce((acc, inv) => acc + Number(inv.amount), 0),
+        outstanding: payables.filter((inv) => inv.status !== "paid").length,
+      },
     };
   }),
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {

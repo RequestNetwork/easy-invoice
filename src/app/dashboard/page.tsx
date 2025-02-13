@@ -16,12 +16,11 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const { user } = await getCurrentSession();
 
-  const { invoices, totalPayments, outstandingInvoices } =
-    await api.invoice.getAll.query();
-
   if (!user) {
     redirect("/");
   }
+
+  const invoices = await api.invoice.getAll.query();
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
@@ -87,13 +86,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          <InvoiceTable
-            initialInvoices={{
-              invoices,
-              totalPayments,
-              outstandingInvoices,
-            }}
-          />
+          <InvoiceTable initialInvoices={invoices} />
         </main>
       </div>
     </div>
