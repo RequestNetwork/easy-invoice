@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import { requestTable, userTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, not, or } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
@@ -40,6 +40,8 @@ const createInvoiceHelper = async (
       paymentReference: response.data.paymentReference as string,
       clientName: input.clientName,
       clientEmail: input.clientEmail,
+      creatorName: input.creatorName,
+      creatorEmail: input.creatorEmail,
       invoiceNumber: input.invoiceNumber,
       items: input.items,
       notes: input.notes,
@@ -67,9 +69,21 @@ export const invoiceRouter = router({
         });
       }
 
+      // Check if client email exists as a user
+      const clientUser = await db.query.userTable.findFirst({
+        where: eq(userTable.email, input.clientEmail),
+      });
+
       try {
         return await db.transaction(async (tx) => {
-          return createInvoiceHelper(tx, input, user.id);
+          return createInvoiceHelper(
+            tx,
+            {
+              ...input,
+              invoicedTo: clientUser?.id ?? undefined,
+            },
+            user.id,
+          );
         });
       } catch (error) {
         console.log("Error: ", error);
@@ -120,7 +134,10 @@ export const invoiceRouter = router({
     const receivables = await db.query.requestTable.findMany({
       where: and(
         eq(requestTable.userId, user?.id as string),
-        isNull(requestTable.invoicedTo),
+        or(
+          isNull(requestTable.invoicedTo),
+          not(eq(requestTable.invoicedTo, user?.id as string)),
+        ),
       ),
       orderBy: desc(requestTable.createdAt),
     });

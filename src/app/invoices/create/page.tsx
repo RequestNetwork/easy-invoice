@@ -11,9 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function CreateInvoicePage() {
-  const { session } = await getCurrentSession();
+  const { user } = await getCurrentSession();
 
-  if (!session) {
+  console.log("User : ", user);
+
+  if (!user) {
     redirect("/");
   }
 
@@ -65,7 +67,12 @@ export default async function CreateInvoicePage() {
             </h1>
           </div>
 
-          <InvoiceCreator />
+          <InvoiceCreator
+            currentUser={{
+              email: user.email ?? "",
+              name: user.name ?? "",
+            }}
+          />
         </main>
       </div>
     </div>

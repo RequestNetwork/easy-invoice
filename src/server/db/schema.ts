@@ -51,6 +51,8 @@ export const requestTable = createTable("request", {
   issuedDate: text().notNull(),
   clientName: text().notNull(),
   clientEmail: text().notNull(),
+  creatorName: text().notNull(),
+  creatorEmail: text().notNull(),
   invoiceNumber: text().notNull(),
   items: json().notNull(),
   notes: text(),

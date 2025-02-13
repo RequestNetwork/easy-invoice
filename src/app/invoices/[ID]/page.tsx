@@ -120,7 +120,11 @@ export default async function PaymentPage({
                   <div>
                     <div className="text-xs text-neutral-500 mb-3">FROM</div>
                     <div className="space-y-1">
-                      <div className="text-sm">PAYABLE TO:</div>
+                      <div className="text-sm">{invoice.creatorName}</div>
+                      <div className="text-sm text-neutral-600">
+                        {invoice.creatorEmail}
+                      </div>
+                      <div className="text-sm mt-4">PAYABLE TO:</div>
                       <div className="text-sm text-neutral-600 font-mono break-all">
                         {invoice.payee}
                       </div>

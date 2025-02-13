@@ -51,10 +51,20 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
 
         {/* From/To Section */}
         <div className="grid grid-cols-2 gap-16 mb-12">
-          <div>
-            <div className="text-xs text-neutral-500 mb-3">FROM</div>
-            <div className="space-y-1">
-              <div className="text-sm">PAYABLE TO:</div>
+          <div className="space-y-6">
+            <div>
+              <div className="text-xs text-neutral-500 mb-3">FROM</div>
+              <div className="space-y-1">
+                <div className="text-sm font-medium">
+                  {data.creatorName || "Your name"}
+                </div>
+                <div className="text-sm text-neutral-600">
+                  {data.creatorEmail || "your@email.com"}
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-neutral-500 mb-1">PAYABLE TO</div>
               <div className="text-sm text-neutral-600 font-mono break-all">
                 {data.walletAddress || "Payee address"}
               </div>
@@ -63,7 +73,9 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
           <div>
             <div className="text-xs text-neutral-500 mb-3">TO</div>
             <div className="space-y-1">
-              <div className="text-sm">{data.clientName || "Client name"}</div>
+              <div className="text-sm font-medium">
+                {data.clientName || "Client name"}
+              </div>
               <div className="text-sm text-neutral-600">
                 {data.clientEmail || "client@email.com"}
               </div>

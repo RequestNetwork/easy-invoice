@@ -14,7 +14,7 @@ import { formatCurrencyLabel } from "@/lib/currencies";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format, isPast } from "date-fns";
-import { AlertCircle, DollarSign, Eye, FileText } from "lucide-react";
+import { AlertCircle, DollarSign, Eye, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "./ui/button";
@@ -69,6 +69,34 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
   const activeData =
     activeTab === "sent" ? invoices.issuedByMe : invoices.issuedToMe;
 
+  const EmptyState = ({ type }: { type: "sent" | "received" }) => (
+    <div className="flex flex-col items-center justify-center py-12 px-4">
+      <div className="h-12 w-12 rounded-full bg-zinc-100 flex items-center justify-center mb-4">
+        {type === "sent" ? (
+          <FileText className="h-6 w-6 text-zinc-600" />
+        ) : (
+          <DollarSign className="h-6 w-6 text-zinc-600" />
+        )}
+      </div>
+      <h3 className="text-lg font-medium text-zinc-900 mb-1">
+        {type === "sent" ? "No invoices yet" : "No invoices to pay"}
+      </h3>
+      <p className="text-sm text-zinc-500 text-center mb-4">
+        {type === "sent"
+          ? "Create your first invoice to get paid"
+          : "When someone creates an invoice for you, it will appear here"}
+      </p>
+      {type === "sent" && (
+        <Link href="/invoices/create">
+          <Button className="bg-black hover:bg-zinc-800 text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Invoice
+          </Button>
+        </Link>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -106,46 +134,38 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-none">
-                    <TableHead className="text-zinc-500 font-medium">
-                      Invoice #
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Client
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Amount
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Currency
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Due Date
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium w-[1%]">
-                      Actions
-                    </TableHead>
-                  </TableRow>
+                  <TableColumns type="sent" />
                 </TableHeader>
                 <TableBody>
-                  {activeData.invoices
-                    .slice(
-                      (receivablePage - 1) * ITEMS_PER_PAGE,
-                      receivablePage * ITEMS_PER_PAGE,
-                    )
-                    .map((invoice) => (
-                      <InvoiceRow key={invoice.id} invoice={invoice} />
-                    ))}
+                  {activeData.invoices.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="p-0">
+                        <EmptyState type="sent" />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    activeData.invoices
+                      .slice(
+                        (receivablePage - 1) * ITEMS_PER_PAGE,
+                        receivablePage * ITEMS_PER_PAGE,
+                      )
+                      .map((invoice) => (
+                        <InvoiceRow
+                          key={invoice.id}
+                          invoice={invoice}
+                          activeTab="sent"
+                        />
+                      ))
+                  )}
                 </TableBody>
               </Table>
-              <Pagination
-                page={receivablePage}
-                setPage={setReceivablePage}
-                totalItems={activeData.invoices.length}
-              />
+              {activeData.invoices.length > 0 && (
+                <Pagination
+                  page={receivablePage}
+                  setPage={setReceivablePage}
+                  totalItems={activeData.invoices.length}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -155,46 +175,38 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-none">
-                    <TableHead className="text-zinc-500 font-medium">
-                      Invoice #
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      From
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Amount
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Currency
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Due Date
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-zinc-500 font-medium w-[1%]">
-                      Actions
-                    </TableHead>
-                  </TableRow>
+                  <TableColumns type="received" />
                 </TableHeader>
                 <TableBody>
-                  {activeData.invoices
-                    .slice(
-                      (payablePage - 1) * ITEMS_PER_PAGE,
-                      payablePage * ITEMS_PER_PAGE,
-                    )
-                    .map((invoice) => (
-                      <InvoiceRow key={invoice.id} invoice={invoice} />
-                    ))}
+                  {activeData.invoices.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="p-0">
+                        <EmptyState type="received" />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    activeData.invoices
+                      .slice(
+                        (payablePage - 1) * ITEMS_PER_PAGE,
+                        payablePage * ITEMS_PER_PAGE,
+                      )
+                      .map((invoice) => (
+                        <InvoiceRow
+                          key={invoice.id}
+                          invoice={invoice}
+                          activeTab="received"
+                        />
+                      ))
+                  )}
                 </TableBody>
               </Table>
-              <Pagination
-                page={payablePage}
-                setPage={setPayablePage}
-                totalItems={activeData.invoices.length}
-              />
+              {activeData.invoices.length > 0 && (
+                <Pagination
+                  page={payablePage}
+                  setPage={setPayablePage}
+                  totalItems={activeData.invoices.length}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -204,7 +216,10 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
 }
 
 // Extracted components for better organization
-const InvoiceRow = ({ invoice }: { invoice: Request }) => {
+const InvoiceRow = ({
+  invoice,
+  activeTab,
+}: { invoice: Request; activeTab: "sent" | "received" }) => {
   const dueDate = new Date(invoice.dueDate);
   const isOverdue = invoice.status === "pending" && isPast(dueDate);
 
@@ -213,8 +228,12 @@ const InvoiceRow = ({ invoice }: { invoice: Request }) => {
       <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
       <TableCell>
         <div className="flex flex-col">
-          <span>{invoice.clientName}</span>
-          <code className="text-xs text-zinc-500">{invoice.clientEmail}</code>
+          <span>
+            {activeTab === "sent" ? invoice.clientName : invoice.creatorName}
+          </span>
+          <code className="text-xs text-zinc-500">
+            {activeTab === "sent" ? invoice.clientEmail : invoice.creatorEmail}
+          </code>
         </div>
       </TableCell>
       <TableCell>${Number(invoice.amount).toLocaleString()}</TableCell>
@@ -248,6 +267,21 @@ const InvoiceRow = ({ invoice }: { invoice: Request }) => {
   );
 };
 
+// Update the table headers based on tab
+const TableColumns = ({ type }: { type: "sent" | "received" }) => (
+  <TableRow className="hover:bg-transparent border-none">
+    <TableHead className="text-zinc-500 font-medium">Invoice #</TableHead>
+    <TableHead className="text-zinc-500 font-medium">
+      {type === "sent" ? "Client" : "From"}
+    </TableHead>
+    <TableHead className="text-zinc-500 font-medium">Amount</TableHead>
+    <TableHead className="text-zinc-500 font-medium">Currency</TableHead>
+    <TableHead className="text-zinc-500 font-medium">Due Date</TableHead>
+    <TableHead className="text-zinc-500 font-medium">Status</TableHead>
+    <TableHead className="text-zinc-500 font-medium w-[1%]">Actions</TableHead>
+  </TableRow>
+);
+
 const Pagination = ({
   page,
   setPage,
@@ -257,7 +291,12 @@ const Pagination = ({
   setPage: (page: number) => void;
   totalItems: number;
 }) => {
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+
+  // Don't show pagination if there are no items
+  if (totalItems === 0) {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-between px-4 py-4 border-t border-zinc-100">

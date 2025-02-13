@@ -19,9 +19,16 @@ interface InvoiceCreatorProps {
     clientEmail: string;
     userId: string;
   };
+  currentUser?: {
+    name: string;
+    email: string;
+  };
 }
 
-export function InvoiceCreator({ recipientDetails }: InvoiceCreatorProps) {
+export function InvoiceCreator({
+  recipientDetails,
+  currentUser,
+}: InvoiceCreatorProps) {
   const router = useRouter();
   const isInvoiceMe = !!recipientDetails?.userId;
 
@@ -29,15 +36,8 @@ export function InvoiceCreator({ recipientDetails }: InvoiceCreatorProps) {
     ? api.invoice.createFromInvoiceMe.useMutation({
         onSuccess: () => {
           toast.success("Invoice created successfully", {
-            description: !isInvoiceMe
-              ? "You will be redirected to the dashboard in 3 seconds"
-              : "You could close this page",
+            description: "You could close this page",
           });
-          if (!isInvoiceMe) {
-            setTimeout(() => {
-              router.push("/dashboard");
-            }, 3000);
-          }
         },
       })
     : api.invoice.create.useMutation({
@@ -54,6 +54,8 @@ export function InvoiceCreator({ recipientDetails }: InvoiceCreatorProps) {
     defaultValues: {
       invoiceNumber: "",
       dueDate: "",
+      creatorName: !isInvoiceMe ? (currentUser?.name ?? "") : "",
+      creatorEmail: !isInvoiceMe ? (currentUser?.email ?? "") : "",
       clientName: recipientDetails?.clientName ?? "",
       clientEmail: recipientDetails?.clientEmail ?? "",
       invoicedTo: recipientDetails?.userId ?? "",

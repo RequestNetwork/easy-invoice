@@ -67,36 +67,67 @@ export function InvoiceForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="clientName">Client Name</Label>
-        <Input
-          {...form.register("clientName")}
-          placeholder="Enter client name"
-          readOnly={!!recipientDetails}
-          className={recipientDetails ? "bg-zinc-50 text-zinc-500" : ""}
-        />
-        {form.formState.errors.clientName && (
-          <p className="text-sm text-red-500">
-            {form.formState.errors.clientName.message}
-          </p>
-        )}
-      </div>
+      {recipientDetails ? (
+        // Show creator fields when we have recipient details (invoice-me flow)
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="creatorName">Your Name</Label>
+            <Input
+              {...form.register("creatorName")}
+              placeholder="Enter your name"
+            />
+            {form.formState.errors.creatorName && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.creatorName.message}
+              </p>
+            )}
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="clientEmail">Client Email</Label>
-        <Input
-          {...form.register("clientEmail")}
-          type="email"
-          placeholder="client@example.com"
-          readOnly={!!recipientDetails}
-          className={recipientDetails ? "bg-zinc-50 text-zinc-500" : ""}
-        />
-        {form.formState.errors.clientEmail && (
-          <p className="text-sm text-red-500">
-            {form.formState.errors.clientEmail.message}
-          </p>
-        )}
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="creatorEmail">Your Email</Label>
+            <Input
+              {...form.register("creatorEmail")}
+              type="email"
+              placeholder="your@email.com"
+            />
+            {form.formState.errors.creatorEmail && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.creatorEmail.message}
+              </p>
+            )}
+          </div>
+        </>
+      ) : (
+        // Show client fields for normal invoice flow
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="clientName">Client Name</Label>
+            <Input
+              {...form.register("clientName")}
+              placeholder="Enter client name"
+            />
+            {form.formState.errors.clientName && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.clientName.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="clientEmail">Client Email</Label>
+            <Input
+              {...form.register("clientEmail")}
+              type="email"
+              placeholder="client@example.com"
+            />
+            {form.formState.errors.clientEmail && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.clientEmail.message}
+              </p>
+            )}
+          </div>
+        </>
+      )}
 
       <div className="space-y-2">
         <Label>Items</Label>
