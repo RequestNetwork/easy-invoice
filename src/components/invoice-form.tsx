@@ -131,6 +131,12 @@ export function InvoiceForm({
 
       <div className="space-y-2">
         <Label>Items</Label>
+        <div className="grid grid-cols-[1fr,80px,96px,40px] gap-4 mb-1">
+          <Label className="text-xs text-gray-500">Description</Label>
+          <Label className="text-xs text-gray-500">Quantity</Label>
+          <Label className="text-xs text-gray-500">Price</Label>
+          <div />
+        </div>
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-end gap-4">
             <div className="flex-grow">

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { AppKit } from "@/components/app-kit";
 import { Toaster } from "@/components/ui/sonner";
+import VersionDisplay from "@/components/version-badge";
 import { TRPCReactProvider } from "@/trpc/react";
 import { cookies } from "next/headers";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
           </TRPCReactProvider>
           <Toaster />
         </AppKit>
+        <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
       </body>
     </html>
   );
