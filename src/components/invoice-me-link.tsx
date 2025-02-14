@@ -101,7 +101,16 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={async () => {
-                          await deleteInvoiceMeLink(link.id);
+                          try {
+                            await deleteInvoiceMeLink(link.id);
+                            toast.success("Invoice Me link deleted");
+                          } catch (error) {
+                            console.error(error);
+                            toast.error("Failed to delete Invoice Me link", {
+                              description:
+                                "Please try again later or contact support if the problem persists.",
+                            });
+                          }
                         }}
                         className="bg-red-600 hover:bg-red-700"
                       >

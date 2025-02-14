@@ -79,6 +79,13 @@ export const invoiceMeRouter = router({
       },
     });
 
+    if (!invoiceMeLink) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Invoice me link not found",
+      });
+    }
+
     return invoiceMeLink;
   }),
 });
