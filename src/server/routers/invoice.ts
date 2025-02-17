@@ -86,7 +86,7 @@ export const invoiceRouter = router({
           );
         });
       } catch (error) {
-        console.log("Error: ", error);
+        console.error("Error: ", error);
         return { success: false };
       }
     }),
@@ -122,7 +122,7 @@ export const invoiceRouter = router({
           return createInvoiceHelper(tx, input, input.invoicedTo as string);
         });
       } catch (error) {
-        console.log("Error: ", error);
+        console.error("Error: ", error);
         return { success: false };
       }
     }),

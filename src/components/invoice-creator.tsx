@@ -36,7 +36,7 @@ export function InvoiceCreator({
     ? api.invoice.createFromInvoiceMe.useMutation({
         onSuccess: () => {
           toast.success("Invoice created successfully", {
-            description: "You could close this page",
+            description: "You can safely close this page now",
           });
         },
       })
