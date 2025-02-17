@@ -22,7 +22,13 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": ["error", "warn", "info", "debug"]
+          }
+        }
       },
       "correctness": {
         "noUnusedImports": "error",

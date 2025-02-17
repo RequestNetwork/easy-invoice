@@ -13,8 +13,6 @@ export const metadata: Metadata = {
 export default async function CreateInvoicePage() {
   const { user } = await getCurrentSession();
 
-  console.log("User : ", user);
-
   if (!user) {
     redirect("/");
   }
