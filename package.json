@@ -1,7 +1,7 @@
 {
   "name": "easy-invoice",
   "description": "A Request Network demo app for easy invoice creation using Request API",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "scripts": {
     "dev": "chmod +x dev/dev-startup.sh && ./dev/dev-startup.sh ",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@next/third-parties": "^15.1.7",
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
     "@radix-ui/react-alert-dialog": "^1.1.6",

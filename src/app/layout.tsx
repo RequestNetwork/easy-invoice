@@ -5,6 +5,7 @@ import { AppKit } from "@/components/app-kit";
 import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
 import { TRPCReactProvider } from "@/trpc/react";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { cookies } from "next/headers";
 
 const geistSans = localFont({
@@ -30,6 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
