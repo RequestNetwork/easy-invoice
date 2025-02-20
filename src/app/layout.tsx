@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
 import { AppKit } from "@/components/app-kit";
+import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
 import { TRPCReactProvider } from "@/trpc/react";
 import { GoogleTagManager } from "@next/third-parties/google";
+import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { cookies } from "next/headers";
+import "./globals.css";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,7 +38,7 @@ export default function RootLayout({
       >
         <AppKit>
           <TRPCReactProvider cookies={cookies().toString()}>
-            {children}
+            <BackgroundWrapper>{children}</BackgroundWrapper>
           </TRPCReactProvider>
           <Toaster />
         </AppKit>
