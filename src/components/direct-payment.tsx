@@ -400,7 +400,11 @@ export function DirectPayment() {
                       </span>
                       <LogOut className="h-3 w-3" />
                     </button>
-                    <Button type="submit" className="relative">
+                    <Button
+                      type="submit"
+                      className="relative"
+                      disabled={paymentStatus === "processing"}
+                    >
                       {paymentStatus === "processing" ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
