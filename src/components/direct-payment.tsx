@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAppKit,
   useAppKitAccount,
@@ -17,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -44,23 +46,32 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForInvoice,
 } from "@/lib/currencies";
+import {
+  type PaymentFormValues,
+  paymentFormSchema,
+} from "@/lib/schemas/payment";
 
 export function DirectPayment() {
-  // State for payment form
-  const [amount, setAmount] = useState("");
-  const [payee, setPayee] = useState("");
-  const [invoiceCurrency, setInvoiceCurrency] =
-    useState<InvoiceCurrency>("USD");
-  const [paymentCurrency, setPaymentCurrency] = useState<PaymentCurrency>(
-    "ETH-sepolia-sepolia",
-  );
-
-  // Payment processing states
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAppKitReady, setIsAppKitReady] = useState(false);
+
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema),
+    defaultValues: {
+      payee: "",
+      amount: 0,
+      invoiceCurrency: "USD",
+      paymentCurrency: "ETH-sepolia-sepolia",
+    },
+  });
+
+  const invoiceCurrency = form.watch("invoiceCurrency") as InvoiceCurrency;
+  const paymentCurrency = form.watch("paymentCurrency") as PaymentCurrency;
+
+  const showPaymentCurrencySelect = invoiceCurrency === "USD";
 
   const { open } = useAppKit();
   const { isConnected, address } = useAppKitAccount();
@@ -68,8 +79,8 @@ export function DirectPayment() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+      setIsAppKitReady(true);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -82,31 +93,36 @@ export function DirectPayment() {
     }
   }, [isConnected]);
 
-  const handleSubmitPayment = async () => {
+  const handleInvoiceCurrencyChange = (value: string) => {
+    const newInvoiceCurrency = value as InvoiceCurrency;
+    form.setValue("invoiceCurrency", newInvoiceCurrency);
+
+    if (newInvoiceCurrency !== "USD") {
+      form.setValue("paymentCurrency", newInvoiceCurrency);
+    } else {
+      const validPaymentCurrencies =
+        getPaymentCurrenciesForInvoice(newInvoiceCurrency);
+      form.setValue("paymentCurrency", validPaymentCurrencies[0]);
+    }
+  };
+
+  const onSubmit = async (data: PaymentFormValues) => {
     if (!isConnected) {
       toast.error("Please connect your wallet first");
-      return;
-    }
-
-    if (!amount || !payee) {
-      toast.error("Please fill in all required fields");
       return;
     }
 
     setPaymentStatus("processing");
 
     try {
-      // Get ethers provider and signer
       const ethersProvider = new ethers.providers.Web3Provider(
         walletProvider as ethers.providers.ExternalProvider,
       );
 
       const signer = await ethersProvider.getSigner();
 
-      // First step: Call the /pay endpoint to initiate the payment
       toast.info("Initiating payment...");
 
-      // Make the API call to the /pay endpoint
       const response = await fetch("https://api.request.network/v1/pay", {
         method: "POST",
         headers: {
@@ -114,10 +130,10 @@ export function DirectPayment() {
           "X-Api-Key": process.env.NEXT_PUBLIC_REQUEST_API_KEY || "",
         },
         body: JSON.stringify({
-          payee,
-          amount,
-          invoiceCurrency,
-          paymentCurrency,
+          payee: data.payee,
+          amount: data.amount,
+          invoiceCurrency: data.invoiceCurrency,
+          paymentCurrency: data.paymentCurrency,
         }),
       });
 
@@ -127,7 +143,6 @@ export function DirectPayment() {
 
       const paymentData = await response.json();
 
-      // Check if approval is needed first
       const isApprovalNeeded = paymentData.metadata?.needsApproval;
 
       if (isApprovalNeeded) {
@@ -137,16 +152,13 @@ export function DirectPayment() {
 
         const approvalIndex = paymentData.metadata.approvalTransactionIndex;
 
-        // Send the approval transaction
         const approvalTransaction = await signer.sendTransaction(
           paymentData.transactions[approvalIndex],
         );
 
-        // Wait for the approval transaction to be mined
         await approvalTransaction.wait();
       }
 
-      // Now send the actual payment transaction
       toast.info("Sending payment", {
         description: "Please confirm the transaction in your wallet",
       });
@@ -155,19 +167,26 @@ export function DirectPayment() {
         paymentData.transactions[isApprovalNeeded ? 1 : 0],
       );
 
-      // Wait for the payment transaction to be mined
       await paymentTransaction.wait();
 
       toast.success("Payment successful", {
-        description: `You've paid ${amount} ${formatCurrencyLabel(invoiceCurrency)} to ${payee.substring(0, 6)}...${payee.substring(payee.length - 4)}`,
+        description: `You've paid ${data.amount} ${formatCurrencyLabel(
+          data.invoiceCurrency,
+        )} to ${data.payee.substring(0, 6)}...${data.payee.substring(
+          data.payee.length - 4,
+        )}`,
       });
 
       setPaymentStatus("success");
 
       // Reset form after successful payment
       setTimeout(() => {
-        setAmount("");
-        setPayee("");
+        form.reset({
+          payee: "",
+          amount: 0,
+          invoiceCurrency: "USD",
+          paymentCurrency: "ETH-sepolia-sepolia",
+        });
         setPaymentStatus("idle");
       }, 3000);
     } catch (error) {
@@ -179,20 +198,6 @@ export function DirectPayment() {
       setPaymentStatus("error");
     }
   };
-
-  // Handle currency change and ensure payment currency is valid for invoice currency
-  const handleInvoiceCurrencyChange = (value: string) => {
-    const newInvoiceCurrency = value as InvoiceCurrency;
-    setInvoiceCurrency(newInvoiceCurrency);
-
-    // Set default payment currency based on invoice currency
-    const validPaymentCurrencies =
-      getPaymentCurrenciesForInvoice(newInvoiceCurrency);
-    setPaymentCurrency(validPaymentCurrencies[0]);
-  };
-
-  // Check if the selected invoice currency requires payment currency selection
-  const showPaymentCurrencySelect = invoiceCurrency === "USD";
 
   return (
     <div className="flex justify-center mx-auto w-full max-w-2xl">
@@ -207,7 +212,7 @@ export function DirectPayment() {
           </CardDescription>
         </CardHeader>
 
-        {isLoading ? (
+        {!isAppKitReady ? (
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
               <Loader2 className="h-10 w-10 animate-spin text-zinc-400" />
@@ -273,7 +278,10 @@ export function DirectPayment() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   {/* Payment form */}
                   <div className="space-y-4">
                     <div
@@ -303,6 +311,11 @@ export function DirectPayment() {
                             ))}
                           </SelectContent>
                         </Select>
+                        {form.formState.errors.invoiceCurrency && (
+                          <p className="text-sm text-red-500">
+                            {form.formState.errors.invoiceCurrency.message}
+                          </p>
+                        )}
                       </div>
 
                       {showPaymentCurrencySelect && (
@@ -313,7 +326,10 @@ export function DirectPayment() {
                           <Select
                             value={paymentCurrency}
                             onValueChange={(value) =>
-                              setPaymentCurrency(value as PaymentCurrency)
+                              form.setValue(
+                                "paymentCurrency",
+                                value as PaymentCurrency,
+                              )
                             }
                             disabled={paymentStatus === "processing"}
                           >
@@ -330,6 +346,11 @@ export function DirectPayment() {
                               ))}
                             </SelectContent>
                           </Select>
+                          {form.formState.errors.paymentCurrency && (
+                            <p className="text-sm text-red-500">
+                              {form.formState.errors.paymentCurrency.message}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -340,23 +361,33 @@ export function DirectPayment() {
                         id="amount"
                         type="number"
                         placeholder="0.00"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        {...form.register("amount", {
+                          valueAsNumber: true,
+                        })}
                         className="pr-12"
                         disabled={paymentStatus === "processing"}
                       />
+                      {form.formState.errors.amount && (
+                        <p className="text-sm text-red-500">
+                          {form.formState.errors.amount.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="recipient">Recipient Address</Label>
+                      <Label htmlFor="payee">Recipient Address</Label>
                       <Input
-                        id="recipient"
+                        id="payee"
                         placeholder="0x..."
-                        value={payee}
-                        onChange={(e) => setPayee(e.target.value)}
+                        {...form.register("payee")}
                         disabled={paymentStatus === "processing"}
                         className="font-mono"
                       />
+                      {form.formState.errors.payee && (
+                        <p className="text-sm text-red-500">
+                          {form.formState.errors.payee.message}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -371,56 +402,52 @@ export function DirectPayment() {
                       the blockchain.
                     </p>
                   </div>
-                </div>
+
+                  <CardFooter className="flex justify-between items-center pt-2 pb-0 px-0">
+                    <button
+                      type="button"
+                      onClick={() => open()}
+                      className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+                    >
+                      <span className="font-mono mr-2">
+                        {address?.substring(0, 6)}...
+                        {address?.substring(address?.length - 4)}
+                      </span>
+                      <LogOut className="h-3 w-3" />
+                    </button>
+                    <Button type="submit" className="relative">
+                      {paymentStatus === "processing" ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : paymentStatus === "success" ? (
+                        <>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Payment Sent
+                        </>
+                      ) : paymentStatus === "error" ? (
+                        <>
+                          <X className="mr-2 h-4 w-4" />
+                          Try Again
+                        </>
+                      ) : (
+                        <>
+                          <ArrowRight className="mr-2 h-4 w-4" />
+                          Send Payment
+                        </>
+                      )}
+                    </Button>
+                  </CardFooter>
+                </form>
               )}
             </CardContent>
 
-            <CardFooter className="flex justify-between items-center pt-2 pb-6">
-              {currentStep === 2 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
-                  >
-                    <span className="font-mono mr-2">
-                      {address?.substring(0, 6)}...
-                      {address?.substring(address?.length - 4)}
-                    </span>
-                    <LogOut className="h-3 w-3" />
-                  </button>
-                  <Button
-                    onClick={handleSubmitPayment}
-                    disabled={
-                      paymentStatus === "processing" || !amount || !payee
-                    }
-                    className="relative"
-                  >
-                    {paymentStatus === "processing" ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : paymentStatus === "success" ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Payment Sent
-                      </>
-                    ) : paymentStatus === "error" ? (
-                      <>
-                        <X className="mr-2 h-4 w-4" />
-                        Try Again
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRight className="mr-2 h-4 w-4" />
-                        Send Payment
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-            </CardFooter>
+            {currentStep === 2 && !form.formState.isSubmitSuccessful && (
+              <CardFooter className="pt-2 pb-6">
+                {/* Empty footer for spacing when form is displayed */}
+              </CardFooter>
+            )}
           </>
         )}
       </Card>

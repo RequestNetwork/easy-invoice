@@ -1,4 +1,5 @@
 import { INVOICE_CURRENCIES } from "@/lib/currencies";
+import { isEthereumAddress } from "validator";
 import { z } from "zod";
 
 export const invoiceFormSchema = z.object({
@@ -23,7 +24,7 @@ export const invoiceFormSchema = z.object({
     required_error: "Please select an invoice currency",
   }),
   paymentCurrency: z.string().min(1, "Payment currency is required"),
-  walletAddress: z.string().min(1, "Wallet address is required"),
+  walletAddress: z.string().refine(isEthereumAddress, "Invalid wallet address"),
 });
 
 export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
