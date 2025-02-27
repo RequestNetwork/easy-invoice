@@ -50,8 +50,11 @@ import {
   type PaymentFormValues,
   paymentFormSchema,
 } from "@/lib/schemas/payment";
+import { api } from "@/trpc/react";
 
 export function DirectPayment() {
+  const { mutateAsync: pay } = api.payment.pay.useMutation();
+
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
   >("idle");
@@ -123,25 +126,7 @@ export function DirectPayment() {
 
       toast.info("Initiating payment...");
 
-      const response = await fetch("https://api.request.network/v1/pay", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": process.env.NEXT_PUBLIC_REQUEST_API_KEY || "",
-        },
-        body: JSON.stringify({
-          payee: data.payee,
-          amount: data.amount,
-          invoiceCurrency: data.invoiceCurrency,
-          paymentCurrency: data.paymentCurrency,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Payment request failed: ${response.statusText}`);
-      }
-
-      const paymentData = await response.json();
+      const paymentData = await pay(data);
 
       const isApprovalNeeded = paymentData.metadata?.needsApproval;
 
