@@ -6,11 +6,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
 import { UserMenu } from "./user-menu";
 
-export function Header({
-  user,
-}: {
-  user?: User | undefined;
-}) {
+export function Header({ user }: { user?: User | undefined }) {
   const demoMeetingUrl = process.env.NEXT_PUBLIC_DEMO_MEETING;
   const pathname = usePathname();
 
@@ -38,6 +34,12 @@ export function Header({
                 className="text-zinc-900 hover:text-zinc-600 transition-colors"
               >
                 Dashboard
+              </Link>
+              <Link
+                href="/direct-payment"
+                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+              >
+                Direct Payment
               </Link>
               <Link
                 href="/invoice-me"
