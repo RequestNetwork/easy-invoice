@@ -28,6 +28,19 @@ export const invoiceFormSchema = z.object({
   isRecurring: z.boolean().default(false),
   startDate: z.string().optional(),
   frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
+}).refine(
+  (data) => {
+    // If invoice is recurring, startDate and frequency must be provided
+    if (data.isRecurring) {
+      return !!data.startDate && !!data.frequency;
+    }
+    return true;
+  },
+  {
+    message: "Start date and frequency are required for recurring invoices",
+    path: ["isRecurring"],
+  }
+);
 });
 
 export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
