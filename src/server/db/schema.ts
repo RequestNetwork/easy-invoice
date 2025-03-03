@@ -70,6 +70,10 @@ export const requestTable = createTable("request", {
       onDelete: "cascade",
     }),
   invoicedTo: text(),
+  recurrence: json().$type<{
+    startDate: string;
+    frequency: string;
+  }>(),
 });
 
 export const sessionTable = createTable("session", {

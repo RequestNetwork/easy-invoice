@@ -225,7 +225,16 @@ const InvoiceRow = ({
 
   return (
     <TableRow className="hover:bg-zinc-50/50">
-      <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+      <TableCell className="font-medium">
+        <div className="flex flex-col">
+          <span>{invoice.invoiceNumber}</span>
+          {invoice.recurrence && (
+            <span className="text-xs text-zinc-500 flex items-center gap-1">
+              ↻ {invoice.recurrence?.frequency?.toLowerCase()}
+            </span>
+          )}
+        </div>
+      </TableCell>
       <TableCell>
         <div className="flex flex-col">
           <span>
@@ -236,7 +245,17 @@ const InvoiceRow = ({
           </code>
         </div>
       </TableCell>
-      <TableCell>${Number(invoice.amount).toLocaleString()}</TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span>${Number(invoice.amount).toLocaleString()}</span>
+          {invoice?.recurrence?.startDate && (
+            <span className="text-xs text-zinc-500">
+              from{" "}
+              {format(new Date(invoice?.recurrence?.startDate), "do MMM yyyy")}
+            </span>
+          )}
+        </div>
+      </TableCell>
       <TableCell>{formatCurrencyLabel(invoice.invoiceCurrency)}</TableCell>
       <TableCell>{format(dueDate, "do MMM yyyy")}</TableCell>
       <TableCell>

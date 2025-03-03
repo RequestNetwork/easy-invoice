@@ -22,6 +22,12 @@ const createInvoiceHelper = async (
     payee: input.walletAddress,
     invoiceCurrency: input.invoiceCurrency,
     paymentCurrency: input.paymentCurrency,
+    ...(input.isRecurring && {
+      recurrence: {
+        startDate: input.startDate,
+        frequency: input.frequency,
+      },
+    }),
   });
 
   const invoice = await db
@@ -47,6 +53,12 @@ const createInvoiceHelper = async (
       notes: input.notes,
       userId: userId,
       invoicedTo: input.invoicedTo || null,
+      recurrence: input.isRecurring
+        ? {
+            startDate: input.startDate,
+            frequency: input.frequency,
+          }
+        : null,
     })
     .returning();
 

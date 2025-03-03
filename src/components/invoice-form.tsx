@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,6 +22,8 @@ import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import { Plus, Trash2 } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
+
+type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
 interface InvoiceFormProps {
   form: UseFormReturn<InvoiceFormValues>;
@@ -66,6 +69,56 @@ export function InvoiceForm({
           )}
         </div>
       </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="isRecurring"
+          checked={form.watch("isRecurring")}
+          onCheckedChange={(checked) => {
+            form.setValue("isRecurring", checked === true);
+          }}
+        />
+        <Label htmlFor="isRecurring">Recurring Invoice</Label>
+      </div>
+
+      {form.watch("isRecurring") && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="startDate">Start Date</Label>
+            <Input {...form.register("startDate")} type="date" />
+            {form.formState.errors.startDate && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.startDate.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="frequency">Frequency</Label>
+            <Select
+              onValueChange={(value) =>
+                form.setValue("frequency", value as RecurringFrequency)
+              }
+              defaultValue={form.getValues("frequency")}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DAILY">Daily</SelectItem>
+                <SelectItem value="WEEKLY">Weekly</SelectItem>
+                <SelectItem value="MONTHLY">Monthly</SelectItem>
+                <SelectItem value="YEARLY">Yearly</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.frequency && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.frequency.message}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {recipientDetails ? (
         // Show creator fields when we have recipient details (invoice-me flow)

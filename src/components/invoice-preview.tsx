@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
+import { format } from "date-fns";
 
 interface InvoicePreviewProps {
   data: Partial<InvoiceFormValues>;
@@ -47,6 +48,19 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
               </div>
             </div>
           </div>
+          {data.isRecurring && data.frequency && (
+            <div className="mt-4">
+              <div className="text-xs text-neutral-500 mb-1">RECURRING</div>
+              <div className="text-sm flex items-center gap-1">
+                <span>↻ {data.frequency.toLowerCase()}</span>
+                {data.startDate && (
+                  <span>
+                    • Starting {format(new Date(data.startDate), "do MMM yyyy")}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* From/To Section */}
@@ -148,16 +162,18 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
 
         {/* Payment Details and Notes Section */}
         <div className="grid grid-cols-2 gap-16">
-          <div>
-            <div className="text-xs text-neutral-500 mb-1">PAYABLE IN</div>
-            <div className="text-sm">
-              {!data.paymentCurrency
-                ? "Choose payment currency"
-                : formatCurrencyLabel(
-                    data.paymentCurrency ||
-                      data.invoiceCurrency ||
-                      "Select currency",
-                  )}
+          <div className="space-y-6">
+            <div>
+              <div className="text-xs text-neutral-500 mb-1">PAYABLE IN</div>
+              <div className="text-sm">
+                {!data.paymentCurrency
+                  ? "Choose payment currency"
+                  : formatCurrencyLabel(
+                      data.paymentCurrency ||
+                        data.invoiceCurrency ||
+                        "Select currency",
+                    )}
+              </div>
             </div>
           </div>
           {data.notes && (

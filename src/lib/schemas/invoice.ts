@@ -25,6 +25,9 @@ export const invoiceFormSchema = z.object({
   }),
   paymentCurrency: z.string().min(1, "Payment currency is required"),
   walletAddress: z.string().refine(isEthereumAddress, "Invalid wallet address"),
+  isRecurring: z.boolean().default(false),
+  startDate: z.string().optional(),
+  frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
 });
 
 export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
