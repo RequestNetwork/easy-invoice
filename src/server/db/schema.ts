@@ -63,6 +63,7 @@ export const requestTable = createTable("request", {
   payee: text().notNull(),
   requestId: text().notNull(),
   paymentReference: text().notNull(),
+  originalRequestPaymentReference: text(),
   createdAt: timestamp("created_at").defaultNow(),
   userId: text()
     .notNull()
