@@ -1,0 +1,1 @@
+ALTER TABLE "easyinvoice_request" ADD COLUMN "isRecurrenceStopped" boolean DEFAULT false;

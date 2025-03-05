@@ -2,6 +2,7 @@ import { type EncryptionVersion, getEncryptionKey } from "@/lib/encryption";
 import CryptoJS from "crypto-js";
 import { type InferSelectModel, relations } from "drizzle-orm";
 import {
+  boolean,
   customType,
   json,
   pgTableCreator,
@@ -75,6 +76,7 @@ export const requestTable = createTable("request", {
     startDate: string;
     frequency: string;
   }>(),
+  isRecurrenceStopped: boolean().default(false),
 });
 
 export const sessionTable = createTable("session", {
