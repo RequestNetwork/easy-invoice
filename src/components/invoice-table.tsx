@@ -15,7 +15,14 @@ import { formatCurrencyLabel } from "@/lib/currencies";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format, isPast } from "date-fns";
-import { AlertCircle, DollarSign, Eye, FileText, Plus } from "lucide-react";
+import {
+  AlertCircle,
+  Ban,
+  DollarSign,
+  Eye,
+  FileText,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -311,20 +318,22 @@ const InvoiceRow = ({
             <span className="sr-only">View</span>
           </Link>
 
-          {/* Add stop recurrence button for recurring invoices that haven't been stopped */}
           {invoice.recurrence &&
             !invoice.isRecurrenceStopped &&
             activeTab === "sent" && (
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
                 onClick={handleStopRecurrence}
                 disabled={stopRecurrenceMutation.isLoading}
-                className="text-xs h-8 px-2"
+                className="h-8 w-8"
               >
-                {stopRecurrenceMutation.isLoading
-                  ? "Stopping..."
-                  : "Stop Recurring"}
+                <Ban className="h-4 w-4 text-zinc-600" />
+                <span className="sr-only">
+                  {stopRecurrenceMutation.isLoading
+                    ? "Stopping..."
+                    : "Stop Recurring"}
+                </span>
               </Button>
             )}
         </div>

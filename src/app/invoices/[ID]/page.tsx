@@ -2,6 +2,7 @@ import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { PaymentSection } from "@/components/payment-section";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
 import { api } from "@/trpc/server";
@@ -98,6 +99,14 @@ export default async function PaymentPage({
                             "do MMM yyyy",
                           )}
                         </span>
+                      )}
+                      {invoice.isRecurrenceStopped && (
+                        <Badge
+                          variant="outline"
+                          className="ml-1 text-xs py-0 px-1"
+                        >
+                          Stopped
+                        </Badge>
                       )}
                     </div>
                   </div>
