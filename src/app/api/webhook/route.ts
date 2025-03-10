@@ -66,11 +66,30 @@ export async function POST(req: Request) {
           const originalRequest = originalRequests[0];
           const { id, issuedDate, dueDate, ...requestWithoutId } =
             originalRequest;
-          // Calculate the new due date by adding the interval to the issued date
+
+          // Set the new issued date to today at midnight UTC
           const now = new Date();
-          const interval =
-            new Date(dueDate).getTime() - new Date(issuedDate).getTime();
-          const newDueDate = new Date(now.getTime() + interval);
+          now.setUTCHours(0, 0, 0, 0);
+
+          // Calculate the difference in days between original issue and due dates
+          const originalIssuedDate = new Date(issuedDate);
+          originalIssuedDate.setUTCHours(0, 0, 0, 0); // Set to midnight UTC due to rounding
+
+          const originalDueDate = new Date(dueDate);
+          originalDueDate.setUTCHours(0, 0, 0, 0); // Set to midnight UTC due to rounding
+
+          // Calculate days difference using UTC dates to avoid timezone issues
+          const daysDifference = Math.max(
+            0,
+            Math.floor(
+              (originalDueDate.getTime() - originalIssuedDate.getTime()) /
+                (24 * 60 * 60 * 1000),
+            ),
+          );
+
+          // Calculate new due date by adding the same number of days to the new issue date
+          const newDueDate = new Date(now);
+          newDueDate.setDate(now.getDate() + daysDifference);
 
           await tx.insert(requestTable).values({
             id: ulid(),
