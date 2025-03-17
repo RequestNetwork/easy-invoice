@@ -223,6 +223,8 @@ export function InvoiceForm({
                   valueAsNumber: true,
                 })}
                 type="number"
+                step="any"
+                min="0"
                 placeholder="Price"
               />
               {form.formState.errors.items?.[index]?.price && (
