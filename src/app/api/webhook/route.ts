@@ -98,6 +98,7 @@ export async function POST(req: Request) {
             dueDate: newDueDate.toISOString(),
             paymentReference: paymentReference,
             originalRequestPaymentReference: originalRequestPaymentReference,
+            status: "pending",
           });
         });
         break;
