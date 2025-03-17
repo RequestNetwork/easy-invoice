@@ -1,9 +1,11 @@
 "use client";
 
+import { PaymentRoute } from "@/components/payment-route";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { formatCurrencyLabel } from "@/lib/currencies";
+import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import {
@@ -12,13 +14,48 @@ import {
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
-import { CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface PaymentSectionProps {
   invoice: NonNullable<Request>;
 }
+
+const MOCK_PAYMENT_ROUTES: PaymentRouteType[] = [
+  {
+    id: "REQUEST_NETWORK_PAYMENT",
+    fee: 0,
+    speed: "FAST",
+    price_impact: 0,
+    chain: "BASE",
+    token: "USDC",
+  },
+  {
+    id: "BASE_BASE_USDC_USDC",
+    fee: 0.001,
+    speed: 10,
+    price_impact: 1.999,
+    chain: "BASE",
+    token: "USDC",
+  },
+  {
+    id: "ARBITRUM_BASE_USDC_USDC",
+    fee: 0.3986,
+    speed: 40,
+    price_impact: 1.6014,
+    chain: "ARBITRUM",
+    token: "USDC",
+  },
+  {
+    id: "ARBITRUM_BASE_USDT_USDC",
+    fee: 0.3986,
+    speed: 40,
+    price_impact: 1.6014,
+    chain: "ARBITRUM",
+    token: "USDT",
+  },
+];
 
 export function PaymentSection({ invoice }: PaymentSectionProps) {
   const [paymentStatus, setPaymentStatus] = useState(invoice.status);
@@ -30,6 +67,11 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const { open } = useAppKit();
   const { isConnected, address } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
+
+  const [showRoutes, setShowRoutes] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType>(
+    MOCK_PAYMENT_ROUTES[0],
+  );
 
   const displayPaymentProgress = () => {
     switch (paymentProgress) {
@@ -124,6 +166,9 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 
   const showCurrencyConversion =
     invoice.invoiceCurrency !== invoice.paymentCurrency;
+
+  const hasMultipleRoutes = MOCK_PAYMENT_ROUTES.length > 1;
+  const hasRoutes = MOCK_PAYMENT_ROUTES.length > 0;
 
   return (
     <Card className="w-full">
@@ -288,15 +333,82 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                         invoice.paymentCurrency,
                       )}.`}
                   </p>
+
+                  {/* Payment Route Selection */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label>Payment Route</Label>
+                      {hasMultipleRoutes && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowRoutes(!showRoutes)}
+                        >
+                          {showRoutes ? "Hide Options" : "See Other Options"}
+                        </Button>
+                      )}
+                    </div>
+
+                    {!hasRoutes ? (
+                      <div className="p-8 border border-dashed rounded-lg">
+                        <div className="text-center">
+                          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 mb-4">
+                            <AlertCircle className="w-6 h-6 text-zinc-600" />
+                          </div>
+                          <h3 className="text-sm font-medium text-zinc-900 mb-1">
+                            No Payment Routes Available
+                          </h3>
+                          <p className="text-sm text-zinc-500">
+                            There are currently no available payment routes for
+                            this transaction.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Selected Route Preview */}
+                        <PaymentRoute
+                          route={selectedRoute}
+                          isSelected={true}
+                          variant="selected"
+                        />
+
+                        {/* Route Options - Only show if there are multiple routes */}
+                        {showRoutes && hasMultipleRoutes && (
+                          <div className="mt-4 space-y-2">
+                            <div className="text-sm text-zinc-500 mb-3">
+                              Available Payment Routes
+                            </div>
+                            {MOCK_PAYMENT_ROUTES.map((route) => (
+                              <PaymentRoute
+                                key={route.id}
+                                route={route}
+                                isSelected={selectedRoute.id === route.id}
+                                onClick={() => setSelectedRoute(route)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Payment button should be disabled if there are no routes */}
                   <Button
                     onClick={handlePayment}
                     className="w-full bg-black hover:bg-zinc-800 text-white"
-                    disabled={paymentProgress !== "idle"}
+                    disabled={paymentProgress !== "idle" || !hasRoutes}
                   >
-                    {paymentProgress !== "idle" && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {!hasRoutes ? (
+                      "No payment routes available"
+                    ) : paymentProgress !== "idle" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {displayPaymentProgress()}
+                      </>
+                    ) : (
+                      displayPaymentProgress()
                     )}
-                    {displayPaymentProgress()}
                   </Button>
                 </div>
               )}
