@@ -93,11 +93,12 @@ export async function POST(req: Request) {
 
           await tx.insert(requestTable).values({
             id: ulid(),
-            issuedDate: now.toISOString(),
             ...requestWithoutId,
+            issuedDate: now.toISOString(),
             dueDate: newDueDate.toISOString(),
             paymentReference: paymentReference,
             originalRequestPaymentReference: originalRequestPaymentReference,
+            status: "pending",
           });
         });
         break;
