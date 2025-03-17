@@ -4,6 +4,7 @@ import { requestTable, userTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNull, not, or } from "drizzle-orm";
 import { ulid } from "ulid";
+import { isEthereumAddress } from "validator";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 
@@ -248,5 +249,35 @@ export const invoiceRouter = router({
       }
 
       return updatedInvoice[0];
+    }),
+  getPaymentRoutes: publicProcedure
+    .input(
+      z.object({
+        paymentReference: z.string(),
+        walletAddress: z.string().refine(
+          (val) => {
+            return isEthereumAddress(val);
+          },
+          {
+            message: "Invalid wallet address",
+          },
+        ),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { paymentReference, walletAddress } = input;
+
+      const response = await apiClient.get(
+        `/v1/request/${paymentReference}/routes?wallet=${walletAddress}`,
+      );
+
+      if (response.status !== 200) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Failed to get payment routes",
+        });
+      }
+
+      return response.data.routes;
     }),
 });

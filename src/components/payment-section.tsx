@@ -58,19 +58,31 @@ const MOCK_PAYMENT_ROUTES: PaymentRouteType[] = [
 ];
 
 export function PaymentSection({ invoice }: PaymentSectionProps) {
+  const { open } = useAppKit();
+  const { isConnected, address } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider("eip155");
+  const [showRoutes, setShowRoutes] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType | null>(
+    null,
+  );
+
   const [paymentStatus, setPaymentStatus] = useState(invoice.status);
   const [paymentProgress, setPaymentProgress] = useState("idle");
   const [currentStep, setCurrentStep] = useState(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
   const { mutateAsync: payRequest } = api.invoice.payRequest.useMutation();
-
-  const { open } = useAppKit();
-  const { isConnected, address } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider("eip155");
-
-  const [showRoutes, setShowRoutes] = useState(false);
-  const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType>(
-    MOCK_PAYMENT_ROUTES[0],
+  const {
+    data: paymentRoutes,
+    refetch,
+    isLoading: isLoadingPaymentRoutes,
+  } = api.invoice.getPaymentRoutes.useQuery(
+    {
+      paymentReference: invoice.paymentReference,
+      walletAddress: address as string,
+    },
+    {
+      enabled: !!address,
+    },
   );
 
   const displayPaymentProgress = () => {
@@ -98,6 +110,18 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   useEffect(() => {
     setCurrentStep(isConnected ? 2 : 1);
   }, [isConnected]);
+
+  useEffect(() => {
+    if (address) {
+      refetch();
+    }
+  }, [address, refetch]);
+
+  useEffect(() => {
+    if (paymentRoutes) {
+      setSelectedRoute(paymentRoutes[0]);
+    }
+  }, [paymentRoutes]);
 
   const handleConnectWallet = () => {
     if (isAppKitReady) {
@@ -167,7 +191,6 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const showCurrencyConversion =
     invoice.invoiceCurrency !== invoice.paymentCurrency;
 
-  const hasMultipleRoutes = MOCK_PAYMENT_ROUTES.length > 1;
   const hasRoutes = MOCK_PAYMENT_ROUTES.length > 0;
 
   return (
@@ -211,7 +234,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
           <div className="space-y-1">
             <div className="text-3xl font-bold">
               {formatCurrencyLabel(invoice.invoiceCurrency)}{" "}
-              {Number(invoice.amount).toFixed(2)}
+              {Number(invoice.amount).toString()}
             </div>
             {showCurrencyConversion && (
               <div className="text-sm text-zinc-600">
@@ -338,7 +361,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label>Payment Route</Label>
-                      {hasMultipleRoutes && (
+                      {paymentRoutes && paymentRoutes.length > 1 && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -349,7 +372,21 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                       )}
                     </div>
 
-                    {!hasRoutes ? (
+                    {isLoadingPaymentRoutes ? (
+                      <div className="p-8 border border-dashed rounded-lg">
+                        <div className="text-center">
+                          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 mb-4">
+                            <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
+                          </div>
+                          <h3 className="text-sm font-medium text-zinc-900 mb-1">
+                            Loading Payment Routes
+                          </h3>
+                          <p className="text-sm text-zinc-500">
+                            Finding the best payment routes for your wallet
+                          </p>
+                        </div>
+                      </div>
+                    ) : !paymentRoutes || paymentRoutes.length === 0 ? (
                       <div className="p-8 border border-dashed rounded-lg">
                         <div className="text-center">
                           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 mb-4">
@@ -367,23 +404,25 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                     ) : (
                       <>
                         {/* Selected Route Preview */}
-                        <PaymentRoute
-                          route={selectedRoute}
-                          isSelected={true}
-                          variant="selected"
-                        />
+                        {selectedRoute && (
+                          <PaymentRoute
+                            route={selectedRoute}
+                            isSelected={true}
+                            variant="selected"
+                          />
+                        )}
 
                         {/* Route Options - Only show if there are multiple routes */}
-                        {showRoutes && hasMultipleRoutes && (
+                        {showRoutes && paymentRoutes.length > 1 && (
                           <div className="mt-4 space-y-2">
                             <div className="text-sm text-zinc-500 mb-3">
                               Available Payment Routes
                             </div>
-                            {MOCK_PAYMENT_ROUTES.map((route) => (
+                            {paymentRoutes.map((route: PaymentRouteType) => (
                               <PaymentRoute
                                 key={route.id}
                                 route={route}
-                                isSelected={selectedRoute.id === route.id}
+                                isSelected={selectedRoute?.id === route.id}
                                 onClick={() => setSelectedRoute(route)}
                               />
                             ))}
