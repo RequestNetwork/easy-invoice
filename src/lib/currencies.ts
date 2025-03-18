@@ -5,6 +5,7 @@ export const INVOICE_CURRENCIES = [
   "fUSDC-sepolia",
   "fUSDT-sepolia",
   "USDC-base",
+  "USDC-optimism",
 ] as const;
 export type InvoiceCurrency = (typeof INVOICE_CURRENCIES)[number];
 
@@ -15,6 +16,7 @@ export const PAYMENT_CURRENCIES = {
   "fUSDC-sepolia": ["fUSDC-sepolia"] as const,
   "fUSDT-sepolia": ["fUSDT-sepolia"] as const,
   "USDC-base": ["USDC-base"] as const,
+  "USDC-optimism": ["USDC-optimism"] as const,
 } as const;
 
 export type PaymentCurrency =
@@ -40,6 +42,8 @@ export function formatCurrencyLabel(currency: string): string {
       return "US Dollar";
     case "USDC-base":
       return "USDC (Base)";
+    case "USDC-optimism":
+      return "USDC (Optimism)";
     default:
       return currency;
   }

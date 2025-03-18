@@ -4,6 +4,7 @@ import { PaymentRoute } from "@/components/payment-route";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { CHAIN_TO_ID, ID_TO_APPKIT_NETWORK } from "@/lib/chains";
 import { formatCurrencyLabel } from "@/lib/currencies";
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
 import type { Request } from "@/server/db/schema";
@@ -11,10 +12,12 @@ import { api } from "@/trpc/react";
 import {
   useAppKit,
   useAppKitAccount,
+  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -60,6 +63,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const { open } = useAppKit();
   const { isConnected, address } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
+  const { chainId, switchNetwork } = useAppKitNetwork();
   const [showRoutes, setShowRoutes] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType | null>(
     null,
@@ -70,6 +74,8 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
   const { mutateAsync: payRequest } = api.invoice.payRequest.useMutation();
+  const { mutateAsync: sendPaymentIntent } =
+    api.invoice.sendPaymentIntent.useMutation();
   const {
     data: paymentRoutes,
     refetch,
@@ -136,6 +142,20 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 
     setPaymentProgress("getting-transactions");
 
+    const targetChain =
+      CHAIN_TO_ID[selectedRoute?.chain as keyof typeof CHAIN_TO_ID];
+
+    if (targetChain !== chainId) {
+      const targetAppkitNetwork =
+        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK];
+
+      toast("Switching to network", {
+        description: `Switching to ${targetAppkitNetwork.name} network`,
+      });
+
+      await switchNetwork(targetAppkitNetwork);
+    }
+
     const ethersProvider = new ethers.providers.Web3Provider(
       walletProvider as ethers.providers.ExternalProvider,
     );
@@ -143,10 +163,74 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
     const signer = await ethersProvider.getSigner();
 
     try {
-      const paymentData = await payRequest(invoice.paymentReference).then(
-        (response) => response.data,
-      );
+      const paymentData = await payRequest({
+        paymentReference: invoice.paymentReference,
+        wallet: address,
+        chain:
+          selectedRoute?.id === "REQUEST_NETWORK_PAYMENT"
+            ? undefined
+            : selectedRoute?.chain,
+        token:
+          selectedRoute?.id === "REQUEST_NETWORK_PAYMENT"
+            ? undefined
+            : selectedRoute?.token,
+      }).then((response) => response.data);
 
+      const isPaygrid = paymentData.paymentIntentId;
+
+      if (isPaygrid) {
+        const paymentIntent = JSON.parse(paymentData.paymentIntent);
+        const supportsEIP2612 = paymentData.metadata.supportsEIP2612;
+        let approvalSignature = undefined;
+        let approval = undefined;
+
+        setPaymentProgress("approving");
+
+        if (supportsEIP2612) {
+          approval = JSON.parse(paymentData.approvalPermitPayload);
+
+          approvalSignature = await signer._signTypedData(
+            approval.domain,
+            approval.types,
+            approval.values,
+          );
+        } else {
+          const tx = await signer.sendTransaction(paymentData.approvalCalldata);
+          await tx.wait();
+        }
+
+        const paymentIntentSignature = await signer._signTypedData(
+          paymentIntent.domain,
+          paymentIntent.types,
+          paymentIntent.values,
+        );
+
+        const signedPermit = {
+          permit2_permit: {
+            signature: paymentIntentSignature,
+            nonce: paymentIntent.values.nonce.toString(),
+            deadline: paymentIntent.values.deadline.toString(),
+          },
+          initial_permit: approvalSignature
+            ? {
+                signature: approvalSignature,
+                nonce: approval.values.nonce.toString(),
+                deadline: approval.values.deadline.toString(),
+              }
+            : undefined,
+        };
+
+        setPaymentProgress("paying");
+
+        await sendPaymentIntent({
+          paymentIntent: paymentData.paymentIntentId,
+          payload: signedPermit,
+        });
+
+        setPaymentStatus("paid");
+
+        return;
+      }
       const isApprovalNeeded = paymentData.metadata.needsApproval;
 
       if (isApprovalNeeded) {
