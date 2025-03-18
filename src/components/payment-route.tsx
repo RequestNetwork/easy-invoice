@@ -1,11 +1,19 @@
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
+import { ArrowRight, Globe, Zap } from "lucide-react";
 import Image from "next/image";
+
+interface RouteTypeInfo {
+  type: "direct" | "same-chain-erc20" | "cross-chain";
+  label: string;
+  description: string;
+}
 
 interface PaymentRouteProps {
   route: PaymentRouteType;
   isSelected: boolean;
   onClick?: () => void;
   variant?: "default" | "selected";
+  routeType?: RouteTypeInfo;
 }
 
 export function PaymentRoute({
@@ -13,8 +21,38 @@ export function PaymentRoute({
   isSelected,
   onClick,
   variant = "default",
+  routeType,
 }: PaymentRouteProps) {
-  const isDirectPayment = route.id === "REQUEST_NETWORK_PAYMENT";
+  const isDirectPayment =
+    routeType?.type === "direct" || route.id === "REQUEST_NETWORK_PAYMENT";
+  const isGasFreePayment = routeType?.type === "same-chain-erc20";
+
+  // Get the appropriate badge color and icon based on route type
+  const getBadgeStyles = () => {
+    if (isDirectPayment) {
+      return {
+        bgColor: "bg-blue-100",
+        textColor: "text-blue-700",
+        icon: <ArrowRight className="w-3 h-3 mr-1" />,
+      };
+    }
+
+    if (isGasFreePayment) {
+      return {
+        bgColor: "bg-green-100",
+        textColor: "text-green-700",
+        icon: <Zap className="w-3 h-3 mr-1" />,
+      };
+    }
+
+    return {
+      bgColor: "bg-purple-100",
+      textColor: "text-purple-700",
+      icon: <Globe className="w-3 h-3 mr-1" />,
+    };
+  };
+
+  const { bgColor, textColor, icon } = getBadgeStyles();
 
   return (
     <button
@@ -45,19 +83,20 @@ export function PaymentRoute({
           </div>
           <div className="text-left">
             <div className="font-medium flex items-center gap-2">
-              {route.chain}
-              {isDirectPayment && (
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                  Direct Payment
-                </span>
-              )}
-              {!isDirectPayment && (
-                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                  via Paygrid
-                </span>
-              )}
+              <span>
+                {route.chain} {route.token}
+              </span>
+              <span
+                className={`text-xs ${bgColor} ${textColor} px-2 py-0.5 rounded-full flex items-center`}
+              >
+                {icon}
+                {routeType?.label ||
+                  (isDirectPayment ? "Direct Payment" : "via Paygrid")}
+              </span>
             </div>
-            <div className="text-sm text-zinc-600">via {route.token}</div>
+            <div className="text-sm text-zinc-600">
+              {routeType?.description || `via ${route.token}`}
+            </div>
           </div>
         </div>
         <div className="text-right">

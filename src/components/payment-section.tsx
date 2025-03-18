@@ -22,40 +22,39 @@ interface PaymentSectionProps {
   invoice: NonNullable<Request>;
 }
 
-const MOCK_PAYMENT_ROUTES: PaymentRouteType[] = [
-  {
-    id: "REQUEST_NETWORK_PAYMENT",
-    fee: 0,
-    speed: "FAST",
-    price_impact: 0,
-    chain: "BASE",
-    token: "USDC",
-  },
-  {
-    id: "BASE_BASE_USDC_USDC",
-    fee: 0.001,
-    speed: 10,
-    price_impact: 1.999,
-    chain: "BASE",
-    token: "USDC",
-  },
-  {
-    id: "ARBITRUM_BASE_USDC_USDC",
-    fee: 0.3986,
-    speed: 40,
-    price_impact: 1.6014,
-    chain: "ARBITRUM",
-    token: "USDC",
-  },
-  {
-    id: "ARBITRUM_BASE_USDT_USDC",
-    fee: 0.3986,
-    speed: 40,
-    price_impact: 1.6014,
-    chain: "ARBITRUM",
-    token: "USDT",
-  },
-];
+const getCurrencyChain = (currency: string) => {
+  // Extract chain from format like "USDC-base"
+  const parts = currency.split("-");
+  return parts.length > 1 ? parts[1].toLowerCase() : null;
+};
+
+const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
+  if (route.id === "REQUEST_NETWORK_PAYMENT") {
+    return {
+      type: "direct" as const,
+      label: "Direct Payment",
+      description: "Pay directly on the same network",
+    };
+  }
+
+  if (
+    route.chain &&
+    invoiceChain &&
+    route.chain.toLowerCase() === invoiceChain
+  ) {
+    return {
+      type: "same-chain-erc20" as const,
+      label: "Same-Chain ERC20",
+      description: `Pay with ${route.token} (no gas token needed)`,
+    };
+  }
+
+  return {
+    type: "cross-chain" as const,
+    label: "Cross-Chain Payment",
+    description: `Pay from ${route.chain} network using ${route.token}`,
+  };
+};
 
 export function PaymentSection({ invoice }: PaymentSectionProps) {
   const { open } = useAppKit();
@@ -84,6 +83,9 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
       enabled: !!address,
     },
   );
+
+  // Extract the chain from invoice currency
+  const invoiceChain = getCurrencyChain(invoice.paymentCurrency);
 
   const displayPaymentProgress = () => {
     switch (paymentProgress) {
@@ -191,7 +193,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const showCurrencyConversion =
     invoice.invoiceCurrency !== invoice.paymentCurrency;
 
-  const hasRoutes = MOCK_PAYMENT_ROUTES.length > 0;
+  const hasRoutes = paymentRoutes && paymentRoutes.length > 0;
 
   return (
     <Card className="w-full">
@@ -409,6 +411,10 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                             route={selectedRoute}
                             isSelected={true}
                             variant="selected"
+                            routeType={getRouteType(
+                              selectedRoute,
+                              invoiceChain,
+                            )}
                           />
                         )}
 
@@ -424,6 +430,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                                 route={route}
                                 isSelected={selectedRoute?.id === route.id}
                                 onClick={() => setSelectedRoute(route)}
+                                routeType={getRouteType(route, invoiceChain)}
                               />
                             ))}
                           </div>
