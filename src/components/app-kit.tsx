@@ -1,7 +1,14 @@
 "use client";
 
 import { Ethers5Adapter } from "@reown/appkit-adapter-ethers5";
-import { sepolia } from "@reown/appkit/networks";
+import {
+  arbitrum,
+  base,
+  mainnet,
+  optimism,
+  polygon,
+  sepolia,
+} from "@reown/appkit/networks";
 import { createAppKit } from "@reown/appkit/react";
 
 const metadata = {
@@ -20,7 +27,7 @@ if (!projectId) {
 createAppKit({
   adapters: [new Ethers5Adapter()],
   metadata,
-  networks: [sepolia],
+  networks: [sepolia, base, mainnet, arbitrum, optimism, polygon],
   projectId,
   features: {
     analytics: false,

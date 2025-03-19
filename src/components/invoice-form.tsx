@@ -15,13 +15,16 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   INVOICE_CURRENCIES,
   type InvoiceCurrency,
+  MAINNET_CURRENCIES,
+  type MainnetCurrency,
   formatCurrencyLabel,
   getPaymentCurrenciesForInvoice,
 } from "@/lib/currencies";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Terminal, Trash2 } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
@@ -223,6 +226,8 @@ export function InvoiceForm({
                   valueAsNumber: true,
                 })}
                 type="number"
+                step="any"
+                min="0"
                 placeholder="Price"
               />
               {form.formState.errors.items?.[index]?.price && (
@@ -294,6 +299,33 @@ export function InvoiceForm({
           </p>
         )}
       </div>
+      {MAINNET_CURRENCIES.includes(
+        form.watch("invoiceCurrency") as MainnetCurrency,
+      ) && (
+        <div className="space-y-2">
+          <Alert variant="warning">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>
+              Warning: You are creating an invoice with real funds
+            </AlertTitle>
+            <AlertDescription className="space-y-2">
+              <p>
+                You've selected{" "}
+                <span className="font-bold">
+                  {formatCurrencyLabel(form.watch("invoiceCurrency"))}
+                </span>
+                , which operates on a mainnet blockchain and uses real
+                cryptocurrency.
+              </p>
+              <p>
+                EasyInvoice is a demonstration app only, designed to showcase
+                Request Network API functionality. Do not use for real
+                invoicing.
+              </p>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {/* Only show payment currency selector for USD invoices */}
       {form.watch("invoiceCurrency") === "USD" && (

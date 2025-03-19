@@ -128,10 +128,10 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
                   </td>
                   <td className="py-3 text-right text-sm">{item.quantity}</td>
                   <td className="py-3 text-right text-sm">
-                    {(item.price || 0).toFixed(2)}
+                    {(item.price || 0).toString()}
                   </td>
                   <td className="py-3 text-right text-sm">
-                    {((item.quantity || 0) * (item.price || 0)).toFixed(2)}
+                    {((item.quantity || 0) * (item.price || 0)).toString()}
                   </td>
                 </tr>
               ))}
@@ -143,13 +143,13 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
             <div className="w-48">
               <div className="flex justify-between py-2">
                 <span className="text-sm text-neutral-600">Subtotal</span>
-                <span className="text-sm">{calculateTotal().toFixed(2)}</span>
+                <span className="text-sm">{calculateTotal().toString()}</span>
               </div>
               <div className="flex justify-between py-2 border-t border-neutral-200">
                 <span className="text-sm font-medium">Total</span>
                 <div>
                   <div className="text-sm text-right font-medium">
-                    {calculateTotal().toFixed(2)}
+                    {calculateTotal().toString()}
                   </div>
                   <div className="text-xs text-neutral-500">
                     {formatCurrencyLabel(data.invoiceCurrency || "USD")}

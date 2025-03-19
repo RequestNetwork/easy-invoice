@@ -4,6 +4,7 @@ import { requestTable, userTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNull, not, or } from "drizzle-orm";
 import { ulid } from "ulid";
+import { isEthereumAddress } from "validator";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 
@@ -189,20 +190,35 @@ export const invoiceRouter = router({
     return invoice;
   }),
   payRequest: publicProcedure
-    .input(z.string())
+    .input(
+      z.object({
+        paymentReference: z.string(),
+        wallet: z.string().optional(),
+        chain: z.string().optional(),
+        token: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
       const invoice = await db.query.requestTable.findFirst({
-        where: eq(requestTable.paymentReference, input),
+        where: eq(requestTable.paymentReference, input.paymentReference),
       });
 
       if (!invoice) {
         return { success: false, message: "Invoice not found" };
       }
 
-      const response = await apiClient.get(
-        `/v1/request/${invoice.paymentReference}/pay`,
-      );
+      let paymentEndpoint = `/v1/request/${invoice.paymentReference}/pay?wallet=${input.wallet}`;
+
+      if (input.chain) {
+        paymentEndpoint += `&chain=${input.chain}`;
+      }
+
+      if (input.token) {
+        paymentEndpoint += `&token=${input.token}`;
+      }
+
+      const response = await apiClient.get(paymentEndpoint);
 
       if (response.status !== 200) {
         return {
@@ -248,5 +264,52 @@ export const invoiceRouter = router({
       }
 
       return updatedInvoice[0];
+    }),
+  getPaymentRoutes: publicProcedure
+    .input(
+      z.object({
+        paymentReference: z.string(),
+        walletAddress: z.string().refine(
+          (val) => {
+            return isEthereumAddress(val);
+          },
+          {
+            message: "Invalid wallet address",
+          },
+        ),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { paymentReference, walletAddress } = input;
+
+      const response = await apiClient.get(
+        `/v1/request/${paymentReference}/routes?wallet=${walletAddress}`,
+      );
+
+      if (response.status !== 200) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Failed to get payment routes",
+        });
+      }
+
+      return response.data.routes;
+    }),
+  sendPaymentIntent: publicProcedure
+    .input(
+      z.object({
+        paymentIntent: z.string(),
+        payload: z.any(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { paymentIntent, payload } = input;
+
+      const response = await apiClient.post(
+        `/v1/request/${paymentIntent}/send`,
+        payload,
+      );
+
+      return response.data;
     }),
 });
