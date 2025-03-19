@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { CHAIN_TO_ID, ID_TO_APPKIT_NETWORK } from "@/lib/chains";
-import { formatCurrencyLabel } from "@/lib/currencies";
+import { MAINNET_CURRENCIES, formatCurrencyLabel } from "@/lib/currencies";
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
@@ -307,6 +307,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Secure Payment Section */}
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
           <h3 className="font-semibold text-green-800 mb-2">Secure Payment</h3>
           <p className="text-sm text-green-700">
@@ -314,6 +315,25 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
             be processed safely and transparently.
           </p>
         </div>
+
+        {MAINNET_CURRENCIES.includes(invoice.invoiceCurrency as any) && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Real Cryptocurrency Warning
+            </h3>
+            <p className="text-sm text-amber-700">
+              This invoice uses{" "}
+              <span className="font-bold">
+                {formatCurrencyLabel(invoice.invoiceCurrency)}
+              </span>{" "}
+              on a mainnet blockchain, which means you'll be transferring{" "}
+              <span className="font-bold">actual value</span>. EasyInvoice is a
+              demonstration app and all blockchain transactions are
+              irreversible.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label>Amount Due</Label>
