@@ -27,6 +27,8 @@ export function PaymentRoute({
     routeType?.type === "direct" || route.id === "REQUEST_NETWORK_PAYMENT";
   const isGasFreePayment = routeType?.type === "same-chain-erc20";
 
+  const nativeToken = route.chain === "POLYGON" ? "POL" : "ETH";
+
   // Get the appropriate badge color and icon based on route type
   const getBadgeStyles = () => {
     if (isDirectPayment) {
@@ -70,12 +72,8 @@ export function PaymentRoute({
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 relative flex items-center justify-center">
             <Image
-              src={
-                isDirectPayment
-                  ? "/request-logo.png"
-                  : `/${route.chain.toLowerCase()}-logo.png`
-              }
-              alt={isDirectPayment ? "Request Network" : `${route.chain} logo`}
+              src={`/${route.chain.toLowerCase()}-logo.png`}
+              alt={`${route.chain} logo`}
               width={32}
               height={32}
               className="object-contain"
@@ -105,7 +103,7 @@ export function PaymentRoute({
               "No fee"
             ) : (
               <span className="text-amber-700">
-                {route.fee} {route.token} fee
+                {route.fee} {isDirectPayment ? nativeToken : route.token} fee
               </span>
             )}
           </div>
