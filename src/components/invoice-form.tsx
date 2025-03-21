@@ -51,7 +51,11 @@ export function InvoiceForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="invoiceNumber">Invoice Number</Label>
-          <Input {...form.register("invoiceNumber")} placeholder="INV-001" />
+          <Input
+            disabled
+            {...form.register("invoiceNumber")}
+            placeholder="INV-001"
+          />
           {form.formState.errors.invoiceNumber && (
             <p className="text-sm text-red-500">
               {form.formState.errors.invoiceNumber.message}

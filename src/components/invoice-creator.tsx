@@ -23,11 +23,13 @@ interface InvoiceCreatorProps {
     name: string;
     email: string;
   };
+  invoiceNumber?: string;
 }
 
 export function InvoiceCreator({
   recipientDetails,
   currentUser,
+  invoiceNumber,
 }: InvoiceCreatorProps) {
   const router = useRouter();
   const isInvoiceMe = !!recipientDetails?.userId;
@@ -52,7 +54,7 @@ export function InvoiceCreator({
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
-      invoiceNumber: "",
+      invoiceNumber: invoiceNumber,
       dueDate: "",
       creatorName: !isInvoiceMe ? (currentUser?.name ?? "") : "",
       creatorEmail: !isInvoiceMe ? (currentUser?.email ?? "") : "",
