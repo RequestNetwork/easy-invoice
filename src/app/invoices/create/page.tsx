@@ -2,7 +2,7 @@ import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { InvoiceCreator } from "@/components/invoice-creator";
-import { generateInvoiceNumber } from "@/lib/invoice";
+import { getInvoiceCount } from "@/lib/invoice";
 import { getCurrentSession } from "@/server/auth";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +15,7 @@ export default async function CreateInvoicePage() {
     redirect("/");
   }
 
-  const invoiceNumber = await generateInvoiceNumber(user.id);
+  const invoiceCount = await getInvoiceCount(user.id);
 
   return (
     <BackgroundWrapper
@@ -41,7 +41,7 @@ export default async function CreateInvoicePage() {
             email: user.email ?? "",
             name: user.name ?? "",
           }}
-          invoiceNumber={invoiceNumber}
+          invoiceCount={invoiceCount}
         />
       </main>
       <Footer />

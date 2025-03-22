@@ -2,7 +2,7 @@ import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { InvoiceCreator } from "@/components/invoice-creator";
-import { generateInvoiceNumber } from "@/lib/invoice";
+import { getInvoiceCount } from "@/lib/invoice";
 import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -25,7 +25,7 @@ export default async function InvoiceMePage({
     notFound();
   }
 
-  const invoiceNumber = await generateInvoiceNumber(invoiceMeLink.user.id);
+  const invoiceCount = await getInvoiceCount(invoiceMeLink.user.id);
 
   return (
     <BackgroundWrapper
@@ -52,7 +52,7 @@ export default async function InvoiceMePage({
             clientEmail: invoiceMeLink.user.email ?? "",
             userId: invoiceMeLink.user.id,
           }}
-          invoiceNumber={invoiceNumber}
+          invoiceCount={invoiceCount}
         />
       </main>
       <Footer />

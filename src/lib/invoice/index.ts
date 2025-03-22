@@ -2,7 +2,7 @@ import { db } from "@/server/db";
 import { requestTable } from "@/server/db/schema";
 import { and, count, eq, gte } from "drizzle-orm";
 
-export const generateInvoiceNumber = async (userId: string) => {
+export const getInvoiceCount = async (userId: string) => {
   const invoicesCountThisMonth = await db
     .select({
       count: count(),
@@ -18,14 +18,10 @@ export const generateInvoiceNumber = async (userId: string) => {
       ),
     );
 
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
   const invoiceCount = String(invoicesCountThisMonth[0].count + 1).padStart(
     4,
     "0",
-  ); // Pad with zeros to 4 digits
+  );
 
-  const invoiceNumber = `${year}${month}-${invoiceCount}`;
-  return invoiceNumber;
+  return invoiceCount;
 };
