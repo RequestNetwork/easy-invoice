@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import { getInvoiceCount } from "@/lib/invoice";
+import { generateInvoiceNumber } from "@/lib/invoice/client";
 import { db } from "@/server/db";
 import { requestTable } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -91,9 +93,14 @@ export async function POST(req: Request) {
           const newDueDate = new Date(now);
           newDueDate.setDate(now.getDate() + daysDifference);
 
+          const invoiceCount = await getInvoiceCount(originalRequest.userId);
+
+          const invoiceNumber = generateInvoiceNumber(invoiceCount);
+
           await tx.insert(requestTable).values({
             id: ulid(),
             ...requestWithoutId,
+            invoiceNumber,
             issuedDate: now.toISOString(),
             dueDate: newDueDate.toISOString(),
             paymentReference: paymentReference,
