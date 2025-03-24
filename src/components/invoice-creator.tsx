@@ -3,6 +3,7 @@
 import { InvoiceForm } from "@/components/invoice-form";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { generateInvoiceNumber } from "@/lib/invoice/client";
 import {
   type InvoiceFormValues,
   invoiceFormSchema,
@@ -23,11 +24,13 @@ interface InvoiceCreatorProps {
     name: string;
     email: string;
   };
+  invoiceCount: string;
 }
 
 export function InvoiceCreator({
   recipientDetails,
   currentUser,
+  invoiceCount,
 }: InvoiceCreatorProps) {
   const router = useRouter();
   const isInvoiceMe = !!recipientDetails?.userId;
@@ -52,7 +55,7 @@ export function InvoiceCreator({
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
-      invoiceNumber: "",
+      invoiceNumber: generateInvoiceNumber(invoiceCount),
       dueDate: "",
       creatorName: !isInvoiceMe ? (currentUser?.name ?? "") : "",
       creatorEmail: !isInvoiceMe ? (currentUser?.email ?? "") : "",
