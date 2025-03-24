@@ -31,7 +31,21 @@ const getCurrencyChain = (currency: string) => {
   return parts.length > 1 ? parts[1].toLowerCase() : null;
 };
 
+const REQUEST_NETWORK_CHAIN_TO_PAYMENT_NETWORK = {
+  matic: "polygon",
+  base: "base",
+  "arbitrum-one": "arbitrum",
+  optimism: "optimism",
+  mainnet: "ethereum",
+};
+
 const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
+  const invoiceChainToUse =
+    invoiceChain &&
+    REQUEST_NETWORK_CHAIN_TO_PAYMENT_NETWORK[
+      invoiceChain as keyof typeof REQUEST_NETWORK_CHAIN_TO_PAYMENT_NETWORK
+    ];
+
   if (route.id === "REQUEST_NETWORK_PAYMENT") {
     return {
       type: "direct" as const,
@@ -42,8 +56,8 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
 
   if (
     route.chain &&
-    invoiceChain &&
-    route.chain.toLowerCase() === invoiceChain
+    invoiceChainToUse &&
+    route.chain.toLowerCase() === invoiceChainToUse
   ) {
     return {
       type: "same-chain-erc20" as const,
@@ -215,7 +229,9 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
             ? {
                 signature: approvalSignature,
                 nonce: approval.values.nonce.toString(),
-                deadline: approval.values.deadline.toString(),
+                deadline: approval?.values?.deadline
+                  ? approval.values.deadline.toString()
+                  : approval.values.expiry.toString(),
               }
             : undefined,
         };
@@ -227,7 +243,11 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
           payload: signedPermit,
         });
 
-        setPaymentStatus("paid");
+        setPaymentStatus("processing");
+
+        toast("Payment is being processed", {
+          description: "You can safely close this page.",
+        });
 
         return;
       }
@@ -260,18 +280,19 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 
       await paymentTransaction.wait();
 
-      toast("Payment completed", {
-        description: "Payment completed successfully",
+      toast("Payment is being processed", {
+        description: "You can safely close this page.",
       });
 
-      setPaymentStatus("paid");
+      setPaymentStatus("processing");
     } catch (error) {
       console.error("Error : ", error);
       toast("Payment Failed", {
         description: "Please try again",
       });
+    } finally {
+      setPaymentProgress("idle");
     }
-    setPaymentProgress("idle");
   };
 
   const showCurrencyConversion =
@@ -289,7 +310,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
               paymentStatus === "paid"
                 ? "bg-green-100 text-green-800"
                 : paymentStatus === "processing"
-                  ? "bg-yellow-100 text-yellow-800"
+                  ? "bg-orange-100 text-orange-800"
                   : "bg-blue-100 text-blue-800"
             }`}
           >
@@ -547,7 +568,11 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                   <Button
                     onClick={handlePayment}
                     className="w-full bg-black hover:bg-zinc-800 text-white"
-                    disabled={paymentProgress !== "idle" || !hasRoutes}
+                    disabled={
+                      paymentProgress !== "idle" ||
+                      !hasRoutes ||
+                      paymentStatus === "processing"
+                    }
                   >
                     {!hasRoutes ? (
                       "No payment routes available"
