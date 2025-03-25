@@ -220,12 +220,12 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
         );
 
         const signedPermit = {
-          permit2_permit: {
+          signedPaymentIntent: {
             signature: paymentIntentSignature,
             nonce: paymentIntent.values.nonce.toString(),
             deadline: paymentIntent.values.deadline.toString(),
           },
-          initial_permit: approvalSignature
+          signedApprovalPermit: approvalSignature
             ? {
                 signature: approvalSignature,
                 nonce: approval.values.nonce.toString(),
