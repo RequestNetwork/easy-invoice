@@ -262,7 +262,12 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
         description: `Switching to ${targetAppkitNetwork.name} network`,
       });
 
-      await switchNetwork(targetAppkitNetwork);
+      try {
+        await switchNetwork(targetAppkitNetwork);
+      } catch (_) {
+        toast("Error switching network");
+        return;
+      }
     }
 
     const ethersProvider = new ethers.providers.Web3Provider(
