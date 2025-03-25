@@ -151,6 +151,101 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
     }
   };
 
+  const handlePaygridPayments = async (paymentData: any, signer: any) => {
+    const paymentIntent = JSON.parse(paymentData.paymentIntent);
+    const supportsEIP2612 = paymentData.metadata.supportsEIP2612;
+    let approvalSignature = undefined;
+    let approval = undefined;
+
+    setPaymentProgress("approving");
+
+    if (supportsEIP2612) {
+      approval = JSON.parse(paymentData.approvalPermitPayload);
+
+      approvalSignature = await signer._signTypedData(
+        approval.domain,
+        approval.types,
+        approval.values,
+      );
+    } else {
+      const tx = await signer.sendTransaction(paymentData.approvalCalldata);
+      await tx.wait();
+    }
+
+    const paymentIntentSignature = await signer._signTypedData(
+      paymentIntent.domain,
+      paymentIntent.types,
+      paymentIntent.values,
+    );
+
+    const signedPermit = {
+      signedPaymentIntent: {
+        signature: paymentIntentSignature,
+        nonce: paymentIntent.values.nonce.toString(),
+        deadline: paymentIntent.values.deadline.toString(),
+      },
+      signedApprovalPermit: approvalSignature
+        ? {
+            signature: approvalSignature,
+            nonce: approval.values.nonce.toString(),
+            deadline: approval?.values?.deadline
+              ? approval.values.deadline.toString()
+              : approval.values.expiry.toString(),
+          }
+        : undefined,
+    };
+
+    setPaymentProgress("paying");
+
+    await sendPaymentIntent({
+      paymentIntent: paymentData.paymentIntentId,
+      payload: signedPermit,
+    });
+
+    setPaymentStatus("processing");
+
+    toast("Payment is being processed", {
+      description: "You can safely close this page.",
+    });
+  };
+
+  const handleDirectPayments = async (paymentData: any, signer: any) => {
+    const isApprovalNeeded = paymentData.metadata.needsApproval;
+
+    if (isApprovalNeeded) {
+      setPaymentProgress("approving");
+      toast("Payment Approval Required", {
+        description: "Please approve the payment in your wallet",
+      });
+
+      const approvalIndex = paymentData.metadata.approvalTransactionIndex;
+
+      const approvalTransaction = await signer.sendTransaction(
+        paymentData.transactions[approvalIndex],
+      );
+
+      await approvalTransaction.wait();
+    }
+
+    setPaymentProgress("paying");
+
+    toast("Initiating payment", {
+      description: "Please confirm the payment in your wallet",
+    });
+
+    const paymentTransaction = await signer.sendTransaction(
+      paymentData.transactions[isApprovalNeeded ? 1 : 0],
+    );
+
+    await paymentTransaction.wait();
+
+    toast("Payment is being processed", {
+      description: "You can safely close this page.",
+    });
+
+    setPaymentStatus("processing");
+  };
+
   const handlePayment = async () => {
     if (paymentProgress !== "idle") return;
 
@@ -193,98 +288,10 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
       const isPaygrid = paymentData.paymentIntentId;
 
       if (isPaygrid) {
-        const paymentIntent = JSON.parse(paymentData.paymentIntent);
-        const supportsEIP2612 = paymentData.metadata.supportsEIP2612;
-        let approvalSignature = undefined;
-        let approval = undefined;
-
-        setPaymentProgress("approving");
-
-        if (supportsEIP2612) {
-          approval = JSON.parse(paymentData.approvalPermitPayload);
-
-          approvalSignature = await signer._signTypedData(
-            approval.domain,
-            approval.types,
-            approval.values,
-          );
-        } else {
-          const tx = await signer.sendTransaction(paymentData.approvalCalldata);
-          await tx.wait();
-        }
-
-        const paymentIntentSignature = await signer._signTypedData(
-          paymentIntent.domain,
-          paymentIntent.types,
-          paymentIntent.values,
-        );
-
-        const signedPermit = {
-          signedPaymentIntent: {
-            signature: paymentIntentSignature,
-            nonce: paymentIntent.values.nonce.toString(),
-            deadline: paymentIntent.values.deadline.toString(),
-          },
-          signedApprovalPermit: approvalSignature
-            ? {
-                signature: approvalSignature,
-                nonce: approval.values.nonce.toString(),
-                deadline: approval?.values?.deadline
-                  ? approval.values.deadline.toString()
-                  : approval.values.expiry.toString(),
-              }
-            : undefined,
-        };
-
-        setPaymentProgress("paying");
-
-        await sendPaymentIntent({
-          paymentIntent: paymentData.paymentIntentId,
-          payload: signedPermit,
-        });
-
-        setPaymentStatus("processing");
-
-        toast("Payment is being processed", {
-          description: "You can safely close this page.",
-        });
-
-        return;
+        await handlePaygridPayments(paymentData, signer);
+      } else {
+        await handleDirectPayments(paymentData, signer);
       }
-      const isApprovalNeeded = paymentData.metadata.needsApproval;
-
-      if (isApprovalNeeded) {
-        setPaymentProgress("approving");
-        toast("Payment Approval Required", {
-          description: "Please approve the payment in your wallet",
-        });
-
-        const approvalIndex = paymentData.metadata.approvalTransactionIndex;
-
-        const approvalTransaction = await signer.sendTransaction(
-          paymentData.transactions[approvalIndex],
-        );
-
-        await approvalTransaction.wait();
-      }
-
-      setPaymentProgress("paying");
-
-      toast("Initiating payment", {
-        description: "Please confirm the payment in your wallet",
-      });
-
-      const paymentTransaction = await signer.sendTransaction(
-        paymentData.transactions[isApprovalNeeded ? 1 : 0],
-      );
-
-      await paymentTransaction.wait();
-
-      toast("Payment is being processed", {
-        description: "You can safely close this page.",
-      });
-
-      setPaymentStatus("processing");
     } catch (error) {
       console.error("Error : ", error);
       toast("Payment Failed", {
