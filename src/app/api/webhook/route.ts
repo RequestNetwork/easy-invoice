@@ -109,6 +109,9 @@ export async function POST(req: Request) {
           });
         });
         break;
+      case "compliance.updated":
+        // TODO: Update user compliance status in the frontend
+        break;
       default:
         break;
     }
