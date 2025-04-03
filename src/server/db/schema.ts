@@ -43,6 +43,69 @@ export const userTable = createTable("user", {
   googleId: text().unique(),
   name: text(),
   email: text().unique(),
+  agreementStatus: text().default("pending"),
+  kycStatus: text().default("pending"),
+  isCompliant: boolean().default(false),
+});
+
+export const paymentDetailsTable = createTable("payment_details", {
+  id: text().primaryKey().notNull(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  bankName: text().notNull(),
+  accountName: text().notNull(),
+  accountNumber: text(),
+  routingNumber: text(),
+  accountType: text().default("checking"),
+  sortCode: text(),
+  iban: text(),
+  swiftBic: text(),
+  documentNumber: text(),
+  documentType: text(),
+  ribNumber: text(),
+  bsbNumber: text(),
+  ncc: text(),
+  branchCode: text(),
+  bankCode: text(),
+  ifsc: text(),
+  beneficiaryType: text().notNull(),
+  dateOfBirth: text(),
+  addressLine1: text().notNull(),
+  addressLine2: text(),
+  city: text().notNull(),
+  state: text(),
+  postalCode: text().notNull(),
+  country: text().notNull(),
+  rails: text().default("local"),
+  currency: text().notNull(),
+  phone: text(),
+  neighbourhood: text(),
+  activity: text(),
+  nationality: text(),
+  gender: text(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// New junction table to link payment details with multiple payers
+export const paymentDetailsPayersTable = createTable("payment_details_payers", {
+  id: text().primaryKey().notNull(),
+  paymentDetailsId: text()
+    .notNull()
+    .references(() => paymentDetailsTable.id, {
+      onDelete: "cascade",
+    }),
+  payerId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  status: text().notNull(),
+  paymentDetailsReference: text().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const requestTable = createTable("request", {
@@ -77,6 +140,10 @@ export const requestTable = createTable("request", {
     frequency: string;
   }>(),
   isRecurrenceStopped: boolean().default(false),
+  cryptoToFiatAvailable: boolean().default(false),
+  paymentDetailsId: text().references(() => paymentDetailsTable.id, {
+    onDelete: "cascade",
+  }),
 });
 
 export const sessionTable = createTable("session", {
@@ -109,12 +176,17 @@ export const userRelations = relations(userTable, ({ many }) => ({
   requests: many(requestTable),
   session: many(sessionTable),
   invoiceMe: many(invoiceMeTable),
+  paymentDetailsPayers: many(paymentDetailsPayersTable),
 }));
 
 export const requestRelations = relations(requestTable, ({ one }) => ({
   user: one(userTable, {
     fields: [requestTable.userId],
     references: [userTable.id],
+  }),
+  paymentDetails: one(paymentDetailsTable, {
+    fields: [requestTable.paymentDetailsId],
+    references: [paymentDetailsTable.id],
   }),
 }));
 
@@ -132,7 +204,36 @@ export const invoiceMeRelations = relations(invoiceMeTable, ({ one }) => ({
   }),
 }));
 
+export const paymentDetailsRelations = relations(
+  paymentDetailsTable,
+  ({ one, many }) => ({
+    user: one(userTable, {
+      fields: [paymentDetailsTable.userId],
+      references: [userTable.id],
+    }),
+    payers: many(paymentDetailsPayersTable),
+  }),
+);
+
+export const paymentDetailsPayersRelations = relations(
+  paymentDetailsPayersTable,
+  ({ one }) => ({
+    paymentDetails: one(paymentDetailsTable, {
+      fields: [paymentDetailsPayersTable.paymentDetailsId],
+      references: [paymentDetailsTable.id],
+    }),
+    payer: one(userTable, {
+      fields: [paymentDetailsPayersTable.payerId],
+      references: [userTable.id],
+    }),
+  }),
+);
+
 export type Request = InferSelectModel<typeof requestTable>;
 export type User = InferSelectModel<typeof userTable>;
 export type Session = InferSelectModel<typeof sessionTable>;
 export type InvoiceMe = InferSelectModel<typeof invoiceMeTable>;
+export type PaymentDetails = InferSelectModel<typeof paymentDetailsTable>;
+export type PaymentDetailsPayers = InferSelectModel<
+  typeof paymentDetailsPayersTable
+>;

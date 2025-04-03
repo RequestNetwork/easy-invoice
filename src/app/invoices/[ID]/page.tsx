@@ -9,7 +9,6 @@ import { api } from "@/trpc/server";
 import { format } from "date-fns";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
 export const metadata: Metadata = {
   title: "Invoice Payment | EasyInvoice",
   description: "Process payment for your invoice",
@@ -27,6 +26,9 @@ export default async function PaymentPage({
   params: { ID: string };
 }) {
   const invoice = await api.invoice.getById.query(params.ID);
+  const paymentDetailsData = await api.compliance.getPaymentDetailsById.query(
+    invoice?.paymentDetailsId || "",
+  );
 
   if (!invoice) {
     notFound();
@@ -212,6 +214,46 @@ export default async function PaymentPage({
                     {formatCurrencyLabel(invoice.paymentCurrency)}
                   </div>
                 </div>
+                {paymentDetailsData?.paymentDetails && (
+                  <div>
+                    <div className="text-xs text-neutral-500 mb-1">
+                      BANK ACCOUNT DETAILS
+                    </div>
+                    {paymentDetailsData.paymentDetails.accountName && (
+                      <div className="text-sm">
+                        {paymentDetailsData.paymentDetails.accountName}
+                      </div>
+                    )}
+                    {paymentDetailsData.paymentDetails.accountNumber && (
+                      <div className="text-sm">
+                        {paymentDetailsData.paymentDetails.accountNumber.replace(
+                          /^\d+(?=\d{4})/,
+                          "****",
+                        )}
+                      </div>
+                    )}
+                    {paymentDetailsData.paymentDetails.bankName && (
+                      <div className="text-sm">
+                        {paymentDetailsData.paymentDetails.bankName}
+                      </div>
+                    )}
+                    {paymentDetailsData.paymentDetails.swiftBic && (
+                      <div className="text-sm">
+                        {paymentDetailsData.paymentDetails.swiftBic}
+                      </div>
+                    )}
+                    {paymentDetailsData.paymentDetails.iban && (
+                      <div className="text-sm">
+                        {paymentDetailsData.paymentDetails.iban}
+                      </div>
+                    )}
+                    {paymentDetailsData.paymentDetails.currency && (
+                      <div className="text-sm">
+                        {paymentDetailsData.paymentDetails.currency.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {invoice.notes && (
                   <div>
                     <div className="text-xs text-neutral-500 mb-1">NOTES</div>

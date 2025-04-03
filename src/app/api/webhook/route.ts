@@ -2,7 +2,11 @@ import crypto from "node:crypto";
 import { getInvoiceCount } from "@/lib/invoice";
 import { generateInvoiceNumber } from "@/lib/invoice/client";
 import { db } from "@/server/db";
-import { requestTable } from "@/server/db/schema";
+import {
+  paymentDetailsPayersTable,
+  requestTable,
+  userTable,
+} from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ulid } from "ulid";
@@ -110,7 +114,27 @@ export async function POST(req: Request) {
         });
         break;
       case "compliance.updated":
-        // TODO: Update user compliance status in the frontend
+        await db
+          .update(userTable)
+          .set({
+            isCompliant: body.isCompliant,
+            kycStatus: body.kycStatus,
+            agreementStatus: body.agreementStatus,
+          })
+          .where(eq(userTable.email, body.clientUserId));
+        break;
+      case "payment_detail.updated":
+        await db
+          .update(paymentDetailsPayersTable)
+          .set({
+            status: body.status,
+          })
+          .where(
+            eq(
+              paymentDetailsPayersTable.paymentDetailsReference,
+              body.paymentDetailsId,
+            ),
+          );
         break;
       default:
         break;

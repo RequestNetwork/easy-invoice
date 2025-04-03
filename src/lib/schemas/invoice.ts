@@ -31,6 +31,8 @@ export const invoiceFormSchema = z
     isRecurring: z.boolean().default(false),
     startDate: z.string().optional(),
     frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
+    cryptoToFiatAvailable: z.boolean().default(false),
+    paymentDetailsId: z.string().optional(),
   })
   .refine(
     (data) => {

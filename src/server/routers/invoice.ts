@@ -1,6 +1,10 @@
 import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
-import { requestTable, userTable } from "@/server/db/schema";
+import {
+  paymentDetailsPayersTable,
+  requestTable,
+  userTable,
+} from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNull, not, or } from "drizzle-orm";
 import { ulid } from "ulid";
@@ -23,6 +27,7 @@ const createInvoiceHelper = async (
     payee: input.walletAddress,
     invoiceCurrency: input.invoiceCurrency,
     paymentCurrency: input.paymentCurrency,
+    cryptoToFiatAvailable: input.cryptoToFiatAvailable,
     ...(input.isRecurring && {
       recurrence: {
         startDate: input.startDate,
@@ -60,12 +65,14 @@ const createInvoiceHelper = async (
             frequency: input.frequency,
           }
         : null,
+      cryptoToFiatAvailable: input.cryptoToFiatAvailable,
+      paymentDetailsId: input.paymentDetailsId,
     })
     .returning();
 
   return {
     success: true,
-    invoice: invoice[0],
+    invoice: invoice[0] || null,
   };
 };
 
@@ -87,6 +94,13 @@ export const invoiceRouter = router({
         where: eq(userTable.email, input.clientEmail),
       });
 
+      if (!clientUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Client not found",
+        });
+      }
+
       try {
         return await db.transaction(async (tx) => {
           return createInvoiceHelper(
@@ -100,7 +114,7 @@ export const invoiceRouter = router({
         });
       } catch (error) {
         console.error("Error: ", error);
-        return { success: false };
+        return { success: false, invoice: null };
       }
     }),
 
@@ -132,11 +146,17 @@ export const invoiceRouter = router({
       try {
         return await db.transaction(async (tx) => {
           // For invoice-me, the userId is the same as invoicedTo
-          return createInvoiceHelper(tx, input, input.invoicedTo as string);
+          return createInvoiceHelper(
+            tx,
+            {
+              ...input,
+            },
+            input.invoicedTo as string,
+          );
         });
       } catch (error) {
         console.error("Error: ", error);
-        return { success: false };
+        return { success: false, invoice: null };
       }
     }),
 
@@ -202,13 +222,25 @@ export const invoiceRouter = router({
       const { db } = ctx;
       const invoice = await db.query.requestTable.findFirst({
         where: eq(requestTable.paymentReference, input.paymentReference),
+        with: {
+          paymentDetails: {
+            with: {
+              payers: {
+                where: eq(
+                  paymentDetailsPayersTable.paymentDetailsId,
+                  requestTable.paymentDetailsId,
+                ),
+              },
+            },
+          },
+        },
       });
 
       if (!invoice) {
         return { success: false, message: "Invoice not found" };
       }
 
-      let paymentEndpoint = `/v1/request/${invoice.paymentReference}/pay?wallet=${input.wallet}`;
+      let paymentEndpoint = `/v1/request/${invoice.paymentReference}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${invoice.paymentDetails?.payers[0].paymentDetailsReference}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;

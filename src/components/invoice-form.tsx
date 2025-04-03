@@ -21,11 +21,12 @@ import {
   getPaymentCurrenciesForInvoice,
 } from "@/lib/currencies";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
+import type { PaymentDetails, User } from "@/server/db/schema";
 import { Plus, Terminal, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-
 type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
 interface InvoiceFormProps {
@@ -36,6 +37,9 @@ interface InvoiceFormProps {
     clientName: string;
     clientEmail: string;
   };
+  paymentDetails:
+    | { paymentDetails: PaymentDetails; paymentDetailsPayers: User[] }[]
+    | undefined;
 }
 
 export function InvoiceForm({
@@ -43,14 +47,43 @@ export function InvoiceForm({
   onSubmit,
   isLoading,
   recipientDetails,
+  paymentDetails,
 }: InvoiceFormProps) {
+  const [linkedPaymentDetails, setLinkedPaymentDetails] = useState<
+    | { paymentDetails: PaymentDetails; paymentDetailsPayers: User[] }[]
+    | undefined
+  >(undefined);
   const { fields, append, remove } = useFieldArray({
     name: "items",
     control: form.control,
   });
 
+  const handleFormSubmit = (data: InvoiceFormValues) => {
+    onSubmit(data);
+  };
+
+  useEffect(() => {
+    if (!form.watch("cryptoToFiatAvailable")) {
+      form.setValue("paymentDetailsId", undefined);
+    } else {
+      const clientEmail = form.getValues("clientEmail");
+      if (clientEmail && paymentDetails) {
+        setLinkedPaymentDetails(
+          paymentDetails.filter((detail) =>
+            detail.paymentDetailsPayers.some(
+              (payer) => payer.email === clientEmail,
+            ),
+          ),
+        );
+      } else {
+        setLinkedPaymentDetails([]);
+        form.setValue("paymentDetailsId", undefined);
+      }
+    }
+  }, [form, paymentDetails]);
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="invoiceNumber">Invoice Number</Label>
@@ -366,6 +399,55 @@ export function InvoiceForm({
           </p>
         )}
       </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="cryptoToFiatAvailable"
+          checked={form.watch("cryptoToFiatAvailable")}
+          onCheckedChange={(checked) => {
+            form.setValue("cryptoToFiatAvailable", checked === true);
+          }}
+        />
+        <Label htmlFor="cryptoToFiatAvailable">
+          Allow payment via bank account (crypto-to-fiat conversion)
+        </Label>
+      </div>
+
+      {form.watch("cryptoToFiatAvailable") && (
+        <div className="space-y-2">
+          <Label htmlFor="paymentDetailsId">Payment Details</Label>
+          {!linkedPaymentDetails || linkedPaymentDetails.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              No payment details linked to this client
+            </p>
+          ) : (
+            <Select
+              onValueChange={(value) =>
+                form.setValue("paymentDetailsId", value)
+              }
+              defaultValue={form.getValues("paymentDetailsId")}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select payment details" />
+              </SelectTrigger>
+              <SelectContent>
+                {linkedPaymentDetails &&
+                  linkedPaymentDetails.length > 0 &&
+                  paymentDetails?.map((detail) => (
+                    <SelectItem
+                      key={detail.paymentDetails.id}
+                      value={detail.paymentDetails.id}
+                    >
+                      {(detail.paymentDetails.accountName || "").slice(0, 10)}{" "}
+                      ••••{" "}
+                      {(detail.paymentDetails.accountNumber || "").slice(-4)}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      )}
 
       <div className="flex justify-end">
         <Button

@@ -1,13 +1,22 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
+import type { PaymentDetails, User } from "@/server/db/schema";
 import { format } from "date-fns";
 
 interface InvoicePreviewProps {
   data: Partial<InvoiceFormValues>;
+  paymentDetails:
+    | { paymentDetails: PaymentDetails; paymentDetailsPayers: User[] }[]
+    | undefined;
+  paymentDetailsId: string | undefined;
 }
 
-export function InvoicePreview({ data }: InvoicePreviewProps) {
+export function InvoicePreview({
+  data,
+  paymentDetails,
+  paymentDetailsId,
+}: InvoicePreviewProps) {
   const calculateTotal = () => {
     return (data.items || []).reduce(
       (total, item) => total + (item.quantity || 0) * (item.price || 0),
@@ -22,6 +31,13 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
       day: "2-digit",
     });
   };
+
+  const selectedPaymentDetails =
+    paymentDetails && paymentDetailsId
+      ? paymentDetails.find(
+          (detail) => detail.paymentDetails.id === paymentDetailsId,
+        )
+      : null;
 
   return (
     <Card className="w-full bg-white shadow-sm border-0">
@@ -175,6 +191,55 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
                     )}
               </div>
             </div>
+
+            {/* Bank Account Details */}
+            {selectedPaymentDetails && (
+              <div>
+                <div className="text-xs text-neutral-500 mb-1">
+                  BANK ACCOUNT DETAILS
+                </div>
+                <div className="space-y-1 text-sm">
+                  {selectedPaymentDetails.paymentDetails.accountName && (
+                    <p>
+                      <b>Name:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.accountName}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.bankName && (
+                    <p>
+                      <b>Bank Name:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.bankName}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.accountNumber && (
+                    <p>
+                      <b>Account Number:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.accountNumber.replace(
+                        /^\d+(?=\d{4})/,
+                        "****",
+                      )}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.iban && (
+                    <p>
+                      <b>IBAN:</b> {selectedPaymentDetails.paymentDetails.iban}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.swiftBic && (
+                    <p>
+                      <b>SWIFT BIC:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.swiftBic}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.currency && (
+                    <p>
+                      <b>Currency:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.currency.toUpperCase()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           {data.notes && (
             <div>

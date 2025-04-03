@@ -48,6 +48,12 @@ export function UserMenu({ user }: UserMenuProps) {
             </p>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuItem
+          onClick={() => router.push("/account")}
+          className="text-sm text-neutral-700 cursor-pointer hover:text-neutral-900"
+        >
+          <span>Account</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => logout.mutate()}

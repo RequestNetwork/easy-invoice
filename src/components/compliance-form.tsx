@@ -18,7 +18,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -59,7 +58,6 @@ export function ComplianceForm({ user }: { user: User }) {
   const [complianceData, setComplianceData] =
     useState<ComplianceResponse | null>(null);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
-  const [startComplianceCheck, setStartComplianceCheck] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -133,25 +131,6 @@ export function ComplianceForm({ user }: { user: User }) {
       ssn: "",
     },
   });
-
-  // Check if the user is compliant with a setInterval
-  useEffect(() => {
-    if (startComplianceCheck) {
-      const interval = setInterval(() => {
-        getComplianceStatus();
-        if (complianceData?.status.kycStatus === "completed") {
-          setStartComplianceCheck(false);
-          toast.success("KYC completed successfully");
-          clearInterval(interval);
-        }
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [
-    startComplianceCheck,
-    getComplianceStatus,
-    complianceData?.status.kycStatus,
-  ]);
 
   // Set up a listener for the agreement events
   useEffect(() => {
@@ -250,7 +229,6 @@ export function ComplianceForm({ user }: { user: User }) {
                           className="w-full"
                           onClick={() => {
                             window.open(complianceData?.kycUrl, "_blank");
-                            setStartComplianceCheck(true);
                           }}
                         >
                           Start KYC Process{" "}
@@ -378,11 +356,8 @@ export function ComplianceForm({ user }: { user: User }) {
                           <FormItem>
                             <FormLabel>Date of Birth</FormLabel>
                             <FormControl>
-                              <Input placeholder="MM/DD/YYYY" {...field} />
+                              <Input placeholder="DD/MM/YYYY" {...field} />
                             </FormControl>
-                            <FormDescription>
-                              Format: MM/DD/YYYY
-                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}

@@ -21,6 +21,7 @@ interface InvoiceCreatorProps {
     userId: string;
   };
   currentUser?: {
+    id: string;
     name: string;
     email: string;
   };
@@ -52,6 +53,11 @@ export function InvoiceCreator({
         },
       });
 
+  const { data: paymentDetailsData } =
+    api.compliance.getPaymentDetails.useQuery({
+      userId: currentUser?.id ?? "",
+    });
+
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
@@ -80,6 +86,7 @@ export function InvoiceCreator({
             ? error.message
             : "An unexpected error occurred",
       });
+      form.formState.isSubmitSuccessful = false;
     }
   };
 
@@ -95,11 +102,16 @@ export function InvoiceCreator({
             onSubmit={onSubmit}
             isLoading={isLoading}
             recipientDetails={recipientDetails}
+            paymentDetails={paymentDetailsData?.paymentDetails}
           />
         </CardContent>
       </Card>
 
-      <InvoicePreview data={form.watch()} />
+      <InvoicePreview
+        data={form.watch()}
+        paymentDetails={paymentDetailsData?.paymentDetails}
+        paymentDetailsId={form.getValues("paymentDetailsId")}
+      />
     </div>
   );
 }
