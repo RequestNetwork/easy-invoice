@@ -319,14 +319,15 @@ export const complianceRouter = router({
           const paymentDetail = row.payment_details;
           if (!paymentDetailsMap.has(paymentDetail.id)) {
             paymentDetailsMap.set(paymentDetail.id, {
-              payment_details: paymentDetail,
-              payment_details_payers: [],
+              paymentDetails: paymentDetail,
+              paymentDetailsPayers: [],
             });
           }
           if (row.payment_details_payers) {
-            paymentDetailsMap
-              .get(paymentDetail.id)
-              ?.payment_details_payers.push(row.payment_details_payers);
+            paymentDetailsMap.get(paymentDetail.id)?.paymentDetailsPayers.push({
+              ...row.payment_details_payers,
+              ...row.user,
+            });
           }
         }
 

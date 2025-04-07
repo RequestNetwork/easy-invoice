@@ -62,8 +62,10 @@ export function InvoiceForm({
     onSubmit(data);
   };
 
+  const cryptoToFiatAvailable = form.watch("cryptoToFiatAvailable");
+
   useEffect(() => {
-    if (!form.watch("cryptoToFiatAvailable")) {
+    if (!cryptoToFiatAvailable) {
       form.setValue("paymentDetailsId", undefined);
     } else {
       const clientEmail = form.getValues("clientEmail");
@@ -80,7 +82,7 @@ export function InvoiceForm({
         form.setValue("paymentDetailsId", undefined);
       }
     }
-  }, [form, paymentDetails]);
+  }, [cryptoToFiatAvailable, paymentDetails, form]);
 
   return (
     <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">

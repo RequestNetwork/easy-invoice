@@ -84,50 +84,50 @@ export function BankAccountsSection({ user }: BankAccountsSectionProps) {
               const payersForAccount = item.paymentDetailsPayers || [];
 
               return (
-                <Card key={account.id} className="p-4">
+                <Card key={account?.id} className="p-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Account Name
                       </p>
-                      <p>{account.accountName}</p>
+                      <p>{account?.accountName}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Bank Name
                       </p>
-                      <p>{account.bankName}</p>
+                      <p>{account?.bankName}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Account Number
                       </p>
-                      <p>•••• {(account.accountNumber || "").slice(-4)}</p>
+                      <p>•••• {(account?.accountNumber || "").slice(-4)}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Currency
                       </p>
-                      <p>{account.currency?.toUpperCase()}</p>
+                      <p>{account?.currency?.toUpperCase()}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Routing Number
                       </p>
-                      <p>{account.routingNumber || "N/A"}</p>
+                      <p>{account?.routingNumber || "N/A"}</p>
                     </div>
-                    {account.addressLine1 && (
+                    {account?.addressLine1 && (
                       <div className="col-span-2">
                         <p className="text-sm font-medium text-muted-foreground">
                           Address
                         </p>
                         <p>
-                          {account.addressLine1}
-                          {account.addressLine2
-                            ? `, ${account.addressLine2}`
+                          {account?.addressLine1}
+                          {account?.addressLine2
+                            ? `, ${account?.addressLine2}`
                             : ""}
-                          , {account.city}, {account.state} {account.postalCode}
-                          , {account.country}
+                          , {account?.city}, {account?.state}{" "}
+                          {account?.postalCode}, {account?.country}
                         </p>
                       </div>
                     )}
@@ -172,7 +172,7 @@ export function BankAccountsSection({ user }: BankAccountsSectionProps) {
                       )}
                     </div>
                     <div className="mt-4 border-t pt-4 flex justify-end w-full">
-                      {linkingAccountId === account.id ? (
+                      {linkingAccountId === account?.id ? (
                         <div className="space-y-2 w-full">
                           <div className="flex items-center gap-2">
                             <input
@@ -184,7 +184,7 @@ export function BankAccountsSection({ user }: BankAccountsSectionProps) {
                             />
                             <Button
                               size="sm"
-                              onClick={() => handleLinkAccount(account.id)}
+                              onClick={() => handleLinkAccount(account?.id)}
                               disabled={allowPaymentDetailsMutation.isLoading}
                             >
                               {allowPaymentDetailsMutation.isLoading ? (
@@ -211,7 +211,7 @@ export function BankAccountsSection({ user }: BankAccountsSectionProps) {
                           size="sm"
                           variant="outline"
                           className="flex items-center gap-1"
-                          onClick={() => setLinkingAccountId(account.id)}
+                          onClick={() => setLinkingAccountId(account?.id)}
                         >
                           <LinkIcon className="h-4 w-4" />
                           Link with Payer
