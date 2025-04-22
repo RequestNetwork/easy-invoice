@@ -35,6 +35,7 @@ const REQUEST_NETWORK_CHAIN_TO_PAYMENT_NETWORK = {
   matic: "polygon",
   base: "base",
   "arbitrum-one": "arbitrum",
+  arbitrum: "arbitrum",
   optimism: "optimism",
   mainnet: "ethereum",
 };
