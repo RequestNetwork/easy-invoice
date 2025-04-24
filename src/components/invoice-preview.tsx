@@ -1,20 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
-import type { PaymentDetails, User } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 import { format } from "date-fns";
 
 interface InvoicePreviewProps {
   data: Partial<InvoiceFormValues>;
-  paymentDetails:
-    | { paymentDetails: PaymentDetails; paymentDetailsPayers: User[] }[]
-    | undefined;
   paymentDetailsId: string | undefined;
 }
 
 export function InvoicePreview({
   data,
-  paymentDetails,
   paymentDetailsId,
 }: InvoicePreviewProps) {
   const calculateTotal = () => {
@@ -32,12 +28,8 @@ export function InvoicePreview({
     });
   };
 
-  const selectedPaymentDetails =
-    paymentDetails && paymentDetailsId
-      ? paymentDetails.find(
-          (detail) => detail.paymentDetails.id === paymentDetailsId,
-        )
-      : null;
+  const { data: selectedPaymentDetails } =
+    api.compliance.getPaymentDetailsById.useQuery(paymentDetailsId ?? "");
 
   return (
     <Card className="w-full bg-white shadow-sm border-0">

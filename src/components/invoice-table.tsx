@@ -248,7 +248,7 @@ const InvoiceRow = ({
   const handleStopRecurrence = () => {
     if (confirm("Are you sure you want to stop this recurring payment?")) {
       stopRecurrenceMutation.mutate({
-        paymentReference: invoice.paymentReference,
+        requestId: invoice.requestId,
       });
     }
   };

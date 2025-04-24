@@ -16,7 +16,7 @@ export const paymentRouter = router({
         });
       }
 
-      const response = await apiClient.post("v1/pay", {
+      const response = await apiClient.post("v2/pay", {
         amount: input.amount.toString(),
         payee: input.payee,
         invoiceCurrency: input.invoiceCurrency,

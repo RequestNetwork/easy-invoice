@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    const { paymentReference, event, originalRequestPaymentReference } = body;
+    const { requestId, event, originalRequestId, isCryptoToFiat } = body;
 
     switch (event) {
       case "payment.confirmed":
@@ -39,14 +39,85 @@ export async function POST(req: Request) {
           const result = await tx
             .update(requestTable)
             .set({
-              status: "paid",
+              status: isCryptoToFiat ? "crypto_paid" : "paid",
             })
-            .where(eq(requestTable.paymentReference, paymentReference))
+            .where(eq(requestTable.requestId, requestId))
             .returning({ id: requestTable.id });
 
           if (!result.length) {
             throw new Error(
-              `No request found with payment reference: ${paymentReference}`,
+              `No request found with payment reference: ${requestId}`,
+            );
+          }
+        });
+        break;
+      case "settlement.initiated":
+        await db.transaction(async (tx) => {
+          const result = await tx
+            .update(requestTable)
+            .set({
+              status: "offramp_initiated",
+            })
+            .where(eq(requestTable.requestId, requestId))
+            .returning({ id: requestTable.id });
+
+          if (!result.length) {
+            throw new Error(
+              `No request found with payment reference: ${requestId}`,
+            );
+          }
+        });
+        break;
+      case "settlement.failed":
+      case "settlement.bounced":
+        await db.transaction(async (tx) => {
+          const result = await tx
+            .update(requestTable)
+            .set({
+              status: "offramp_failed",
+            })
+            .where(eq(requestTable.requestId, requestId))
+            .returning({ id: requestTable.id });
+
+          if (!result.length) {
+            throw new Error(
+              `No request found with payment reference: ${requestId}`,
+            );
+          }
+        });
+        break;
+      case "settlement.pending_internal_assessment":
+      case "settlement.ongoing_checks":
+      case "settlement.sending_fiat":
+        await db.transaction(async (tx) => {
+          const result = await tx
+            .update(requestTable)
+            .set({
+              status: "offramp_pending",
+            })
+            .where(eq(requestTable.requestId, requestId))
+            .returning({ id: requestTable.id });
+
+          if (!result.length) {
+            throw new Error(
+              `No request found with payment reference: ${requestId}`,
+            );
+          }
+        });
+        break;
+      case "settlement.fiat_sent":
+        await db.transaction(async (tx) => {
+          const result = await tx
+            .update(requestTable)
+            .set({
+              status: "paid",
+            })
+            .where(eq(requestTable.requestId, requestId))
+            .returning({ id: requestTable.id });
+
+          if (!result.length) {
+            throw new Error(
+              `No request found with payment reference: ${requestId}`,
             );
           }
         });
@@ -56,16 +127,11 @@ export async function POST(req: Request) {
           const originalRequests = await tx
             .select()
             .from(requestTable)
-            .where(
-              eq(
-                requestTable.paymentReference,
-                originalRequestPaymentReference,
-              ),
-            );
+            .where(eq(requestTable.requestId, originalRequestId));
 
           if (!originalRequests.length) {
             throw new Error(
-              `No original request found with payment reference: ${originalRequestPaymentReference}`,
+              `No original request found with payment reference: ${originalRequestId}`,
             );
           }
 
@@ -107,8 +173,6 @@ export async function POST(req: Request) {
             invoiceNumber,
             issuedDate: now.toISOString(),
             dueDate: newDueDate.toISOString(),
-            paymentReference: paymentReference,
-            originalRequestPaymentReference: originalRequestPaymentReference,
             status: "pending",
           });
         });

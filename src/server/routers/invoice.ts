@@ -22,7 +22,7 @@ const createInvoiceHelper = async (
     0,
   );
 
-  const response = await apiClient.post("/v1/request", {
+  const response = await apiClient.post("/v2/request", {
     amount: totalAmount.toString(),
     payee: input.walletAddress,
     invoiceCurrency: input.invoiceCurrency,
@@ -48,8 +48,7 @@ const createInvoiceHelper = async (
       status: "pending",
       payee: input.walletAddress,
       dueDate: new Date(input.dueDate).toISOString(),
-      requestId: response.data.requestID as string,
-      paymentReference: response.data.paymentReference as string,
+      requestId: response.data.requestId as string,
       clientName: input.clientName,
       clientEmail: input.clientEmail,
       creatorName: input.creatorName,
@@ -212,7 +211,7 @@ export const invoiceRouter = router({
   payRequest: publicProcedure
     .input(
       z.object({
-        paymentReference: z.string(),
+        requestId: z.string(),
         wallet: z.string().optional(),
         chain: z.string().optional(),
         token: z.string().optional(),
@@ -221,7 +220,7 @@ export const invoiceRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
       const invoice = await db.query.requestTable.findFirst({
-        where: eq(requestTable.paymentReference, input.paymentReference),
+        where: eq(requestTable.requestId, input.requestId),
         with: {
           paymentDetails: {
             with: {
@@ -240,7 +239,7 @@ export const invoiceRouter = router({
         return { success: false, message: "Invoice not found" };
       }
 
-      let paymentEndpoint = `/v1/request/${invoice.paymentReference}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${invoice.paymentDetails?.payers[0].paymentDetailsReference}`;
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${invoice.paymentDetails?.payers[0].paymentDetailsReference}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;
@@ -264,14 +263,14 @@ export const invoiceRouter = router({
   stopRecurrence: publicProcedure
     .input(
       z.object({
-        paymentReference: z.string(),
+        requestId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { paymentReference } = input;
+      const { requestId } = input;
 
       const request = await apiClient.patch(
-        `/v1/request/${paymentReference}/stop-recurrence`,
+        `/v2/request/${requestId}/stop-recurrence`,
       );
 
       if (request.status !== 200) {
@@ -285,7 +284,7 @@ export const invoiceRouter = router({
         .set({
           isRecurrenceStopped: true,
         })
-        .where(eq(requestTable.paymentReference, paymentReference))
+        .where(eq(requestTable.requestId, requestId))
         .returning();
 
       if (!updatedInvoice.length) {
@@ -300,7 +299,7 @@ export const invoiceRouter = router({
   getPaymentRoutes: publicProcedure
     .input(
       z.object({
-        paymentReference: z.string(),
+        requestId: z.string(),
         walletAddress: z.string().refine(
           (val) => {
             return isEthereumAddress(val);
@@ -312,10 +311,10 @@ export const invoiceRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const { paymentReference, walletAddress } = input;
+      const { requestId, walletAddress } = input;
 
       const response = await apiClient.get(
-        `/v1/request/${paymentReference}/routes?wallet=${walletAddress}`,
+        `/v2/request/${requestId}/routes?wallet=${walletAddress}`,
       );
 
       if (response.status !== 200) {
@@ -338,7 +337,7 @@ export const invoiceRouter = router({
       const { paymentIntent, payload } = input;
 
       const response = await apiClient.post(
-        `/v1/request/${paymentIntent}/send`,
+        `/v2/request/${paymentIntent}/send`,
         payload,
       );
 

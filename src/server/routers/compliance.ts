@@ -21,7 +21,7 @@ export const complianceRouter = router({
     .input(complianceFormSchema)
     .mutation(async ({ input }) => {
       try {
-        const complianceEndpoint = "/v1/payer/compliance";
+        const complianceEndpoint = "/v2/payer/compliance";
 
         const response = await apiClient.post(complianceEndpoint, input);
 
@@ -46,7 +46,7 @@ export const complianceRouter = router({
       try {
         // Make the API call to Request Network using apiClient
         const response = await apiClient.patch(
-          `/v1/payer/compliance/${input.clientUserId}`,
+          `/v2/payer/compliance/${input.clientUserId}`,
           { agreementCompleted: true },
         );
 
@@ -82,7 +82,7 @@ export const complianceRouter = router({
         // Get the compliance status from Request Network
         try {
           const response = await apiClient.get(
-            `/v1/payer/compliance/${input.clientUserId}`,
+            `/v2/payer/compliance/${input.clientUserId}`,
           );
 
           return {
@@ -239,7 +239,7 @@ export const complianceRouter = router({
         let response: any;
         try {
           response = await apiClient.post(
-            `/v1/payer/payment-details/${payerEmail}`,
+            `/v2/payer/payment-details/${payerEmail}`,
             cleanedPaymentDetails,
           );
         } catch (error: any) {
@@ -373,5 +373,22 @@ export const complianceRouter = router({
           message: "Failed to get payment details by ID",
         });
       }
+    }),
+
+  getUserByEmail: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.db.query.userTable.findFirst({
+        where: eq(userTable.email, input.email),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      return user;
     }),
 });

@@ -96,7 +96,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
     isLoading: isLoadingPaymentRoutes,
   } = api.invoice.getPaymentRoutes.useQuery(
     {
-      paymentReference: invoice.paymentReference,
+      requestId: invoice.requestId,
       walletAddress: address as string,
     },
     {
@@ -278,7 +278,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 
     try {
       const paymentData = await payRequest({
-        paymentReference: invoice.paymentReference,
+        requestId: invoice.requestId,
         wallet: address,
         chain:
           selectedRoute?.id === "REQUEST_NETWORK_PAYMENT"

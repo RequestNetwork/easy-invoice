@@ -30,7 +30,7 @@ import { useForm } from "react-hook-form";
 
 interface BankAccountFormProps {
   user: User;
-  onSuccess: () => void;
+  onSuccess: (result: any) => void;
   onCancel?: () => void;
 }
 
@@ -42,8 +42,8 @@ export function BankAccountForm({
   const [activeTab, setActiveTab] = useState("account");
 
   const { mutateAsync } = api.compliance.createPaymentDetails.useMutation({
-    onSuccess: () => {
-      onSuccess();
+    onSuccess: (result) => {
+      onSuccess(result);
       form.reset();
     },
   });
@@ -81,7 +81,11 @@ export function BankAccountForm({
 
   async function onSubmit(data: BankAccountFormValues) {
     try {
-      await mutateAsync({ userId: user.id, paymentDetailsData: data });
+      const result = await mutateAsync({
+        userId: user.id,
+        paymentDetailsData: data,
+      });
+      onSuccess(result);
     } catch (error) {
       console.error("Error creating bank account:", error);
     }
