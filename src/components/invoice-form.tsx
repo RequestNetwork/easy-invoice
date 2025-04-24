@@ -60,6 +60,9 @@ export function InvoiceForm({
   recipientDetails,
 }: InvoiceFormProps) {
   const [showBankAccountModal, setShowBankAccountModal] = useState(false);
+  const [showPendingApprovalModal, setShowPendingApprovalModal] =
+    useState(false);
+  const [invoiceCreated, setInvoiceCreated] = useState(false);
   const [linkedPaymentDetails, setLinkedPaymentDetails] = useState<
     | {
         paymentDetails: PaymentDetails;
@@ -129,6 +132,31 @@ export function InvoiceForm({
         );
 
         setLinkedPaymentDetails(validPaymentDetails);
+
+        // Check if the selected payment details are now approved
+        if (showPendingApprovalModal && form.getValues("paymentDetailsId")) {
+          const selectedPaymentDetail = validPaymentDetails.find(
+            (detail) =>
+              detail.paymentDetails.id === form.getValues("paymentDetailsId"),
+          );
+
+          if (selectedPaymentDetail) {
+            const payer = selectedPaymentDetail.paymentDetailsPayers.find(
+              (p: User & PaymentDetailsPayers) => p.email === clientEmail,
+            );
+
+            if (payer && payer.status === "approved") {
+              // First close the modal
+              setShowPendingApprovalModal(false);
+              // Then show success message
+              toast.success("Payment details approved! Creating invoice...");
+              // Finally submit the form
+              setTimeout(() => {
+                void handleFormSubmit(form.getValues());
+              }, 100);
+            }
+          }
+        }
       } else {
         setLinkedPaymentDetails([]);
       }
@@ -138,9 +166,11 @@ export function InvoiceForm({
     cryptoToFiatAvailable,
     paymentDetailsData?.paymentDetails,
     clientUserData,
+    showPendingApprovalModal,
+    form,
   ]);
 
-  const handleFormSubmit = (data: InvoiceFormValues) => {
+  const handleFormSubmit = async (data: InvoiceFormValues) => {
     // If C2F is enabled but no payment details are linked, show bank account modal
     if (data.cryptoToFiatAvailable && !data.paymentDetailsId) {
       setShowBankAccountModal(true);
@@ -155,22 +185,34 @@ export function InvoiceForm({
 
       if (selectedPaymentDetail) {
         const payer = selectedPaymentDetail.paymentDetailsPayers.find(
-          (p) => p.email === clientEmail,
+          (p: User & PaymentDetailsPayers) => p.email === clientEmail,
         );
-        if (payer && payer.status !== "approved") {
-          toast.error("Cannot create invoice with unapproved payment details");
-          return;
+        if (payer) {
+          if (payer.status === "pending") {
+            setShowPendingApprovalModal(true);
+            return;
+          }
+          if (payer.status !== "approved") {
+            toast.error(
+              "Cannot create invoice with unapproved payment details",
+            );
+            return;
+          }
         }
       }
     }
 
-    onSubmit(data);
+    try {
+      await onSubmit(data);
+      setInvoiceCreated(true);
+    } catch (_error) {
+      setInvoiceCreated(false);
+    }
   };
 
   const allowPaymentDetailsMutation =
     api.compliance.allowPaymentDetails.useMutation({
       onSuccess: () => {
-        toast.success("Bank account linked successfully");
         refetchPaymentDetails();
       },
       onError: (error) => {
@@ -221,6 +263,31 @@ export function InvoiceForm({
               onCancel={() => setShowBankAccountModal(false)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showPendingApprovalModal}
+        onOpenChange={setShowPendingApprovalModal}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Payment Details Pending Approval</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900" />
+            <p className="text-center text-zinc-600">
+              The payment details you selected are currently pending approval.
+              Please wait until they are approved before creating an invoice.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setShowPendingApprovalModal(false)}
+              className="mt-4"
+            >
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -566,7 +633,9 @@ export function InvoiceForm({
                   Checking client details...
                 </div>
               ) : !clientUserData ? (
-                <p className="text-sm text-gray-500">Client not found</p>
+                <p className="text-sm text-gray-500">
+                  Client not compliant. Please use a verified client
+                </p>
               ) : !clientUserData.isCompliant ? (
                 <p className="text-sm text-gray-500">
                   Client is not valid for Crypto to Fiat
@@ -652,7 +721,7 @@ export function InvoiceForm({
           >
             {isLoading
               ? "Creating..."
-              : form.formState.isSubmitSuccessful
+              : invoiceCreated
                 ? "Invoice created"
                 : "Create Invoice"}
           </Button>

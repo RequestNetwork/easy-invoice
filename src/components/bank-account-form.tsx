@@ -81,11 +81,10 @@ export function BankAccountForm({
 
   async function onSubmit(data: BankAccountFormValues) {
     try {
-      const result = await mutateAsync({
+      await mutateAsync({
         userId: user.id,
         paymentDetailsData: data,
       });
-      onSuccess(result);
     } catch (error) {
       console.error("Error creating bank account:", error);
     }
