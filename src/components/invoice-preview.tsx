@@ -29,7 +29,12 @@ export function InvoicePreview({
   };
 
   const { data: selectedPaymentDetails } =
-    api.compliance.getPaymentDetailsById.useQuery(paymentDetailsId ?? "");
+    api.compliance.getPaymentDetailsById.useQuery(
+      typeof paymentDetailsId === "string" ? paymentDetailsId : "",
+      {
+        enabled: !!paymentDetailsId, // only fetch when we _have_ an id
+      },
+    );
 
   return (
     <Card className="w-full bg-white shadow-sm border-0">

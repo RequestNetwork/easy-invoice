@@ -1,10 +1,6 @@
 import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
-import {
-  paymentDetailsPayersTable,
-  requestTable,
-  userTable,
-} from "@/server/db/schema";
+import { requestTable, userTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNull, not, or } from "drizzle-orm";
 import { ulid } from "ulid";
@@ -219,17 +215,14 @@ export const invoiceRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
+
+      // Get the request with its payment details
       const invoice = await db.query.requestTable.findFirst({
         where: eq(requestTable.requestId, input.requestId),
         with: {
           paymentDetails: {
             with: {
-              payers: {
-                where: eq(
-                  paymentDetailsPayersTable.paymentDetailsId,
-                  requestTable.paymentDetailsId,
-                ),
-              },
+              payers: true,
             },
           },
         },
@@ -239,7 +232,16 @@ export const invoiceRouter = router({
         return { success: false, message: "Invoice not found" };
       }
 
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${invoice.paymentDetails?.payers[0].paymentDetailsReference}`;
+      if (!invoice.paymentDetails) {
+        return { success: false, message: "Payment details not found" };
+      }
+
+      const paymentDetails = invoice.paymentDetails.payers[0];
+      if (!paymentDetails) {
+        return { success: false, message: "Payment details not found" };
+      }
+
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${paymentDetails.paymentDetailsReference}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;

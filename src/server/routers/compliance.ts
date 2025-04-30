@@ -8,7 +8,6 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
-import { db } from "../db";
 import {
   paymentDetailsPayersTable,
   paymentDetailsTable,
@@ -42,7 +41,7 @@ export const complianceRouter = router({
         clientUserId: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         // Make the API call to Request Network using apiClient
         const response = await apiClient.patch(
@@ -57,6 +56,13 @@ export const complianceRouter = router({
               response.data?.message || "Failed to update agreement status",
           });
         }
+
+        await ctx.db
+          .update(userTable)
+          .set({
+            agreementStatus: "completed",
+          })
+          .where(eq(userTable.id, input.clientUserId));
 
         return { success: true };
       } catch (error) {
@@ -125,7 +131,7 @@ export const complianceRouter = router({
         paymentDetailsData: bankAccountSchema,
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const { userId, paymentDetailsData } = input;
         // Filter out undefined values before inserting
@@ -135,7 +141,7 @@ export const complianceRouter = router({
           ),
         ) as BankAccountFormValues;
 
-        const paymentDetails = await db
+        const paymentDetails = await ctx.db
           .insert(paymentDetailsTable)
           .values({
             id: ulid(),
@@ -151,6 +157,13 @@ export const complianceRouter = router({
         };
       } catch (error) {
         console.error("Error creating payment details:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to create payment details",
+        });
       }
     }),
 
@@ -163,12 +176,12 @@ export const complianceRouter = router({
         payerEmail: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         // Extract payer_email from paymentDetails if it exists
         const { payerEmail, paymentDetailsId } = input;
 
-        const payerUser = await db.query.userTable.findFirst({
+        const payerUser = await ctx.db.query.userTable.findFirst({
           where: eq(userTable.email, payerEmail),
         });
 
@@ -179,11 +192,10 @@ export const complianceRouter = router({
           });
         }
 
-        const paymentDetailsData = await db.query.paymentDetailsTable.findFirst(
-          {
+        const paymentDetailsData =
+          await ctx.db.query.paymentDetailsTable.findFirst({
             where: eq(paymentDetailsTable.id, paymentDetailsId),
-          },
-        );
+          });
 
         if (!paymentDetailsData) {
           throw new TRPCError({
@@ -256,7 +268,7 @@ export const complianceRouter = router({
           });
         }
 
-        await db.insert(paymentDetailsPayersTable).values({
+        await ctx.db.insert(paymentDetailsPayersTable).values({
           id: ulid(),
           paymentDetailsId: paymentDetailsId,
           payerId: payerUser.id,
@@ -291,12 +303,12 @@ export const complianceRouter = router({
         userId: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       try {
         const { userId } = input;
 
         // Get all payment details with their payers using a join
-        const results = await db
+        const results = await ctx.db
           .select()
           .from(paymentDetailsTable)
           .leftJoin(
@@ -350,11 +362,13 @@ export const complianceRouter = router({
   // New procedure for getting payment details by ID
   getPaymentDetailsById: protectedProcedure
     .input(z.string())
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       try {
-        const paymentDetails = await db.query.paymentDetailsTable.findFirst({
-          where: eq(paymentDetailsTable.id, input),
-        });
+        const paymentDetails = await ctx.db.query.paymentDetailsTable.findFirst(
+          {
+            where: eq(paymentDetailsTable.id, input),
+          },
+        );
 
         if (!paymentDetails) {
           throw new TRPCError({

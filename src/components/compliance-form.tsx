@@ -356,7 +356,7 @@ export function ComplianceForm({ user }: { user: User }) {
                           <FormItem>
                             <FormLabel>Date of Birth</FormLabel>
                             <FormControl>
-                              <Input placeholder="DD/MM/YYYY" {...field} />
+                              <Input placeholder="MM/DD/YYYY" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

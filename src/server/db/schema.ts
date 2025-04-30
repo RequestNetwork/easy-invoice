@@ -14,7 +14,7 @@ export const createTable = pgTableCreator((name) => `easyinvoice_${name}`);
 
 const encryptionKey = process.env.ENCRYPTION_KEY as string;
 
-// biome-ignore lint/correctness/noUnusedVariables: Will be used in the future
+// biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
   dataType() {
     return "text";
@@ -57,7 +57,7 @@ export const paymentDetailsTable = createTable("payment_details", {
     }),
   bankName: text().notNull(),
   accountName: text().notNull(),
-  accountNumber: text(),
+  accountNumber: encryptedText(),
   routingNumber: text(),
   accountType: text().default("checking"),
   sortCode: text(),
