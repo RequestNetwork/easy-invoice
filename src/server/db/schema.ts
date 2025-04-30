@@ -126,6 +126,8 @@ export const requestTable = createTable("request", {
   status: text().notNull(),
   payee: text().notNull(),
   requestId: text().notNull(),
+  paymentReference: text().notNull(),
+  originalRequestPaymentReference: text(),
   createdAt: timestamp("created_at").defaultNow(),
   userId: text()
     .notNull()
@@ -142,8 +144,6 @@ export const requestTable = createTable("request", {
   paymentDetailsId: text().references(() => paymentDetailsTable.id, {
     onDelete: "cascade",
   }),
-  paymentReference: text().notNull(),
-  originalRequestPaymentReference: text(),
 });
 
 export const sessionTable = createTable("session", {
