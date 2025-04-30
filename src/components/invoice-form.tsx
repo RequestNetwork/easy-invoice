@@ -115,76 +115,80 @@ export function InvoiceForm({
       },
     );
 
-  // Watch for client email changes and update payment details accordingly
-  useEffect(() => {
-    if (
-      cryptoToFiatAvailable &&
-      clientEmail &&
-      paymentDetailsData?.paymentDetails &&
-      clientUserData
-    ) {
-      if (clientUserData.isCompliant && paymentDetailsData?.paymentDetails) {
-        const validPaymentDetails = paymentDetailsData.paymentDetails.filter(
-          (detail) => {
-            // Include if any payer matches the client email, regardless of status
-            const hasMatchingPayer = detail.paymentDetailsPayers.some(
-              (payer: User & PaymentDetailsPayers) => {
-                return payer.email === clientEmail;
-              },
-            );
+// Filter payment details based on client email and compliance status
+const filterValidPaymentDetails = (
+  paymentDetails: (PaymentDetails & { paymentDetailsPayers: (User & PaymentDetailsPayers)[] })[],
+  clientEmail: string
+): (PaymentDetails & { paymentDetailsPayers: (User & PaymentDetailsPayers)[] })[] => {
+  return paymentDetails.filter((detail) => {
+    const hasMatchingPayer = detail.paymentDetailsPayers.some(
+      (payer: User & PaymentDetailsPayers) => payer.email === clientEmail
+    );
 
-            // If there's a matching payer, check their compliance status
-            if (hasMatchingPayer) {
-              const matchingPayer = detail.paymentDetailsPayers.find(
-                (payer: User & PaymentDetailsPayers) =>
-                  payer.email === clientEmail,
-              );
-              if (matchingPayer) {
-                return matchingPayer.isCompliant;
-              }
-            }
-            return false;
-          },
-        );
-
-        setLinkedPaymentDetails(validPaymentDetails);
-
-        // Check if the selected payment details are now approved
-        if (showPendingApprovalModal && form.getValues("paymentDetailsId")) {
-          const selectedPaymentDetail = validPaymentDetails.find(
-            (detail) =>
-              detail.paymentDetails.id === form.getValues("paymentDetailsId"),
-          );
-
-          if (selectedPaymentDetail) {
-            const payer = selectedPaymentDetail.paymentDetailsPayers.find(
-              (p: User & PaymentDetailsPayers) => p.email === clientEmail,
-            );
-
-            if (payer && payer.status === "approved") {
-              // First close the modal
-              setShowPendingApprovalModal(false);
-              // Then show success message
-              toast.success("Payment details approved! Creating invoice...");
-              // Finally submit the form
-              setTimeout(() => {
-                void handleFormSubmit(form.getValues());
-              }, 100);
-            }
-          }
-        }
-      } else {
-        setLinkedPaymentDetails([]);
+    if (hasMatchingPayer) {
+      const matchingPayer = detail.paymentDetailsPayers.find(
+        (payer: User & PaymentDetailsPayers) => payer.email === clientEmail
+      );
+      if (matchingPayer) {
+        return matchingPayer.isCompliant;
       }
     }
-  }, [
-    clientEmail,
-    cryptoToFiatAvailable,
-    paymentDetailsData?.paymentDetails,
-    clientUserData,
-    showPendingApprovalModal,
-    form,
-  ]);
+    return false;
+  });
+};
+
+// Watch for client email changes and update payment details accordingly
+useEffect(() => {
+  if (
+    cryptoToFiatAvailable &&
+    clientEmail &&
+    paymentDetailsData?.paymentDetails &&
+    clientUserData
+  ) {
+    if (clientUserData.isCompliant && paymentDetailsData.paymentDetails) {
+      const validPaymentDetails = filterValidPaymentDetails(
+        paymentDetailsData.paymentDetails,
+        clientEmail
+      );
+
+      setLinkedPaymentDetails(validPaymentDetails);
+
+      // Check if the selected payment details are now approved
+      if (showPendingApprovalModal && form.getValues("paymentDetailsId")) {
+        const selectedPaymentDetail = validPaymentDetails.find(
+          (detail) =>
+            detail.paymentDetails.id === form.getValues("paymentDetailsId"),
+        );
+
+        if (selectedPaymentDetail) {
+          const payer = selectedPaymentDetail.paymentDetailsPayers.find(
+            (p: User & PaymentDetailsPayers) => p.email === clientEmail,
+          );
+
+          if (payer && payer.status === "approved") {
+            // First close the modal
+            setShowPendingApprovalModal(false);
+            // Then show success message
+            toast.success("Payment details approved! Creating invoice...");
+            // Finally submit the form
+            setTimeout(() => {
+              void handleFormSubmit(form.getValues());
+            }, 100);
+          }
+        }
+      }
+    } else {
+      setLinkedPaymentDetails([]);
+    }
+  }
+}, [
+  clientEmail,
+  cryptoToFiatAvailable,
+  paymentDetailsData?.paymentDetails,
+  clientUserData,
+  showPendingApprovalModal,
+  form,
+]);
 
   const handleFormSubmit = async (data: InvoiceFormValues) => {
     // If C2F is enabled but no payment details are linked, show bank account modal
