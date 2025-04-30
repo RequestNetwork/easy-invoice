@@ -138,7 +138,7 @@ export const requestTable = createTable("request", {
     frequency: string;
   }>(),
   isRecurrenceStopped: boolean().default(false),
-  cryptoToFiatAvailable: boolean().default(false),
+  isCryptoToFiatAvailable: boolean().default(false),
   paymentDetailsId: text().references(() => paymentDetailsTable.id, {
     onDelete: "cascade",
   }),

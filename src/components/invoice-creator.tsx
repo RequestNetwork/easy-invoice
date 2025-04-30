@@ -68,7 +68,7 @@ export function InvoiceCreator({
       invoiceCurrency: "USD",
       paymentCurrency: "",
       walletAddress: "",
-      cryptoToFiatAvailable: false,
+      isCryptoToFiatAvailable: false,
     },
   });
 

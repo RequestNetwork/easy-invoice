@@ -257,7 +257,7 @@ export function InvoiceForm({
   });
 
   const clientEmail = form.watch("clientEmail");
-  const cryptoToFiatAvailable = form.watch("cryptoToFiatAvailable");
+  const isCryptoToFiatAvailable = form.watch("isCryptoToFiatAvailable");
 
   // Query to get user by email
   const { data: clientUserData, isLoading: isLoadingUser } =
@@ -327,7 +327,7 @@ export function InvoiceForm({
     };
 
     if (
-      cryptoToFiatAvailable &&
+      isCryptoToFiatAvailable &&
       clientEmail &&
       paymentDetailsData?.paymentDetails &&
       clientUserData
@@ -371,7 +371,7 @@ export function InvoiceForm({
     }
   }, [
     clientEmail,
-    cryptoToFiatAvailable,
+    isCryptoToFiatAvailable,
     paymentDetailsData?.paymentDetails,
     clientUserData,
     showPendingApprovalModal,
@@ -380,13 +380,13 @@ export function InvoiceForm({
 
   const handleFormSubmit = async (data: InvoiceFormValues) => {
     // If C2F is enabled but no payment details are linked, show bank account modal
-    if (data.cryptoToFiatAvailable && !data.paymentDetailsId) {
+    if (data.isCryptoToFiatAvailable && !data.paymentDetailsId) {
       setShowBankAccountModal(true);
       return;
     }
 
     // Check if payment details have approved status
-    if (data.cryptoToFiatAvailable && data.paymentDetailsId) {
+    if (data.isCryptoToFiatAvailablele && data.paymentDetailsId) {
       const selectedPaymentDetail = linkedPaymentDetails?.find(
         (detail) => detail.paymentDetails.id === data.paymentDetailsId,
       );
@@ -826,18 +826,18 @@ export function InvoiceForm({
 
         <div className="flex items-center space-x-2">
           <Checkbox
-            id="cryptoToFiatAvailable"
-            checked={form.watch("cryptoToFiatAvailable")}
+            id="isCryptoToFiatAvailable"
+            checked={form.watch("isCryptoToFiatAvailable")}
             onCheckedChange={(checked) => {
-              form.setValue("cryptoToFiatAvailable", checked === true);
+              form.setValue("isCryptoToFiatAvailable", checked === true);
             }}
           />
-          <Label htmlFor="cryptoToFiatAvailable">
+          <Label htmlFor="isCryptoToFiatAvailable">
             Allow payment via bank account (crypto-to-fiat conversion)
           </Label>
         </div>
 
-        {form.watch("cryptoToFiatAvailable") && (
+        {form.watch("isCryptoToFiatAvailable") && (
           <div className="space-y-2">
             <Label htmlFor="paymentDetailsId">Payment Details</Label>
             <PaymentDetailsSection

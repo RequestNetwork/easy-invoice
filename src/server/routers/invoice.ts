@@ -23,7 +23,7 @@ const createInvoiceHelper = async (
     payee: input.walletAddress,
     invoiceCurrency: input.invoiceCurrency,
     paymentCurrency: input.paymentCurrency,
-    cryptoToFiatAvailable: input.cryptoToFiatAvailable,
+    isCryptoToFiatAvailable: input.isCryptoToFiatAvailable,
     ...(input.isRecurring && {
       recurrence: {
         startDate: input.startDate,
@@ -60,7 +60,7 @@ const createInvoiceHelper = async (
             frequency: input.frequency,
           }
         : null,
-      cryptoToFiatAvailable: input.cryptoToFiatAvailable,
+      isCryptoToFiatAvailable: input.isCryptoToFiatAvailable,
       paymentDetailsId: input.paymentDetailsId,
     })
     .returning();
