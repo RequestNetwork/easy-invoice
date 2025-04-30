@@ -35,6 +35,7 @@ const REQUEST_NETWORK_CHAIN_TO_PAYMENT_NETWORK = {
   matic: "polygon",
   base: "base",
   "arbitrum-one": "arbitrum",
+  arbitrum: "arbitrum",
   optimism: "optimism",
   mainnet: "ethereum",
 };
@@ -151,7 +152,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
     }
   };
 
-  const handlePaygridPayments = async (paymentData: any, signer: any) => {
+  const handleCrosschaimPayments = async (paymentData: any, signer: any) => {
     const paymentIntent = JSON.parse(paymentData.paymentIntent);
     const supportsEIP2612 = paymentData.metadata.supportsEIP2612;
     let approvalSignature = undefined;
@@ -293,7 +294,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
       const isPaygrid = paymentData.paymentIntentId;
 
       if (isPaygrid) {
-        await handlePaygridPayments(paymentData, signer);
+        await handleCrosschaimPayments(paymentData, signer);
       } else {
         await handleDirectPayments(paymentData, signer);
       }

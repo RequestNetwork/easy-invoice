@@ -1,14 +1,19 @@
 export const MAINNET_CURRENCIES = [
   "USDC-base",
-  "USDC-optimism",
-  "USDC-matic",
+  "USDT-base",
+  "DAI-base",
+  "USDCn-optimism",
+  "USDT-optimism",
+  "DAI-optimism",
+  "USDCn-matic",
+  "USDT-matic",
+  "DAI-matic",
   "USDC-mainnet",
   "USDT-mainnet",
-  "USDT-matic",
-  "USDT-optimism",
   "DAI-mainnet",
-  "DAI-matic",
-  "DAI-optimism",
+  "USDC-arbitrum-one",
+  "USDT-arbitrum-one",
+  "DAI-arbitrum-one",
 ] as const;
 
 export type MainnetCurrency = (typeof MAINNET_CURRENCIES)[number];
@@ -60,24 +65,34 @@ export function formatCurrencyLabel(currency: string): string {
       return "US Dollar";
     case "USDC-base":
       return "USDC (Base)";
-    case "USDC-optimism":
+    case "USDT-base":
+      return "USDT (Base)";
+    case "DAI-base":
+      return "DAI (Base)";
+    case "USDCn-optimism":
       return "USDC (Optimism)";
-    case "USDC-matic":
+    case "USDT-optimism":
+      return "USDT (Optimism)";
+    case "DAI-optimism":
+      return "DAI (Optimism)";
+    case "USDCn-matic":
       return "USDC (Polygon)";
+    case "USDT-matic":
+      return "USDT (Polygon)";
+    case "DAI-matic":
+      return "DAI (Polygon)";
     case "USDC-mainnet":
       return "USDC (Mainnet)";
     case "USDT-mainnet":
       return "USDT (Mainnet)";
-    case "USDT-optimism":
-      return "USDT (Optimism)";
-    case "USDT-matic":
-      return "USDT (Polygon)";
     case "DAI-mainnet":
       return "DAI (Mainnet)";
-    case "DAI-optimism":
-      return "DAI (Optimism)";
-    case "DAI-matic":
-      return "DAI (Polygon)";
+    case "USDC-arbitrum-one":
+      return "USDC (Arbitrum)";
+    case "USDT-arbitrum-one":
+      return "USDT (Arbitrum)";
+    case "DAI-arbitrum-one":
+      return "DAI (Arbitrum)";
     default:
       return currency;
   }
