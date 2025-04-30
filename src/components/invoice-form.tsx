@@ -53,6 +53,170 @@ interface InvoiceFormProps {
   };
 }
 
+// Payment Details Status Component
+const PaymentDetailsStatus = ({ status }: { status: string }) => (
+  <span
+    className={`ml-2 text-xs font-medium ${
+      status === "approved"
+        ? "text-green-600"
+        : status === "pending"
+          ? "text-yellow-600"
+          : "text-red-600"
+    }`}
+  >
+    {status.charAt(0).toUpperCase() + status.slice(1)}
+  </span>
+);
+
+// Payment Details Select Item Component
+const PaymentDetailsSelectItem = ({
+  detail,
+  clientEmail,
+}: {
+  detail: {
+    paymentDetails: PaymentDetails;
+    paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+  };
+  clientEmail: string;
+}) => {
+  const payer = detail.paymentDetailsPayers.find(
+    (p) => p.email === clientEmail,
+  );
+  const lastFourDigits = detail.paymentDetails.accountNumber
+    ? detail.paymentDetails.accountNumber.slice(-4)
+    : "";
+
+  return (
+    <SelectItem key={detail.paymentDetails.id} value={detail.paymentDetails.id}>
+      <div className="flex justify-between items-center w-full">
+        <span>
+          {detail.paymentDetails.accountName || "Account"} •••• {lastFourDigits}
+        </span>
+        {payer && <PaymentDetailsStatus status={payer.status} />}
+      </div>
+    </SelectItem>
+  );
+};
+
+// Payment Details Loading State
+const PaymentDetailsLoading = () => (
+  <div className="text-sm text-gray-500">Checking client details...</div>
+);
+
+// Payment Details Error States
+const PaymentDetailsError = ({ message }: { message: string }) => (
+  <p className="text-sm text-gray-500">{message}</p>
+);
+
+// Payment Details Empty State
+const PaymentDetailsEmpty = ({ onAdd }: { onAdd: () => void }) => (
+  <div className="space-y-4">
+    <p className="text-sm text-gray-500">
+      No bank accounts found for this client
+    </p>
+    <Button type="button" variant="outline" onClick={onAdd} className="w-full">
+      Add Bank Account
+    </Button>
+  </div>
+);
+
+// Payment Details Select Component
+const PaymentDetailsSelect = ({
+  details,
+  clientEmail,
+  onSelect,
+  defaultValue,
+}: {
+  details: {
+    paymentDetails: PaymentDetails;
+    paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+  }[];
+  clientEmail: string;
+  onSelect: (value: string) => void;
+  defaultValue?: string;
+}) => (
+  <div className="space-y-2">
+    <Select onValueChange={onSelect} defaultValue={defaultValue}>
+      <SelectTrigger>
+        <SelectValue placeholder="Select payment details" />
+      </SelectTrigger>
+      <SelectContent>
+        {details.map((detail) => (
+          <PaymentDetailsSelectItem
+            key={detail.paymentDetails.id}
+            detail={detail}
+            clientEmail={clientEmail}
+          />
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
+// Payment Details Section Component
+const PaymentDetailsSection = ({
+  clientEmail,
+  isLoadingUser,
+  clientUserData,
+  linkedPaymentDetails,
+  onAddBankAccount,
+  onSelectPaymentDetails,
+  selectedPaymentDetailsId,
+}: {
+  clientEmail: string;
+  isLoadingUser: boolean;
+  clientUserData: User | null | undefined;
+  linkedPaymentDetails:
+    | {
+        paymentDetails: PaymentDetails;
+        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+      }[]
+    | undefined;
+  onAddBankAccount: () => void;
+  onSelectPaymentDetails: (value: string) => void;
+  selectedPaymentDetailsId?: string;
+}) => {
+  if (!clientEmail) {
+    return (
+      <PaymentDetailsError message="Enter client email to view payment details" />
+    );
+  }
+
+  if (isLoadingUser) {
+    return <PaymentDetailsLoading />;
+  }
+
+  if (!clientUserData) {
+    return (
+      <PaymentDetailsError message="Client not compliant. Please use a verified client" />
+    );
+  }
+
+  if (!clientUserData.isCompliant) {
+    return (
+      <PaymentDetailsError message="Client is not valid for Crypto to Fiat" />
+    );
+  }
+
+  if (!linkedPaymentDetails || linkedPaymentDetails.length === 0) {
+    return <PaymentDetailsEmpty onAdd={onAddBankAccount} />;
+  }
+
+  return (
+    <PaymentDetailsSelect
+      details={linkedPaymentDetails.map(
+        ({ paymentDetails, paymentDetailsPayers }) => ({
+          paymentDetails,
+          paymentDetailsPayers,
+        }),
+      )}
+      clientEmail={clientEmail}
+      onSelect={onSelectPaymentDetails}
+      defaultValue={selectedPaymentDetailsId}
+    />
+  );
+};
+
 export function InvoiceForm({
   form,
   onSubmit,
@@ -115,57 +279,82 @@ export function InvoiceForm({
       },
     );
 
-// Filter payment details based on client email and compliance status
-const filterValidPaymentDetails = (
-  paymentDetails: (PaymentDetails & { paymentDetailsPayers: (User & PaymentDetailsPayers)[] })[],
-  clientEmail: string
-): (PaymentDetails & { paymentDetailsPayers: (User & PaymentDetailsPayers)[] })[] => {
-  return paymentDetails.filter((detail) => {
-    const hasMatchingPayer = detail.paymentDetailsPayers.some(
-      (payer: User & PaymentDetailsPayers) => payer.email === clientEmail
-    );
-
-    if (hasMatchingPayer) {
-      const matchingPayer = detail.paymentDetailsPayers.find(
-        (payer: User & PaymentDetailsPayers) => payer.email === clientEmail
-      );
-      if (matchingPayer) {
-        return matchingPayer.isCompliant;
-      }
-    }
-    return false;
-  });
-};
-
-// Watch for client email changes and update payment details accordingly
-useEffect(() => {
-  if (
-    cryptoToFiatAvailable &&
-    clientEmail &&
-    paymentDetailsData?.paymentDetails &&
-    clientUserData
-  ) {
-    if (clientUserData.isCompliant && paymentDetailsData.paymentDetails) {
-      const validPaymentDetails = filterValidPaymentDetails(
-        paymentDetailsData.paymentDetails,
-        clientEmail
-      );
-
-      setLinkedPaymentDetails(validPaymentDetails);
-
-      // Check if the selected payment details are now approved
-      if (showPendingApprovalModal && form.getValues("paymentDetailsId")) {
-        const selectedPaymentDetail = validPaymentDetails.find(
-          (detail) =>
-            detail.paymentDetails.id === form.getValues("paymentDetailsId"),
+  useEffect(() => {
+    // Filter payment details based on client email and compliance status
+    const filterValidPaymentDetails = (
+      paymentDetails: (PaymentDetails & {
+        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+      })[],
+      clientEmail: string,
+    ): (PaymentDetails & {
+      paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+    })[] => {
+      return paymentDetails.filter((detail) => {
+        const hasMatchingPayer = detail.paymentDetailsPayers.some(
+          (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
         );
 
-        if (selectedPaymentDetail) {
-          const payer = selectedPaymentDetail.paymentDetailsPayers.find(
-            (p: User & PaymentDetailsPayers) => p.email === clientEmail,
+        if (hasMatchingPayer) {
+          const matchingPayer = detail.paymentDetailsPayers.find(
+            (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
+          );
+          if (matchingPayer) {
+            return matchingPayer.isCompliant;
+          }
+        }
+        return false;
+      });
+    };
+
+    // Helper function to check if payment details are approved
+    const checkPaymentDetailsApproval = (
+      paymentDetailsId: string,
+      validPaymentDetails: (PaymentDetails & {
+        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+      })[],
+      clientEmail: string,
+    ) => {
+      const selectedPaymentDetail = validPaymentDetails.find(
+        (detail) => detail.id === paymentDetailsId,
+      );
+
+      if (!selectedPaymentDetail) return false;
+      const payer = selectedPaymentDetail.paymentDetailsPayers.find(
+        (p: User & PaymentDetailsPayers) => p.email === clientEmail,
+      );
+
+      return payer?.status === "approved";
+    };
+
+    if (
+      cryptoToFiatAvailable &&
+      clientEmail &&
+      paymentDetailsData?.paymentDetails &&
+      clientUserData
+    ) {
+      if (clientUserData.isCompliant && paymentDetailsData.paymentDetails) {
+        const validPaymentDetails = filterValidPaymentDetails(
+          paymentDetailsData.paymentDetails,
+          clientEmail,
+        );
+
+        // Transform the payment details into the expected format
+        const formattedPaymentDetails = validPaymentDetails.map((detail) => ({
+          paymentDetails: detail,
+          paymentDetailsPayers: detail.paymentDetailsPayers,
+        }));
+
+        setLinkedPaymentDetails(formattedPaymentDetails);
+
+        // Check if the selected payment details are now approved
+        if (showPendingApprovalModal && form.getValues("paymentDetailsId")) {
+          const isApproved = checkPaymentDetailsApproval(
+            form.getValues("paymentDetailsId") ?? "",
+            validPaymentDetails,
+            clientEmail,
           );
 
-          if (payer && payer.status === "approved") {
+          if (isApproved) {
             // First close the modal
             setShowPendingApprovalModal(false);
             // Then show success message
@@ -176,19 +365,18 @@ useEffect(() => {
             }, 100);
           }
         }
+      } else {
+        setLinkedPaymentDetails([]);
       }
-    } else {
-      setLinkedPaymentDetails([]);
     }
-  }
-}, [
-  clientEmail,
-  cryptoToFiatAvailable,
-  paymentDetailsData?.paymentDetails,
-  clientUserData,
-  showPendingApprovalModal,
-  form,
-]);
+  }, [
+    clientEmail,
+    cryptoToFiatAvailable,
+    paymentDetailsData?.paymentDetails,
+    clientUserData,
+    showPendingApprovalModal,
+    form,
+  ]);
 
   const handleFormSubmit = async (data: InvoiceFormValues) => {
     // If C2F is enabled but no payment details are linked, show bank account modal
@@ -225,7 +413,12 @@ useEffect(() => {
     try {
       await onSubmit(data);
       setInvoiceCreated(true);
-    } catch (_error) {
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? `Failed to create invoice: ${error.message}`
+          : "Failed to create invoice due to an unknown error",
+      );
       setInvoiceCreated(false);
     }
   };
@@ -647,89 +840,17 @@ useEffect(() => {
         {form.watch("cryptoToFiatAvailable") && (
           <div className="space-y-2">
             <Label htmlFor="paymentDetailsId">Payment Details</Label>
-            {clientEmail ? (
-              isLoadingUser ? (
-                <div className="text-sm text-gray-500">
-                  Checking client details...
-                </div>
-              ) : !clientUserData ? (
-                <p className="text-sm text-gray-500">
-                  Client not compliant. Please use a verified client
-                </p>
-              ) : !clientUserData.isCompliant ? (
-                <p className="text-sm text-gray-500">
-                  Client is not valid for Crypto to Fiat
-                </p>
-              ) : linkedPaymentDetails && linkedPaymentDetails.length > 0 ? (
-                <div className="space-y-2">
-                  <Select
-                    onValueChange={(value) =>
-                      form.setValue("paymentDetailsId", value)
-                    }
-                    defaultValue={form.getValues("paymentDetailsId")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select payment details" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {linkedPaymentDetails.map((detail) => {
-                        const payer = detail.paymentDetailsPayers.find(
-                          (p) => p.email === clientEmail,
-                        );
-                        return (
-                          <SelectItem
-                            key={detail.paymentDetails.id}
-                            value={detail.paymentDetails.id}
-                          >
-                            <div className="flex justify-between items-center w-full">
-                              <span>
-                                {detail.paymentDetails.accountName || "Account"}{" "}
-                                ••••
-                                {(
-                                  detail.paymentDetails.accountNumber || ""
-                                ).slice(-4)}
-                              </span>
-                              {payer && (
-                                <span
-                                  className={`ml-2 text-xs font-medium ${
-                                    payer.status === "approved"
-                                      ? "text-green-600"
-                                      : payer.status === "pending"
-                                        ? "text-yellow-600"
-                                        : "text-red-600"
-                                  }`}
-                                >
-                                  {payer.status.charAt(0).toUpperCase() +
-                                    payer.status.slice(1)}
-                                </span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-500">
-                    No bank accounts found for this client
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowBankAccountModal(true)}
-                    className="w-full"
-                  >
-                    Add Bank Account
-                  </Button>
-                </div>
-              )
-            ) : (
-              <p className="text-sm text-gray-500">
-                Enter client email to view payment details
-              </p>
-            )}
+            <PaymentDetailsSection
+              clientEmail={clientEmail}
+              isLoadingUser={isLoadingUser}
+              clientUserData={clientUserData}
+              linkedPaymentDetails={linkedPaymentDetails}
+              onAddBankAccount={() => setShowBankAccountModal(true)}
+              onSelectPaymentDetails={(value) =>
+                form.setValue("paymentDetailsId", value)
+              }
+              selectedPaymentDetailsId={form.getValues("paymentDetailsId")}
+            />
           </div>
         )}
 
