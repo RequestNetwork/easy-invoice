@@ -64,7 +64,7 @@ const PaymentDetailsStatus = ({ status }: { status: string }) => (
           : "text-red-600"
     }`}
   >
-    {status.charAt(0).toUpperCase() + status.slice(1)}
+    {status ? status.charAt(0).toUpperCase() + status.slice(1) : "Unknown"}
   </span>
 );
 
@@ -386,7 +386,7 @@ export function InvoiceForm({
     }
 
     // Check if payment details have approved status
-    if (data.isCryptoToFiatAvailablele && data.paymentDetailsId) {
+    if (data.isCryptoToFiatAvailable && data.paymentDetailsId) {
       const selectedPaymentDetail = linkedPaymentDetails?.find(
         (detail) => detail.paymentDetails.id === data.paymentDetailsId,
       );
