@@ -71,6 +71,22 @@ export function InvoiceForm({
     | undefined
   >(undefined);
 
+  // Add timeout effect for bank account modal
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (showBankAccountModal) {
+      timeoutId = setTimeout(() => {
+        setShowBankAccountModal(false);
+        toast.error("Bank account approval timed out. Please try again.");
+      }, 60000); // 1 minute timeout
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [showBankAccountModal]);
+
   const { fields, append, remove } = useFieldArray({
     name: "items",
     control: form.control,
