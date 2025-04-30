@@ -39,7 +39,7 @@ import type { User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, ExternalLink } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ComplianceStatus } from "./compliance-status";
@@ -60,6 +60,7 @@ export function ComplianceForm({ user }: { user: User }) {
   const [showAgreementModal, setShowAgreementModal] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const TRUSTED_ORIGIN = "https://request.network"; // Adjust this to match your actual domain
 
   // Fetch compliance status when component mounts
   const { isLoading: isLoadingStatus, refetch: getComplianceStatus } =
@@ -112,6 +113,12 @@ export function ComplianceForm({ user }: { user: User }) {
       },
     });
 
+  const handleAgreementUpdate = useCallback(() => {
+    updateAgreementStatusMutation.mutate({
+      clientUserId: user?.email ?? "",
+    });
+  }, [updateAgreementStatusMutation, user?.email]);
+
   const form = useForm<ComplianceFormValues>({
     resolver: zodResolver(complianceFormSchema),
     defaultValues: {
@@ -135,12 +142,18 @@ export function ComplianceForm({ user }: { user: User }) {
   // Set up a listener for the agreement events
   useEffect(() => {
     const onCompleteHandler = (event: MessageEvent) => {
+      // Validate the origin of the message
+      if (event.origin !== TRUSTED_ORIGIN) {
+        console.warn(
+          `Received postMessage from untrusted origin: ${event.origin}`,
+        );
+        return;
+      }
+
       if (event.data.agreements === "complete") {
         setShowAgreementModal(false);
         // Notify the Request Network API that the agreement is completed
-        updateAgreementStatusMutation.mutate({
-          clientUserId: user?.email ?? "",
-        });
+        handleAgreementUpdate();
       } else if (
         event.data.agreements &&
         Object.keys(event.data.agreements).find((i) => i.includes("agreed"))
@@ -157,11 +170,7 @@ export function ComplianceForm({ user }: { user: User }) {
     return () => {
       window.removeEventListener("message", onCompleteHandler);
     };
-  }, [
-    user?.email,
-    updateAgreementStatusMutation.mutate,
-    complianceData?.agreementUrl,
-  ]);
+  }, [handleAgreementUpdate, complianceData?.agreementUrl]);
 
   async function onSubmit(values: ComplianceFormValues) {
     submitComplianceMutation.mutate(values);
