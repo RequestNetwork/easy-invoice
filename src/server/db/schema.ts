@@ -57,7 +57,7 @@ export const paymentDetailsTable = createTable("payment_details", {
     }),
   bankName: text().notNull(),
   accountName: text().notNull(),
-  accountNumber: encryptedText(),
+  accountNumber: text(),
   routingNumber: text(),
   accountType: text().default("checking"),
   sortCode: text(),
