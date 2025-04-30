@@ -101,8 +101,8 @@ export const complianceRouter = router({
             return {
               success: true,
               data: {
-                kycStatus: "not_started",
-                agreementStatus: "not_started",
+                kycStatus: "pending",
+                agreementStatus: "pending",
                 isCompliant: false,
               },
             };
