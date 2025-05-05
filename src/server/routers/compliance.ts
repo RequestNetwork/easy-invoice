@@ -91,6 +91,14 @@ export const complianceRouter = router({
             `/v2/payer/compliance/${input.clientUserId}`,
           );
 
+          if (response.status !== 200) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                response.data?.message || "Failed to get compliance status",
+            });
+          }
+
           return {
             success: true,
             data: response.data,
@@ -101,8 +109,8 @@ export const complianceRouter = router({
             return {
               success: true,
               data: {
-                kycStatus: "pending",
-                agreementStatus: "pending",
+                kycStatus: "not_started",
+                agreementStatus: "not_started",
                 isCompliant: false,
               },
             };

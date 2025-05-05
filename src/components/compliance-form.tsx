@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  BeneficiaryType,
   type ComplianceFormValues,
   complianceFormSchema,
 } from "@/lib/schemas/compliance";
@@ -49,7 +50,7 @@ type ComplianceResponse = {
   kycUrl: string;
   status: {
     agreementStatus: "not_started" | "pending" | "completed";
-    kycStatus: "not_started" | "pending" | "completed";
+    kycStatus: "not_started" | "initiated" | "pending" | "completed";
     isCompliant: boolean;
   };
 };
@@ -60,7 +61,11 @@ export function ComplianceForm({ user }: { user: User }) {
   const [showAgreementModal, setShowAgreementModal] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const TRUSTED_ORIGIN = "https://request.network"; // Adjust this to match your actual domain
+  const TRUSTED_ORIGINS = [
+    "https://request.network",
+    "https://core-api-staging.pay.so",
+    "http://localhost:3000",
+  ];
 
   // Fetch compliance status when component mounts
   const { isLoading: isLoadingStatus, refetch: getComplianceStatus } =
@@ -95,9 +100,19 @@ export function ComplianceForm({ user }: { user: User }) {
         if (response.success) {
           setComplianceData(response.data);
           getComplianceStatus();
+          toast.success("Compliance information submitted successfully");
         } else {
-          toast.error(response.message);
+          toast.error(
+            response.message || "Failed to submit compliance information",
+          );
         }
+      },
+      onError: (error) => {
+        console.error("Compliance submission error:", error);
+        toast.error(
+          error.message ||
+            "Failed to submit compliance information. Please try again.",
+        );
       },
     });
 
@@ -126,9 +141,11 @@ export function ComplianceForm({ user }: { user: User }) {
       email: user?.email ?? "",
       firstName: "",
       lastName: "",
-      beneficiaryType: "individual",
+      beneficiaryType: BeneficiaryType.INDIVIDUAL,
+      companyName: "",
       dateOfBirth: "",
       addressLine1: "",
+      addressLine2: "",
       city: "",
       state: "",
       postcode: "",
@@ -136,6 +153,8 @@ export function ComplianceForm({ user }: { user: User }) {
       nationality: "",
       phone: "",
       ssn: "",
+      sourceOfFunds: "",
+      businessActivity: "",
     },
   });
 
@@ -143,7 +162,7 @@ export function ComplianceForm({ user }: { user: User }) {
   useEffect(() => {
     const onCompleteHandler = (event: MessageEvent) => {
       // Validate the origin of the message
-      if (event.origin !== TRUSTED_ORIGIN) {
+      if (!TRUSTED_ORIGINS.includes(event.origin)) {
         console.warn(
           `Received postMessage from untrusted origin: ${event.origin}`,
         );
@@ -173,8 +192,22 @@ export function ComplianceForm({ user }: { user: User }) {
   }, [handleAgreementUpdate, complianceData?.agreementUrl]);
 
   async function onSubmit(values: ComplianceFormValues) {
-    submitComplianceMutation.mutate(values);
+    try {
+      await submitComplianceMutation.mutateAsync(values);
+      toast.success("Compliance information submitted successfully!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit compliance information. Please try again.",
+      );
+    }
   }
+
+  const handleSubmit = () => {
+    const values = form.getValues();
+    onSubmit(values);
+  };
 
   return (
     <div className="w-full">
@@ -224,7 +257,7 @@ export function ComplianceForm({ user }: { user: User }) {
                   </Card>
                 )}
                 {complianceData?.status?.agreementStatus === "completed" &&
-                  complianceData?.status?.kycStatus === "pending" && (
+                  complianceData?.status?.kycStatus === "initiated" && (
                     <Card>
                       <CardHeader>
                         <CardTitle>KYC Verification</CardTitle>
@@ -296,10 +329,7 @@ export function ComplianceForm({ user }: { user: User }) {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
-                  >
+                  <form className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -358,6 +388,58 @@ export function ComplianceForm({ user }: { user: User }) {
                         )}
                       />
 
+                      {form.watch("beneficiaryType") === "business" && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="companyName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Company Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Acme Inc." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="sourceOfFunds"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Source of Funds</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Business Revenue"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="businessActivity"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Business Activity</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Software Development"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
+
                       <FormField
                         control={form.control}
                         name="dateOfBirth"
@@ -365,7 +447,7 @@ export function ComplianceForm({ user }: { user: User }) {
                           <FormItem>
                             <FormLabel>Date of Birth</FormLabel>
                             <FormControl>
-                              <Input placeholder="MM/DD/YYYY" {...field} />
+                              <Input type="date" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -377,9 +459,23 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="addressLine1"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Address</FormLabel>
+                            <FormLabel>Address Line 1</FormLabel>
                             <FormControl>
                               <Input placeholder="123 Main Street" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="addressLine2"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Address Line 2 (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Apt 4B" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -433,9 +529,13 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="country"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Country</FormLabel>
+                            <FormLabel>Country (2-letter code)</FormLabel>
                             <FormControl>
-                              <Input placeholder="US" {...field} />
+                              <Input
+                                placeholder="US"
+                                maxLength={2}
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -447,9 +547,13 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="nationality"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nationality</FormLabel>
+                            <FormLabel>Nationality (2-letter code)</FormLabel>
                             <FormControl>
-                              <Input placeholder="US" {...field} />
+                              <Input
+                                placeholder="US"
+                                maxLength={2}
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -461,7 +565,7 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Phone</FormLabel>
+                            <FormLabel>Phone (E.164 format)</FormLabel>
                             <FormControl>
                               <Input placeholder="+12125551234" {...field} />
                             </FormControl>
@@ -475,7 +579,7 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="ssn"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>SSN</FormLabel>
+                            <FormLabel>Social Security Number</FormLabel>
                             <FormControl>
                               <Input placeholder="123-45-6789" {...field} />
                             </FormControl>
@@ -486,9 +590,10 @@ export function ComplianceForm({ user }: { user: User }) {
                     </div>
 
                     <Button
-                      type="submit"
+                      type="button"
                       className="w-full"
                       disabled={submitComplianceMutation.isLoading}
+                      onClick={handleSubmit}
                     >
                       {submitComplianceMutation.isLoading
                         ? "Submitting..."

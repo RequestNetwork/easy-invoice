@@ -4,13 +4,15 @@ import { AlertCircle, CheckCircle, Clock } from "lucide-react";
 type ComplianceStatusProps = {
   status: {
     agreementStatus: "not_started" | "pending" | "completed";
-    kycStatus: "not_started" | "pending" | "completed";
+    kycStatus: "not_started" | "initiated" | "pending" | "completed";
   };
 };
 
 export function ComplianceStatus({ status }: ComplianceStatusProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case "initiated":
+        return <Clock className="h-5 w-5 text-amber-500" />;
       case "completed":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case "pending":
@@ -22,6 +24,8 @@ export function ComplianceStatus({ status }: ComplianceStatusProps) {
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case "initiated":
+        return "Initiated";
       case "completed":
         return "Completed";
       case "pending":
@@ -33,6 +37,8 @@ export function ComplianceStatus({ status }: ComplianceStatusProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "initiated":
+        return "bg-amber-50 border-amber-200 text-amber-700";
       case "completed":
         return "bg-green-50 border-green-200 text-green-700";
       case "pending":
