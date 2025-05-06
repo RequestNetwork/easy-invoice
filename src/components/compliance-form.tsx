@@ -50,7 +50,7 @@ type ComplianceResponse = {
   kycUrl: string;
   status: {
     agreementStatus: "not_started" | "pending" | "completed";
-    kycStatus: "not_started" | "initiated" | "pending" | "completed";
+    kycStatus: "not_started" | "initiated" | "pending" | "approved";
     isCompliant: boolean;
   };
 };

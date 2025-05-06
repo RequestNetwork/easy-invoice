@@ -14,6 +14,7 @@ export function ComplianceStatus({ status }: ComplianceStatusProps) {
       case "initiated":
         return <Clock className="h-5 w-5 text-amber-500" />;
       case "completed":
+      case "approved":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case "pending":
         return <Clock className="h-5 w-5 text-amber-500" />;
@@ -27,6 +28,7 @@ export function ComplianceStatus({ status }: ComplianceStatusProps) {
       case "initiated":
         return "Initiated";
       case "completed":
+      case "approved":
         return "Completed";
       case "pending":
         return "Pending";
@@ -40,6 +42,7 @@ export function ComplianceStatus({ status }: ComplianceStatusProps) {
       case "initiated":
         return "bg-amber-50 border-amber-200 text-amber-700";
       case "completed":
+      case "approved":
         return "bg-green-50 border-green-200 text-green-700";
       case "pending":
         return "bg-amber-50 border-amber-200 text-amber-700";

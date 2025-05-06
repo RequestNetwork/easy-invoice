@@ -45,6 +45,7 @@ const createInvoiceHelper = async (
       payee: input.walletAddress,
       dueDate: new Date(input.dueDate).toISOString(),
       requestId: response.data.requestId as string,
+      paymentReference: response.data.paymentReference as string,
       clientName: input.clientName,
       clientEmail: input.clientEmail,
       creatorName: input.creatorName,

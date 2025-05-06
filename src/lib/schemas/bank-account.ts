@@ -18,7 +18,9 @@ export const bankAccountSchema = z
     rails: z.enum(["local", "swift", "wire"]).default("local"),
     addressLine2: z.string().optional(),
     state: z.string().optional(),
-    dateOfBirth: z.string().optional(),
+    dateOfBirth: z
+      .string()
+      .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in MM/DD/YYYY format"),
     sortCode: z.string().optional(),
     iban: z.string().optional(),
     swiftBic: z.string().optional(),

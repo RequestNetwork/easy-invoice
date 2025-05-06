@@ -212,47 +212,10 @@ export const complianceRouter = router({
           });
         }
 
-        // Format the data according to API requirements
-        const formattedPaymentDetails = {
-          bank_name: paymentDetailsData.bankName,
-          account_name: paymentDetailsData.accountName,
-          beneficiary_type: paymentDetailsData.beneficiaryType,
-          address_line1: paymentDetailsData.addressLine1,
-          date_of_birth: paymentDetailsData.dateOfBirth,
-          postal_code: paymentDetailsData.postalCode,
-          city: paymentDetailsData.city,
-          country: paymentDetailsData.country,
-          currency: paymentDetailsData.currency,
-          rails: paymentDetailsData.rails || "local",
-
-          // Optional fields - include all possible fields from the schema
-          account_number: paymentDetailsData.accountNumber,
-          routing_number: paymentDetailsData.routingNumber,
-          account_type: paymentDetailsData.accountType,
-          sort_code: paymentDetailsData.sortCode,
-          iban: paymentDetailsData.iban,
-          swift_bic: paymentDetailsData.swiftBic,
-          document_number: paymentDetailsData.documentNumber,
-          document_type: paymentDetailsData.documentType,
-          rib_number: paymentDetailsData.ribNumber,
-          bsb_number: paymentDetailsData.bsbNumber,
-          ncc: paymentDetailsData.ncc,
-          branch_code: paymentDetailsData.branchCode,
-          bank_code: paymentDetailsData.bankCode,
-          ifsc: paymentDetailsData.ifsc,
-          address_line2: paymentDetailsData.addressLine2,
-          state: paymentDetailsData.state,
-          phone: paymentDetailsData.phone,
-          neighbourhood: paymentDetailsData.neighbourhood,
-          activity: paymentDetailsData.activity,
-          nationality: paymentDetailsData.nationality,
-          gender: paymentDetailsData.gender,
-        };
-
-        // Remove undefined values to avoid API validation errors
+        // Remove undefined and null values to avoid API validation errors
         const cleanedPaymentDetails = Object.fromEntries(
-          Object.entries(formattedPaymentDetails).filter(
-            ([_, v]) => v !== undefined,
+          Object.entries(paymentDetailsData).filter(
+            ([_, v]) => v !== undefined && v !== null,
           ),
         );
 

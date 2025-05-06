@@ -40,7 +40,6 @@ import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-
 type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
 interface InvoiceFormProps {
@@ -201,15 +200,9 @@ const PaymentDetailsSection = ({
   if (!linkedPaymentDetails || linkedPaymentDetails.length === 0) {
     return <PaymentDetailsEmpty onAdd={onAddBankAccount} />;
   }
-
   return (
     <PaymentDetailsSelect
-      details={linkedPaymentDetails.map(
-        ({ paymentDetails, paymentDetailsPayers }) => ({
-          paymentDetails,
-          paymentDetailsPayers,
-        }),
-      )}
+      details={linkedPaymentDetails}
       clientEmail={clientEmail}
       onSelect={onSelectPaymentDetails}
       defaultValue={selectedPaymentDetailsId}
@@ -228,12 +221,11 @@ export function InvoiceForm({
     useState(false);
   const [invoiceCreated, setInvoiceCreated] = useState(false);
   const [linkedPaymentDetails, setLinkedPaymentDetails] = useState<
-    | {
-        paymentDetails: PaymentDetails;
-        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-      }[]
-    | undefined
-  >(undefined);
+    {
+      paymentDetails: PaymentDetails;
+      paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+    }[]
+  >([]);
 
   // Add timeout effect for bank account modal
   useEffect(() => {
@@ -286,10 +278,8 @@ export function InvoiceForm({
         paymentDetailsPayers: (User & PaymentDetailsPayers)[];
       })[],
       clientEmail: string,
-    ): (PaymentDetails & {
-      paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-    })[] => {
-      return paymentDetails.filter((detail) => {
+    ) => {
+      const validPaymentDetails = paymentDetails.filter((detail) => {
         const hasMatchingPayer = detail.paymentDetailsPayers.some(
           (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
         );
@@ -304,23 +294,28 @@ export function InvoiceForm({
         }
         return false;
       });
+      return validPaymentDetails as unknown as {
+        paymentDetails: PaymentDetails;
+        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+      }[];
     };
 
     // Helper function to check if payment details are approved
     const checkPaymentDetailsApproval = (
       paymentDetailsId: string,
-      validPaymentDetails: (PaymentDetails & {
+      validPaymentDetails: {
+        paymentDetails: PaymentDetails;
         paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-      })[],
+      }[],
       clientEmail: string,
     ) => {
       const selectedPaymentDetail = validPaymentDetails.find(
-        (detail) => detail.id === paymentDetailsId,
+        (detail) => detail.paymentDetails.id === paymentDetailsId,
       );
 
       if (!selectedPaymentDetail) return false;
       const payer = selectedPaymentDetail.paymentDetailsPayers.find(
-        (p: User & PaymentDetailsPayers) => p.email === clientEmail,
+        (p) => p.email === clientEmail,
       );
 
       return payer?.status === "approved";
@@ -337,14 +332,7 @@ export function InvoiceForm({
           paymentDetailsData.paymentDetails,
           clientEmail,
         );
-
-        // Transform the payment details into the expected format
-        const formattedPaymentDetails = validPaymentDetails.map((detail) => ({
-          paymentDetails: detail,
-          paymentDetailsPayers: detail.paymentDetailsPayers,
-        }));
-
-        setLinkedPaymentDetails(formattedPaymentDetails);
+        setLinkedPaymentDetails(validPaymentDetails);
 
         // Check if the selected payment details are now approved
         if (showPendingApprovalModal && form.getValues("paymentDetailsId")) {
