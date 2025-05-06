@@ -15,7 +15,8 @@ export const complianceFormSchema = z
     companyName: z.string().optional(),
     dateOfBirth: z
       .string()
-      .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in MM/DD/YYYY format"),
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+      .describe("Date of birth in YYYY-MM-DD format"),
     addressLine1: z.string().min(1, "Address is required"),
     addressLine2: z.string().optional(),
     city: z.string().min(1, "City is required"),

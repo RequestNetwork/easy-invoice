@@ -20,7 +20,8 @@ export const bankAccountSchema = z
     state: z.string().optional(),
     dateOfBirth: z
       .string()
-      .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in MM/DD/YYYY format"),
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+      .describe("Date of birth in YYYY-MM-DD format"),
     sortCode: z.string().optional(),
     iban: z.string().optional(),
     swiftBic: z.string().optional(),
