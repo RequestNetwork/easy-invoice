@@ -43,14 +43,14 @@ import { AlertCircle, ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ComplianceStatus } from "./compliance-status";
+import { ComplianceStatus, type StatusType } from "./compliance-status";
 
 type ComplianceResponse = {
-  agreementUrl: string;
-  kycUrl: string;
+  agreementUrl: string | null;
+  kycUrl: string | null;
   status: {
-    agreementStatus: "not_started" | "pending" | "completed";
-    kycStatus: "not_started" | "initiated" | "pending" | "approved";
+    agreementStatus: StatusType;
+    kycStatus: StatusType;
     isCompliant: boolean;
   };
 };
@@ -61,16 +61,18 @@ export function ComplianceForm({ user }: { user: User }) {
   const [showAgreementModal, setShowAgreementModal] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const TRUSTED_ORIGINS = useMemo(
-    () => [
-      "https://request.network",
-      "https://core-api-staging.pay.so",
-      ...(process.env.NODE_ENV === "development"
-        ? ["http://localhost:3000"]
-        : []),
-    ],
-    [],
-  );
+  const TRUSTED_ORIGINS = useMemo(() => {
+    const origins = process.env.NEXT_PUBLIC_TRUSTED_ORIGINS
+      ? process.env.NEXT_PUBLIC_TRUSTED_ORIGINS.split(",")
+      : ["https://request.network", "https://core-api-staging.pay.so"];
+
+    // Add localhost in development
+    if (process.env.NODE_ENV === "development") {
+      origins.push("http://localhost:3000");
+    }
+
+    return origins;
+  }, []);
 
   // Fetch compliance status when component mounts
   const { isLoading: isLoadingStatus, refetch: getComplianceStatus } =
@@ -86,8 +88,8 @@ export function ComplianceForm({ user }: { user: User }) {
           if (data.success) {
             // Set compliance data with status from the API
             setComplianceData({
-              agreementUrl: data.data.agreementUrl, // These will be filled in when needed
-              kycUrl: data.data.kycUrl,
+              agreementUrl: data.data.agreementUrl ?? null,
+              kycUrl: data.data.kycUrl ?? null,
               status: {
                 agreementStatus: data.data.agreementStatus,
                 kycStatus: data.data.kycStatus,
@@ -231,9 +233,7 @@ export function ComplianceForm({ user }: { user: User }) {
           complianceData?.status.agreementStatus !== "not_started" ? (
             <div className="flex flex-col gap-6 w-full">
               <div>
-                {complianceData?.status && (
-                  <ComplianceStatus status={complianceData?.status} />
-                )}
+                <ComplianceStatus status={complianceData?.status} />
               </div>
 
               <div>
@@ -250,6 +250,7 @@ export function ComplianceForm({ user }: { user: User }) {
                         variant="outline"
                         className="w-full"
                         onClick={() => setShowAgreementModal(true)}
+                        disabled={!complianceData?.agreementUrl}
                       >
                         Open Agreement <ExternalLink className="ml-2 h-4 w-4" />
                       </Button>
@@ -270,8 +271,11 @@ export function ComplianceForm({ user }: { user: User }) {
                           variant="outline"
                           className="w-full"
                           onClick={() => {
-                            window.open(complianceData?.kycUrl, "_blank");
+                            if (complianceData?.kycUrl) {
+                              window.open(complianceData.kycUrl, "_blank");
+                            }
                           }}
+                          disabled={!complianceData?.kycUrl}
                         >
                           Start KYC Process{" "}
                           <ExternalLink className="ml-2 h-4 w-4" />
@@ -304,7 +308,7 @@ export function ComplianceForm({ user }: { user: User }) {
                     </div>
                     <iframe
                       ref={iframeRef}
-                      src={complianceData?.agreementUrl}
+                      src={complianceData?.agreementUrl ?? ""}
                       className="w-full h-full border-0"
                       title="Compliance Agreement"
                       width="100%"

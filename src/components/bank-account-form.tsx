@@ -22,7 +22,7 @@ import {
   type BankAccountFormValues,
   bankAccountSchema,
 } from "@/lib/schemas/bank-account";
-import type { User } from "@/server/db/schema";
+import type { PaymentDetails, User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -30,7 +30,11 @@ import { useForm } from "react-hook-form";
 
 interface BankAccountFormProps {
   user: User;
-  onSuccess: (result: any) => void;
+  onSuccess: (result: {
+    success: boolean;
+    message: string;
+    paymentDetails: PaymentDetails;
+  }) => void;
   onCancel?: () => void;
 }
 
@@ -45,6 +49,17 @@ export function BankAccountForm({
     onSuccess: (result) => {
       onSuccess(result);
       form.reset();
+    },
+    onError: (error) => {
+      console.error("Payment details creation failed:", error);
+      // Provide feedback to the user about the failure
+      onSuccess({
+        success: false,
+        message:
+          error.message ||
+          "Failed to create payment details. Please try again.",
+        paymentDetails: null as any,
+      });
     },
   });
 
@@ -80,14 +95,10 @@ export function BankAccountForm({
   });
 
   async function onSubmit(data: BankAccountFormValues) {
-    try {
-      await mutateAsync({
-        userId: user.id,
-        paymentDetailsData: data,
-      });
-    } catch (error) {
-      console.error("Error creating bank account:", error);
-    }
+    await mutateAsync({
+      userId: user.id,
+      paymentDetailsData: data,
+    });
   }
 
   return (
@@ -172,6 +183,7 @@ export function BankAccountForm({
                 )}
               />
 
+              {/* TODO: Move currencies to a constants file for better maintainability and reusability */}
               <FormField
                 control={form.control}
                 name="currency"
@@ -362,6 +374,7 @@ export function BankAccountForm({
                 )}
               />
 
+              {/* TODO: Move countries to a constants file for better maintainability and reusability */}
               <FormField
                 control={form.control}
                 name="country"

@@ -35,8 +35,7 @@ export const bankAccountSchema = z
     bankCode: z.string().optional(),
     ifsc: z.string().optional(),
     phone: z.string().optional(),
-    neighbourhood: z.string().optional(),
-    activity: z.string().optional(),
+    businessActivity: z.string().optional(),
     nationality: z.string().optional(),
     gender: z.string().optional(),
   })
