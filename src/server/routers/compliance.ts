@@ -131,7 +131,7 @@ export const complianceRouter = router({
       }
     }),
 
-  // New procedure for creating payment details
+  // Procedure for creating bank account payment details for a user
   createPaymentDetails: protectedProcedure
     .input(
       z.object({
@@ -175,7 +175,7 @@ export const complianceRouter = router({
       }
     }),
 
-  // New procedure for allowing payers to pay invoices using payees payment details
+  // Procedure for allowing payers to use a payee's bank account details for invoice payments
   allowPaymentDetails: protectedProcedure
     .input(
       z.object({
@@ -244,7 +244,7 @@ export const complianceRouter = router({
           paymentDetailsId: paymentDetailsId,
           payerId: payerUser.id,
           status: "pending",
-          paymentDetailsReference: response?.data?.payment_detail?.id,
+          paymentDetailsIdReference: response?.data?.payment_detail?.id,
         });
 
         return {
@@ -267,7 +267,7 @@ export const complianceRouter = router({
       }
     }),
 
-  // Updated procedure for getting payment details
+  // Procedure for retrieving all payment details associated with a user, including shared payment details
   getPaymentDetails: protectedProcedure
     .input(
       z.object({
@@ -330,7 +330,7 @@ export const complianceRouter = router({
       }
     }),
 
-  // New procedure for getting payment details by ID
+  // Procedure for retrieving a specific payment detail by its ID
   getPaymentDetailsById: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {

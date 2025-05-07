@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
+import { formatDate, formatRecurringDate } from "@/lib/date-utils";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import { api } from "@/trpc/react";
-import { format } from "date-fns";
 
 interface InvoicePreviewProps {
   data: Partial<InvoiceFormValues>;
@@ -18,14 +18,6 @@ export function InvoicePreview({
       (total, item) => total + (item.quantity || 0) * (item.price || 0),
       0,
     );
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-GB", {
-      year: "2-digit",
-      month: "2-digit",
-      day: "2-digit",
-    });
   };
 
   const { data: selectedPaymentDetails } =
@@ -67,9 +59,7 @@ export function InvoicePreview({
               <div className="text-sm flex items-center gap-1">
                 <span>↻ {data.frequency.toLowerCase()}</span>
                 {data.startDate && (
-                  <span>
-                    • Starting {format(new Date(data.startDate), "do MMM yyyy")}
-                  </span>
+                  <span>• Starting {formatRecurringDate(data.startDate)}</span>
                 )}
               </div>
             </div>

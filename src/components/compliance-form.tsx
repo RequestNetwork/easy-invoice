@@ -40,7 +40,7 @@ import type { User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, ExternalLink } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ComplianceStatus } from "./compliance-status";
@@ -61,11 +61,16 @@ export function ComplianceForm({ user }: { user: User }) {
   const [showAgreementModal, setShowAgreementModal] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const TRUSTED_ORIGINS = [
-    "https://request.network",
-    "https://core-api-staging.pay.so",
-    "http://localhost:3000",
-  ];
+  const TRUSTED_ORIGINS = useMemo(
+    () => [
+      "https://request.network",
+      "https://core-api-staging.pay.so",
+      ...(process.env.NODE_ENV === "development"
+        ? ["http://localhost:3000"]
+        : []),
+    ],
+    [],
+  );
 
   // Fetch compliance status when component mounts
   const { isLoading: isLoadingStatus, refetch: getComplianceStatus } =
@@ -189,7 +194,7 @@ export function ComplianceForm({ user }: { user: User }) {
     return () => {
       window.removeEventListener("message", onCompleteHandler);
     };
-  }, [handleAgreementUpdate, complianceData?.agreementUrl]);
+  }, [handleAgreementUpdate, complianceData?.agreementUrl, TRUSTED_ORIGINS]);
 
   async function onSubmit(values: ComplianceFormValues) {
     try {
@@ -203,11 +208,6 @@ export function ComplianceForm({ user }: { user: User }) {
       );
     }
   }
-
-  const handleSubmit = () => {
-    const values = form.getValues();
-    onSubmit(values);
-  };
 
   return (
     <div className="w-full">
@@ -329,7 +329,10 @@ export function ComplianceForm({ user }: { user: User }) {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form className="space-y-6">
+                  <form
+                    className="space-y-6"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -590,10 +593,9 @@ export function ComplianceForm({ user }: { user: User }) {
                     </div>
 
                     <Button
-                      type="button"
+                      type="submit"
                       className="w-full"
                       disabled={submitComplianceMutation.isLoading}
-                      onClick={handleSubmit}
                     >
                       {submitComplianceMutation.isLoading
                         ? "Submitting..."

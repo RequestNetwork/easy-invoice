@@ -5,8 +5,8 @@ import { PaymentSection } from "@/components/payment-section";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
+import { formatDate, formatRecurringDate } from "@/lib/date-utils";
 import { api } from "@/trpc/server";
-import { format } from "date-fns";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 export const metadata: Metadata = {
@@ -33,14 +33,6 @@ export default async function PaymentPage({
   if (!invoice) {
     notFound();
   }
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(undefined, {
-      year: "2-digit",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
 
   return (
     <BackgroundWrapper
@@ -96,10 +88,7 @@ export default async function PaymentPage({
                       {invoice.recurrence.startDate && (
                         <span>
                           • Starting{" "}
-                          {format(
-                            new Date(invoice.recurrence.startDate),
-                            "do MMM yyyy",
-                          )}
+                          {formatRecurringDate(invoice.recurrence.startDate)}
                         </span>
                       )}
                       {invoice.isRecurrenceStopped && (

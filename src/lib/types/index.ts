@@ -5,4 +5,5 @@ export interface PaymentRoute {
   price_impact: number;
   chain: string;
   token: string;
+  isCryptoToFiat?: boolean;
 }

@@ -4,7 +4,8 @@ import { AlertCircle, CheckCircle, Clock } from "lucide-react";
 type ComplianceStatusProps = {
   status: {
     agreementStatus: "not_started" | "pending" | "completed";
-    kycStatus: "not_started" | "initiated" | "pending" | "completed";
+    kycStatus: "not_started" | "initiated" | "pending" | "approved";
+    isCompliant: boolean;
   };
 };
 

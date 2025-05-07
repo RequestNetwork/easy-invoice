@@ -29,7 +29,7 @@ export function CryptoToFiat({ user }: { user: User }) {
                 Compliance Required
               </h3>
               <p className="text-sm text-amber-700 mt-1">
-                To use the Crypto to Fiat service, you need to complete KYC
+                To send Crypto to Fiat payments, you need to complete KYC
                 verification and sign the compliance agreement.
               </p>
             </div>

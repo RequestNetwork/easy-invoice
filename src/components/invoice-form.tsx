@@ -35,12 +35,65 @@ import type {
 } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { Plus, Terminal, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+
+// Constants
+const PAYMENT_DETAILS_POLLING_INTERVAL = 30000; // 30 seconds in milliseconds
+const BANK_ACCOUNT_APPROVAL_TIMEOUT = 60000; // 1 minute timeout for bank account approval
+
 type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+
+type LinkedPaymentDetail = {
+  paymentDetails: PaymentDetails;
+  paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+};
+
+// Filter payment details based on client email and compliance status
+const filterValidPaymentDetails = (
+  paymentDetails: (PaymentDetails & {
+    paymentDetailsPayers: (User & PaymentDetailsPayers)[];
+  })[],
+  clientEmail: string,
+): LinkedPaymentDetail[] => {
+  const validPaymentDetails = paymentDetails.filter((detail) => {
+    const hasMatchingPayer = detail.paymentDetailsPayers.some(
+      (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
+    );
+
+    if (hasMatchingPayer) {
+      const matchingPayer = detail.paymentDetailsPayers.find(
+        (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
+      );
+      if (matchingPayer) {
+        return matchingPayer.isCompliant;
+      }
+    }
+    return false;
+  });
+  return validPaymentDetails as unknown as LinkedPaymentDetail[];
+};
+
+// Helper function to check if payment details are approved
+const checkPaymentDetailsApproval = (
+  paymentDetailsId: string,
+  validPaymentDetails: LinkedPaymentDetail[],
+  clientEmail: string,
+) => {
+  const selectedPaymentDetail = validPaymentDetails.find(
+    (detail) => detail.paymentDetails.id === paymentDetailsId,
+  );
+
+  if (!selectedPaymentDetail) return false;
+  const payer = selectedPaymentDetail.paymentDetailsPayers.find(
+    (p) => p.email === clientEmail,
+  );
+
+  return payer?.status === "approved";
+};
 
 interface InvoiceFormProps {
   form: UseFormReturn<InvoiceFormValues>;
@@ -49,6 +102,7 @@ interface InvoiceFormProps {
   recipientDetails?: {
     clientName: string;
     clientEmail: string;
+    userId: string;
   };
 }
 
@@ -72,10 +126,7 @@ const PaymentDetailsSelectItem = ({
   detail,
   clientEmail,
 }: {
-  detail: {
-    paymentDetails: PaymentDetails;
-    paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-  };
+  detail: LinkedPaymentDetail;
   clientEmail: string;
 }) => {
   const payer = detail.paymentDetailsPayers.find(
@@ -111,10 +162,10 @@ const PaymentDetailsError = ({ message }: { message: string }) => (
 const PaymentDetailsEmpty = ({ onAdd }: { onAdd: () => void }) => (
   <div className="space-y-4">
     <p className="text-sm text-gray-500">
-      No bank accounts found for this client
+      No payment methods found for this client
     </p>
     <Button type="button" variant="outline" onClick={onAdd} className="w-full">
-      Add Bank Account
+      Add Payment Method
     </Button>
   </div>
 );
@@ -126,10 +177,7 @@ const PaymentDetailsSelect = ({
   onSelect,
   defaultValue,
 }: {
-  details: {
-    paymentDetails: PaymentDetails;
-    paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-  }[];
+  details: LinkedPaymentDetail[];
   clientEmail: string;
   onSelect: (value: string) => void;
   defaultValue?: string;
@@ -165,12 +213,7 @@ const PaymentDetailsSection = ({
   clientEmail: string;
   isLoadingUser: boolean;
   clientUserData: User | null | undefined;
-  linkedPaymentDetails:
-    | {
-        paymentDetails: PaymentDetails;
-        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-      }[]
-    | undefined;
+  linkedPaymentDetails: LinkedPaymentDetail[] | undefined;
   onAddBankAccount: () => void;
   onSelectPaymentDetails: (value: string) => void;
   selectedPaymentDetailsId?: string;
@@ -187,13 +230,13 @@ const PaymentDetailsSection = ({
 
   if (!clientUserData) {
     return (
-      <PaymentDetailsError message="Client not compliant. Please use a verified client" />
+      <PaymentDetailsError message="Client has not completed KYC. Please use a verified client." />
     );
   }
 
   if (!clientUserData.isCompliant) {
     return (
-      <PaymentDetailsError message="Client is not valid for Crypto to Fiat" />
+      <PaymentDetailsError message="Client's KYC application was rejected. Please use a verified client." />
     );
   }
 
@@ -219,13 +262,64 @@ export function InvoiceForm({
   const [showBankAccountModal, setShowBankAccountModal] = useState(false);
   const [showPendingApprovalModal, setShowPendingApprovalModal] =
     useState(false);
+  const [waitingForPaymentApproval, setWaitingForPaymentApproval] =
+    useState(false);
   const [invoiceCreated, setInvoiceCreated] = useState(false);
   const [linkedPaymentDetails, setLinkedPaymentDetails] = useState<
-    {
-      paymentDetails: PaymentDetails;
-      paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-    }[]
+    LinkedPaymentDetail[]
   >([]);
+
+  // Define a stable reference to the submit handler
+  const handleFormSubmit = useCallback(
+    async (data: InvoiceFormValues) => {
+      // If Crypto to Fiat is enabled but no payment details are linked, show bank account modal
+      if (data.isCryptoToFiatAvailable && !data.paymentDetailsId) {
+        setShowBankAccountModal(true);
+        return;
+      }
+
+      // Check if payment details have approved status
+      if (data.isCryptoToFiatAvailable && data.paymentDetailsId) {
+        const selectedPaymentDetail = linkedPaymentDetails?.find(
+          (detail) => detail.paymentDetails.id === data.paymentDetailsId,
+        );
+
+        if (selectedPaymentDetail) {
+          const payer = selectedPaymentDetail.paymentDetailsPayers.find(
+            (p: User & PaymentDetailsPayers) => p.email === data.clientEmail,
+          );
+          if (payer) {
+            if (payer.status === "pending") {
+              setShowPendingApprovalModal(true);
+              setWaitingForPaymentApproval(true);
+              return;
+            }
+            if (payer.status !== "approved") {
+              toast.error(
+                "Cannot create invoice with unapproved payment method",
+              );
+              return;
+            }
+          }
+        }
+      }
+
+      try {
+        onSubmit(data);
+        setInvoiceCreated(true);
+        setWaitingForPaymentApproval(false);
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? `Failed to create invoice: ${error.message}`
+            : "Failed to create invoice due to an unknown error",
+        );
+        setInvoiceCreated(false);
+        setWaitingForPaymentApproval(false);
+      }
+    },
+    [linkedPaymentDetails, onSubmit],
+  );
 
   // Add timeout effect for bank account modal
   useEffect(() => {
@@ -234,7 +328,7 @@ export function InvoiceForm({
       timeoutId = setTimeout(() => {
         setShowBankAccountModal(false);
         toast.error("Bank account approval timed out. Please try again.");
-      }, 60000); // 1 minute timeout
+      }, BANK_ACCOUNT_APPROVAL_TIMEOUT);
     }
     return () => {
       if (timeoutId) {
@@ -264,63 +358,15 @@ export function InvoiceForm({
       { userId: clientUserData?.id ?? "" },
       {
         enabled: !!clientUserData?.id,
-        // Add polling to refresh data every 30 seconds
-        refetchInterval: 30000,
+        // Use the configurable constant for polling interval
+        refetchInterval: PAYMENT_DETAILS_POLLING_INTERVAL,
         // Also refetch when the window regains focus
         refetchOnWindowFocus: true,
       },
     );
 
+  // Effect for processing and setting payment details
   useEffect(() => {
-    // Filter payment details based on client email and compliance status
-    const filterValidPaymentDetails = (
-      paymentDetails: (PaymentDetails & {
-        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-      })[],
-      clientEmail: string,
-    ) => {
-      const validPaymentDetails = paymentDetails.filter((detail) => {
-        const hasMatchingPayer = detail.paymentDetailsPayers.some(
-          (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
-        );
-
-        if (hasMatchingPayer) {
-          const matchingPayer = detail.paymentDetailsPayers.find(
-            (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
-          );
-          if (matchingPayer) {
-            return matchingPayer.isCompliant;
-          }
-        }
-        return false;
-      });
-      return validPaymentDetails as unknown as {
-        paymentDetails: PaymentDetails;
-        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-      }[];
-    };
-
-    // Helper function to check if payment details are approved
-    const checkPaymentDetailsApproval = (
-      paymentDetailsId: string,
-      validPaymentDetails: {
-        paymentDetails: PaymentDetails;
-        paymentDetailsPayers: (User & PaymentDetailsPayers)[];
-      }[],
-      clientEmail: string,
-    ) => {
-      const selectedPaymentDetail = validPaymentDetails.find(
-        (detail) => detail.paymentDetails.id === paymentDetailsId,
-      );
-
-      if (!selectedPaymentDetail) return false;
-      const payer = selectedPaymentDetail.paymentDetailsPayers.find(
-        (p) => p.email === clientEmail,
-      );
-
-      return payer?.status === "approved";
-    };
-
     if (
       isCryptoToFiatAvailable &&
       clientEmail &&
@@ -333,26 +379,6 @@ export function InvoiceForm({
           clientEmail,
         );
         setLinkedPaymentDetails(validPaymentDetails);
-
-        // Check if the selected payment details are now approved
-        if (showPendingApprovalModal && form.getValues("paymentDetailsId")) {
-          const isApproved = checkPaymentDetailsApproval(
-            form.getValues("paymentDetailsId") ?? "",
-            validPaymentDetails,
-            clientEmail,
-          );
-
-          if (isApproved) {
-            // First close the modal
-            setShowPendingApprovalModal(false);
-            // Then show success message
-            toast.success("Payment details approved! Creating invoice...");
-            // Finally submit the form
-            setTimeout(() => {
-              void handleFormSubmit(form.getValues());
-            }, 100);
-          }
-        }
       } else {
         setLinkedPaymentDetails([]);
       }
@@ -362,54 +388,42 @@ export function InvoiceForm({
     isCryptoToFiatAvailable,
     paymentDetailsData?.paymentDetails,
     clientUserData,
-    showPendingApprovalModal,
-    form,
   ]);
 
-  const handleFormSubmit = async (data: InvoiceFormValues) => {
-    // If C2F is enabled but no payment details are linked, show bank account modal
-    if (data.isCryptoToFiatAvailable && !data.paymentDetailsId) {
-      setShowBankAccountModal(true);
-      return;
-    }
-
-    // Check if payment details have approved status
-    if (data.isCryptoToFiatAvailable && data.paymentDetailsId) {
-      const selectedPaymentDetail = linkedPaymentDetails?.find(
-        (detail) => detail.paymentDetails.id === data.paymentDetailsId,
+  // Separate effect for handling payment approval and form submission
+  useEffect(() => {
+    if (
+      waitingForPaymentApproval &&
+      form.getValues("paymentDetailsId") &&
+      linkedPaymentDetails.length > 0 &&
+      clientEmail
+    ) {
+      const isApproved = checkPaymentDetailsApproval(
+        form.getValues("paymentDetailsId") ?? "",
+        linkedPaymentDetails,
+        clientEmail,
       );
 
-      if (selectedPaymentDetail) {
-        const payer = selectedPaymentDetail.paymentDetailsPayers.find(
-          (p: User & PaymentDetailsPayers) => p.email === clientEmail,
-        );
-        if (payer) {
-          if (payer.status === "pending") {
-            setShowPendingApprovalModal(true);
-            return;
-          }
-          if (payer.status !== "approved") {
-            toast.error(
-              "Cannot create invoice with unapproved payment details",
-            );
-            return;
-          }
-        }
+      if (isApproved) {
+        // Clear the waiting state
+        setWaitingForPaymentApproval(false);
+        // Close the modal if it's still open
+        setShowPendingApprovalModal(false);
+        // Show success message
+        toast.success("Payment method approved! Creating invoice...");
+        // Submit the form
+        setTimeout(() => {
+          void handleFormSubmit(form.getValues());
+        }, 100);
       }
     }
-
-    try {
-      await onSubmit(data);
-      setInvoiceCreated(true);
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? `Failed to create invoice: ${error.message}`
-          : "Failed to create invoice due to an unknown error",
-      );
-      setInvoiceCreated(false);
-    }
-  };
+  }, [
+    waitingForPaymentApproval,
+    linkedPaymentDetails,
+    clientEmail,
+    form,
+    handleFormSubmit,
+  ]);
 
   const allowPaymentDetailsMutation =
     api.compliance.allowPaymentDetails.useMutation({
@@ -417,7 +431,7 @@ export function InvoiceForm({
         refetchPaymentDetails();
       },
       onError: (error) => {
-        toast.error(`Failed to link bank account: ${error.message}`);
+        toast.error(`Failed to link payment method: ${error.message}`);
       },
     });
 
@@ -427,7 +441,7 @@ export function InvoiceForm({
     setShowBankAccountModal(false);
 
     try {
-      // Link the bank account to the client
+      // Link the payment method to the client
       await allowPaymentDetailsMutation.mutateAsync({
         userId: result.paymentDetails.userId,
         paymentDetailsId: result.paymentDetails.id,
@@ -440,10 +454,10 @@ export function InvoiceForm({
       // Refetch payment details to update the UI
       await refetchPaymentDetails();
 
-      toast.success("Bank account linked successfully");
+      toast.success("Payment method linked successfully");
     } catch (error) {
-      console.error("Error linking bank account:", error);
-      toast.error("Failed to link bank account to client");
+      console.error("Error linking payment method:", error);
+      toast.error("Failed to link payment method to client");
     }
   };
 
@@ -455,7 +469,7 @@ export function InvoiceForm({
       >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Add Bank Account</DialogTitle>
+            <DialogTitle>Add Payment Method</DialogTitle>
           </DialogHeader>
           {clientUserData && (
             <BankAccountForm
@@ -469,17 +483,25 @@ export function InvoiceForm({
 
       <Dialog
         open={showPendingApprovalModal}
-        onOpenChange={setShowPendingApprovalModal}
+        onOpenChange={(open) => {
+          setShowPendingApprovalModal(open);
+          // Don't reset the waiting state when closing the modal
+          // This allows the approval check to continue running in the background
+        }}
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Payment Details Pending Approval</DialogTitle>
+            <DialogTitle>Payment Method Pending Approval</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-8 space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900" />
             <p className="text-center text-zinc-600">
-              The payment details you selected are currently pending approval.
-              Please wait until they are approved before creating an invoice.
+              The payment method you selected is currently pending approval.
+              Please wait until it is approved before creating an invoice.
+            </p>
+            <p className="text-center text-zinc-500 text-sm">
+              You can close this dialog. We'll notify you when approval is
+              complete.
             </p>
             <Button
               variant="outline"
@@ -821,13 +843,13 @@ export function InvoiceForm({
             }}
           />
           <Label htmlFor="isCryptoToFiatAvailable">
-            Allow payment via bank account (crypto-to-fiat conversion)
+            Allow payment to your bank account (Crypto to Fiat payment)
           </Label>
         </div>
 
         {form.watch("isCryptoToFiatAvailable") && (
           <div className="space-y-2">
-            <Label htmlFor="paymentDetailsId">Payment Details</Label>
+            <Label htmlFor="paymentDetailsId">Payment Method</Label>
             <PaymentDetailsSection
               clientEmail={clientEmail}
               isLoadingUser={isLoadingUser}

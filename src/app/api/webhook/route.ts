@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { ResourceNotFoundError } from "@/lib/errors";
 import { getInvoiceCount } from "@/lib/invoice";
 import { generateInvoiceNumber } from "@/lib/invoice/client";
 import { db } from "@/server/db";
@@ -10,6 +11,25 @@ import {
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ulid } from "ulid";
+
+/**
+ * Updates the request status in the database
+ */
+async function updateRequestStatus(requestId: string, status: string) {
+  await db.transaction(async (tx) => {
+    const result = await tx
+      .update(requestTable)
+      .set({ status })
+      .where(eq(requestTable.requestId, requestId))
+      .returning({ id: requestTable.id });
+
+    if (!result.length) {
+      throw new ResourceNotFoundError(
+        `No request found with request ID: ${requestId}`,
+      );
+    }
+  });
+}
 
 export async function POST(req: Request) {
   try {
@@ -31,96 +51,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    const { requestId, event, originalRequestId, isCryptoToFiat } = body;
+    const {
+      requestId,
+      event,
+      originalRequestId,
+      isCryptoToFiat,
+      paymentReference,
+    } = body;
 
     switch (event) {
       case "payment.confirmed":
-        await db.transaction(async (tx) => {
-          const result = await tx
-            .update(requestTable)
-            .set({
-              status: isCryptoToFiat ? "crypto_paid" : "paid",
-            })
-            .where(eq(requestTable.requestId, requestId))
-            .returning({ id: requestTable.id });
-
-          if (!result.length) {
-            throw new Error(
-              `No request found with payment reference: ${requestId}`,
-            );
-          }
-        });
+        await updateRequestStatus(
+          requestId,
+          isCryptoToFiat ? "crypto_paid" : "paid",
+        );
         break;
       case "settlement.initiated":
-        await db.transaction(async (tx) => {
-          const result = await tx
-            .update(requestTable)
-            .set({
-              status: "offramp_initiated",
-            })
-            .where(eq(requestTable.requestId, requestId))
-            .returning({ id: requestTable.id });
-
-          if (!result.length) {
-            throw new Error(
-              `No request found with payment reference: ${requestId}`,
-            );
-          }
-        });
+        await updateRequestStatus(requestId, "offramp_initiated");
         break;
       case "settlement.failed":
       case "settlement.bounced":
-        await db.transaction(async (tx) => {
-          const result = await tx
-            .update(requestTable)
-            .set({
-              status: "offramp_failed",
-            })
-            .where(eq(requestTable.requestId, requestId))
-            .returning({ id: requestTable.id });
-
-          if (!result.length) {
-            throw new Error(
-              `No request found with payment reference: ${requestId}`,
-            );
-          }
-        });
+        await updateRequestStatus(requestId, "offramp_failed");
         break;
       case "settlement.pending_internal_assessment":
       case "settlement.ongoing_checks":
       case "settlement.sending_fiat":
-        await db.transaction(async (tx) => {
-          const result = await tx
-            .update(requestTable)
-            .set({
-              status: "offramp_pending",
-            })
-            .where(eq(requestTable.requestId, requestId))
-            .returning({ id: requestTable.id });
-
-          if (!result.length) {
-            throw new Error(
-              `No request found with payment reference: ${requestId}`,
-            );
-          }
-        });
+        await updateRequestStatus(requestId, "offramp_pending");
         break;
       case "settlement.fiat_sent":
-        await db.transaction(async (tx) => {
-          const result = await tx
-            .update(requestTable)
-            .set({
-              status: "paid",
-            })
-            .where(eq(requestTable.requestId, requestId))
-            .returning({ id: requestTable.id });
-
-          if (!result.length) {
-            throw new Error(
-              `No request found with payment reference: ${requestId}`,
-            );
-          }
-        });
+        await updateRequestStatus(requestId, "paid");
         break;
       case "request.recurring":
         await db.transaction(async (tx) => {
@@ -130,8 +89,8 @@ export async function POST(req: Request) {
             .where(eq(requestTable.requestId, originalRequestId));
 
           if (!originalRequests.length) {
-            throw new Error(
-              `No original request found with payment reference: ${originalRequestId}`,
+            throw new ResourceNotFoundError(
+              `No original request found with request ID: ${originalRequestId}`,
             );
           }
 
@@ -173,33 +132,52 @@ export async function POST(req: Request) {
             invoiceNumber,
             issuedDate: now.toISOString(),
             dueDate: newDueDate.toISOString(),
+            requestId: requestId,
+            originalRequestId: originalRequestId,
+            paymentReference: paymentReference,
             status: "pending",
           });
         });
         break;
-      case "compliance.updated":
-        await db
+      case "compliance.updated": {
+        const complianceUpdateResult = await db
           .update(userTable)
           .set({
             isCompliant: body.isCompliant,
             kycStatus: body.kycStatus,
             agreementStatus: body.agreementStatus,
           })
-          .where(eq(userTable.email, body.clientUserId));
+          .where(eq(userTable.email, body.clientUserId))
+          .returning({ id: userTable.id });
+
+        if (!complianceUpdateResult.length) {
+          console.warn(
+            `No user found with email ID: ${body.clientUserId} for compliance update`,
+          );
+        }
         break;
-      case "payment_detail.updated":
-        await db
+      }
+      case "payment_detail.updated": {
+        const paymentDetailUpdateResult = await db
           .update(paymentDetailsPayersTable)
           .set({
             status: body.status,
           })
           .where(
             eq(
-              paymentDetailsPayersTable.paymentDetailsReference,
+              paymentDetailsPayersTable.paymentDetailsIdReference,
               body.paymentDetailsId,
             ),
+          )
+          .returning({ id: paymentDetailsPayersTable.id });
+
+        if (!paymentDetailUpdateResult.length) {
+          console.warn(
+            `No payment detail found with payment details ID: ${body.paymentDetailsId} for status update`,
           );
+        }
         break;
+      }
       default:
         break;
     }
@@ -207,6 +185,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Payment webhook error:", error);
+
+    if (error instanceof ResourceNotFoundError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

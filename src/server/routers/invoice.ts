@@ -242,7 +242,7 @@ export const invoiceRouter = router({
         return { success: false, message: "Payment details not found" };
       }
 
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${paymentDetails.paymentDetailsReference}`;
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${paymentDetails.paymentDetailsIdReference}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;

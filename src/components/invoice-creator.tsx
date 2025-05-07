@@ -74,7 +74,7 @@ export function InvoiceCreator({
 
   const onSubmit = async (data: InvoiceFormValues) => {
     try {
-      await createInvoice(data);
+      createInvoice(data);
     } catch (error) {
       toast.error("Failed to create invoice", {
         description:
