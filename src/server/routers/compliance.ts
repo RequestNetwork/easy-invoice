@@ -179,90 +179,56 @@ export const complianceRouter = router({
       try {
         const { userId, paymentDetailsData } = input;
 
-        // Let's use a direct type-safe approach by explicitly creating a record
-        // that matches the expected database schema types
+        // Extract required fields and optional fields
+        const {
+          bankName,
+          accountName,
+          beneficiaryType,
+          addressLine1,
+          city,
+          postalCode,
+          country,
+          currency,
+          gender,
+          // Extract other fields as needed
+          ...otherFields
+        } = paymentDetailsData;
 
-        // Handle the gender field specially to ensure it matches the enum type
-        let genderValue = null;
-        if (paymentDetailsData.gender) {
-          // Make sure gender is one of the accepted enum values
-          if (
-            ["male", "female", "other", "prefer_not_to_say"].includes(
-              paymentDetailsData.gender,
-            )
-          ) {
-            genderValue = paymentDetailsData.gender;
-          }
-        }
-
-        // Construct a record that explicitly matches the database schema
+        // Construct the record with required fields
         const paymentDetailsRecord = {
           id: ulid(),
           userId,
-          bankName: paymentDetailsData.bankName,
-          accountName: paymentDetailsData.accountName,
-          beneficiaryType: paymentDetailsData.beneficiaryType,
-          currency: paymentDetailsData.currency,
-          addressLine1: paymentDetailsData.addressLine1,
-          city: paymentDetailsData.city,
-          postalCode: paymentDetailsData.postalCode,
-          country: paymentDetailsData.country,
-        } as const;
+          bankName,
+          accountName,
+          beneficiaryType,
+          addressLine1,
+          city,
+          postalCode,
+          country,
+          currency,
+        };
 
-        // Create an object with optional fields
-        const optionalFields: Record<string, unknown> = {};
+        // Add optional fields that are defined
+        const insertData = { ...paymentDetailsRecord };
 
-        // Add optional fields only if they are defined
-        if (paymentDetailsData.accountNumber !== undefined)
-          optionalFields.accountNumber = paymentDetailsData.accountNumber;
-        if (paymentDetailsData.routingNumber !== undefined)
-          optionalFields.routingNumber = paymentDetailsData.routingNumber;
-        if (paymentDetailsData.rails !== undefined)
-          optionalFields.rails = paymentDetailsData.rails;
-        if (paymentDetailsData.addressLine2 !== undefined)
-          optionalFields.addressLine2 = paymentDetailsData.addressLine2;
-        if (paymentDetailsData.state !== undefined)
-          optionalFields.state = paymentDetailsData.state;
-        if (paymentDetailsData.dateOfBirth !== undefined)
-          optionalFields.dateOfBirth = paymentDetailsData.dateOfBirth;
-        if (paymentDetailsData.sortCode !== undefined)
-          optionalFields.sortCode = paymentDetailsData.sortCode;
-        if (paymentDetailsData.iban !== undefined)
-          optionalFields.iban = paymentDetailsData.iban;
-        if (paymentDetailsData.swiftBic !== undefined)
-          optionalFields.swiftBic = paymentDetailsData.swiftBic;
-        if (paymentDetailsData.documentNumber !== undefined)
-          optionalFields.documentNumber = paymentDetailsData.documentNumber;
-        if (paymentDetailsData.documentType !== undefined)
-          optionalFields.documentType = paymentDetailsData.documentType;
-        if (paymentDetailsData.accountType !== undefined)
-          optionalFields.accountType = paymentDetailsData.accountType;
-        if (paymentDetailsData.ribNumber !== undefined)
-          optionalFields.ribNumber = paymentDetailsData.ribNumber;
-        if (paymentDetailsData.bsbNumber !== undefined)
-          optionalFields.bsbNumber = paymentDetailsData.bsbNumber;
-        if (paymentDetailsData.ncc !== undefined)
-          optionalFields.ncc = paymentDetailsData.ncc;
-        if (paymentDetailsData.branchCode !== undefined)
-          optionalFields.branchCode = paymentDetailsData.branchCode;
-        if (paymentDetailsData.bankCode !== undefined)
-          optionalFields.bankCode = paymentDetailsData.bankCode;
-        if (paymentDetailsData.ifsc !== undefined)
-          optionalFields.ifsc = paymentDetailsData.ifsc;
-        if (paymentDetailsData.phone !== undefined)
-          optionalFields.phone = paymentDetailsData.phone;
-        if (paymentDetailsData.businessActivity !== undefined)
-          optionalFields.businessActivity = paymentDetailsData.businessActivity;
-        if (paymentDetailsData.nationality !== undefined)
-          optionalFields.nationality = paymentDetailsData.nationality;
-        if (genderValue !== null) optionalFields.gender = genderValue;
+        // Add gender only if it's a valid value
+        if (
+          gender &&
+          ["male", "female", "other", "prefer_not_to_say"].includes(gender)
+        ) {
+          Object.assign(insertData, { gender });
+        }
+
+        // Add other fields if they're defined
+        for (const [key, value] of Object.entries(otherFields)) {
+          if (value !== undefined && value !== null) {
+            Object.assign(insertData, { [key]: value });
+          }
+        }
 
         const paymentDetails = await ctx.db
           .insert(paymentDetailsTable)
-          .values({
-            ...paymentDetailsRecord,
-            ...optionalFields,
-          })
+          .values(insertData)
           .returning();
 
         return {
