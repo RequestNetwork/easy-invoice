@@ -282,7 +282,10 @@ export const complianceFormSchema = z
       }),
     phone: z
       .string()
-      .regex(/^\+?[1-9]\d{1,14}$/, "Phone number must be in E.164 format"),
+      .regex(
+        /^\+[1-9]\d{1,14}$/,
+        "Phone number must be in E.164 format (e.g., +12025550123)",
+      ),
     ssn: z.string().min(1, "Social Security Number is required"),
     sourceOfFunds: z.string().optional(),
     businessActivity: z.string().optional(),
