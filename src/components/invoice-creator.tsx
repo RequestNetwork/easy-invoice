@@ -21,6 +21,7 @@ interface InvoiceCreatorProps {
     userId: string;
   };
   currentUser?: {
+    id: string;
     name: string;
     email: string;
   };
@@ -67,12 +68,13 @@ export function InvoiceCreator({
       invoiceCurrency: "USD",
       paymentCurrency: "",
       walletAddress: "",
+      isCryptoToFiatAvailable: false,
     },
   });
 
   const onSubmit = async (data: InvoiceFormValues) => {
     try {
-      await createInvoice(data);
+      createInvoice(data);
     } catch (error) {
       toast.error("Failed to create invoice", {
         description:
@@ -80,6 +82,7 @@ export function InvoiceCreator({
             ? error.message
             : "An unexpected error occurred",
       });
+      form.formState.isSubmitSuccessful = false;
     }
   };
 
@@ -99,7 +102,10 @@ export function InvoiceCreator({
         </CardContent>
       </Card>
 
-      <InvoicePreview data={form.watch()} />
+      <InvoicePreview
+        data={form.watch()}
+        paymentDetailsId={form.getValues("paymentDetailsId")}
+      />
     </div>
   );
 }

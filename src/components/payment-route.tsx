@@ -3,7 +3,7 @@ import { ArrowRight, Globe, Zap } from "lucide-react";
 import Image from "next/image";
 
 interface RouteTypeInfo {
-  type: "direct" | "same-chain-erc20" | "cross-chain";
+  type: "direct" | "same-chain-erc20" | "cross-chain" | "crypto-to-fiat";
   label: string;
   description: string;
 }
@@ -24,13 +24,23 @@ export function PaymentRoute({
   routeType,
 }: PaymentRouteProps) {
   const isDirectPayment =
-    routeType?.type === "direct" || route.id === "REQUEST_NETWORK_PAYMENT";
+    routeType?.type === "direct" ||
+    (route.id === "REQUEST_NETWORK_PAYMENT" && !route.isCryptoToFiat);
   const isGasFreePayment = routeType?.type === "same-chain-erc20";
+  const isCryptoToFiat = routeType?.type === "crypto-to-fiat";
 
   const nativeToken = route.chain === "POLYGON" ? "POL" : "ETH";
 
   // Get the appropriate badge color and icon based on route type
   const getBadgeStyles = () => {
+    if (isCryptoToFiat) {
+      return {
+        bgColor: "bg-amber-100",
+        textColor: "text-amber-700",
+        icon: <ArrowRight className="w-3 h-3 mr-1" />,
+      };
+    }
+
     if (isDirectPayment) {
       return {
         bgColor: "bg-blue-100",

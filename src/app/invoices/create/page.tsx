@@ -40,6 +40,7 @@ export default async function CreateInvoicePage() {
           currentUser={{
             email: user.email ?? "",
             name: user.name ?? "",
+            id: user.id,
           }}
           invoiceCount={invoiceCount}
         />

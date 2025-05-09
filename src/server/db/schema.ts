@@ -5,6 +5,7 @@ import {
   boolean,
   customType,
   json,
+  pgEnum,
   pgTableCreator,
   text,
   timestamp,
@@ -14,7 +15,37 @@ export const createTable = pgTableCreator((name) => `easyinvoice_${name}`);
 
 const encryptionKey = process.env.ENCRYPTION_KEY as string;
 
-// biome-ignore lint/correctness/noUnusedVariables: Will be used in the future
+// Define enum types for status fields
+export const agreementStatusEnum = pgEnum("agreement_status", [
+  "not_started",
+  "pending",
+  "completed",
+]);
+export const kycStatusEnum = pgEnum("kyc_status", [
+  "not_started",
+  "initiated",
+  "pending",
+  "approved",
+]);
+export const beneficiaryTypeEnum = pgEnum("beneficiary_type", [
+  "individual",
+  "business",
+]);
+export const accountTypeEnum = pgEnum("account_type", ["checking", "savings"]);
+export const railsTypeEnum = pgEnum("rails_type", ["local", "swift", "wire"]);
+export const genderEnum = pgEnum("gender", [
+  "male",
+  "female",
+  "other",
+  "prefer_not_to_say",
+]);
+export const paymentDetailsStatusEnum = pgEnum("payment_details_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+
+// biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
   dataType() {
     return "text";
@@ -43,6 +74,68 @@ export const userTable = createTable("user", {
   googleId: text().unique(),
   name: text(),
   email: text().unique(),
+  agreementStatus: agreementStatusEnum("agreement_status").default("pending"),
+  kycStatus: kycStatusEnum("kyc_status").default("pending"),
+  isCompliant: boolean().default(false),
+});
+
+export const paymentDetailsTable = createTable("payment_details", {
+  id: text().primaryKey().notNull(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  bankName: text().notNull(),
+  accountName: text().notNull(),
+  accountNumber: text(), // Format varies by country
+  routingNumber: text(), // Format varies by country
+  accountType: accountTypeEnum("account_type").default("checking"),
+  sortCode: text(), // UK: 6 digits format
+  iban: text(), // International Bank Account Number - country-specific format
+  swiftBic: text(), // 8 or 11 characters
+  documentNumber: text(),
+  documentType: text(),
+  ribNumber: text(), // France: Relevé d'Identité Bancaire
+  bsbNumber: text(), // Australia: 6 digits
+  ncc: text(),
+  branchCode: text(),
+  bankCode: text(),
+  ifsc: text(), // India: 11 character code
+  beneficiaryType: beneficiaryTypeEnum("beneficiary_type").notNull(),
+  dateOfBirth: text(), // Format: YYYY-MM-DD
+  addressLine1: text().notNull(),
+  addressLine2: text(),
+  city: text().notNull(),
+  state: text(),
+  postalCode: text().notNull(),
+  country: text().notNull(), // ISO 3166-1 alpha-2 (2 characters)
+  rails: railsTypeEnum("rails_type").default("local"),
+  currency: text().notNull(), // ISO 4217 (3 characters)
+  phone: text(), // E.164 format recommended
+  businessActivity: text(),
+  nationality: text(), // ISO 3166-1 alpha-2 (2 characters)
+  gender: genderEnum("gender"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// New junction table to link payment details with multiple payers
+export const paymentDetailsPayersTable = createTable("payment_details_payers", {
+  id: text().primaryKey().notNull(),
+  paymentDetailsId: text()
+    .notNull()
+    .references(() => paymentDetailsTable.id, {
+      onDelete: "cascade",
+    }),
+  payerId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  status: paymentDetailsStatusEnum("payment_details_status").default("pending"),
+  paymentDetailsIdReference: text().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const requestTable = createTable("request", {
@@ -65,6 +158,7 @@ export const requestTable = createTable("request", {
   requestId: text().notNull(),
   paymentReference: text().notNull(),
   originalRequestPaymentReference: text(),
+  originalRequestId: text(),
   createdAt: timestamp("created_at").defaultNow(),
   userId: text()
     .notNull()
@@ -77,6 +171,10 @@ export const requestTable = createTable("request", {
     frequency: string;
   }>(),
   isRecurrenceStopped: boolean().default(false),
+  isCryptoToFiatAvailable: boolean().default(false),
+  paymentDetailsId: text().references(() => paymentDetailsTable.id, {
+    onDelete: "set null",
+  }),
 });
 
 export const sessionTable = createTable("session", {
@@ -109,12 +207,17 @@ export const userRelations = relations(userTable, ({ many }) => ({
   requests: many(requestTable),
   session: many(sessionTable),
   invoiceMe: many(invoiceMeTable),
+  paymentDetailsPayers: many(paymentDetailsPayersTable),
 }));
 
 export const requestRelations = relations(requestTable, ({ one }) => ({
   user: one(userTable, {
     fields: [requestTable.userId],
     references: [userTable.id],
+  }),
+  paymentDetails: one(paymentDetailsTable, {
+    fields: [requestTable.paymentDetailsId],
+    references: [paymentDetailsTable.id],
   }),
 }));
 
@@ -132,7 +235,36 @@ export const invoiceMeRelations = relations(invoiceMeTable, ({ one }) => ({
   }),
 }));
 
+export const paymentDetailsRelations = relations(
+  paymentDetailsTable,
+  ({ one, many }) => ({
+    user: one(userTable, {
+      fields: [paymentDetailsTable.userId],
+      references: [userTable.id],
+    }),
+    payers: many(paymentDetailsPayersTable),
+  }),
+);
+
+export const paymentDetailsPayersRelations = relations(
+  paymentDetailsPayersTable,
+  ({ one }) => ({
+    paymentDetails: one(paymentDetailsTable, {
+      fields: [paymentDetailsPayersTable.paymentDetailsId],
+      references: [paymentDetailsTable.id],
+    }),
+    payer: one(userTable, {
+      fields: [paymentDetailsPayersTable.payerId],
+      references: [userTable.id],
+    }),
+  }),
+);
+
 export type Request = InferSelectModel<typeof requestTable>;
 export type User = InferSelectModel<typeof userTable>;
 export type Session = InferSelectModel<typeof sessionTable>;
 export type InvoiceMe = InferSelectModel<typeof invoiceMeTable>;
+export type PaymentDetails = InferSelectModel<typeof paymentDetailsTable>;
+export type PaymentDetailsPayers = InferSelectModel<
+  typeof paymentDetailsPayersTable
+>;
