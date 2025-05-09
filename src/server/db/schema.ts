@@ -39,6 +39,11 @@ export const genderEnum = pgEnum("gender", [
   "other",
   "prefer_not_to_say",
 ]);
+export const paymentDetailsStatusEnum = pgEnum("payment_details_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
 
 // biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
@@ -128,7 +133,7 @@ export const paymentDetailsPayersTable = createTable("payment_details_payers", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
-  status: text().notNull(),
+  status: paymentDetailsStatusEnum("payment_details_status").default("pending"),
   paymentDetailsIdReference: text().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
