@@ -295,7 +295,7 @@ export function BankAccountForm({
                       Date of Birth <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="DD/MM/YYYY" {...field} />
+                      <Input type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
