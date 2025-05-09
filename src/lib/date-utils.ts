@@ -6,7 +6,16 @@ import { format } from "date-fns";
  * @returns Formatted date string
  */
 export function formatDate(date: string) {
-  return format(new Date(date), "dd/MM/yy");
+  try {
+    const dateObj = new Date(date);
+    if (Number.isNaN(dateObj.getTime())) {
+      throw new Error("Invalid date");
+    }
+    return format(dateObj, "do MMM yyyy");
+  } catch (error) {
+    console.error("Error formatting recurring date:", error);
+    return "Invalid date";
+  }
 }
 
 /**
@@ -15,5 +24,5 @@ export function formatDate(date: string) {
  * @returns Formatted date string for recurring dates
  */
 export function formatRecurringDate(date: string) {
-  return format(new Date(date), "do MMM yyyy");
+  return formatDate(date);
 }
