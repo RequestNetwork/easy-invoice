@@ -476,6 +476,13 @@ export const complianceRouter = router({
     .input(z.string())
     .query(async ({ ctx, input }) => {
       try {
+        if (!ctx.user || !ctx.user.id) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You must be logged in to access payment details",
+          });
+        }
+
         const paymentDetails = await ctx.db.query.paymentDetailsTable.findFirst(
           {
             where: eq(paymentDetailsTable.id, input),
