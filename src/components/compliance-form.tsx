@@ -601,7 +601,11 @@ export function ComplianceForm({ user }: { user: User }) {
                           <FormItem>
                             <FormLabel>Phone (E.164 format)</FormLabel>
                             <FormControl>
-                              <Input placeholder="+12125551234" {...field} />
+                              <Input
+                                type="tel"
+                                placeholder="+12125551234"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

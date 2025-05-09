@@ -34,7 +34,10 @@ export const bankAccountSchema = z
     branchCode: z.string().optional(),
     bankCode: z.string().optional(),
     ifsc: z.string().optional(),
-    phone: z.string().optional(),
+    phone: z
+      .string()
+      .regex(/^\+?[1-9]\d{1,14}$/, "Phone number must be in E.164 format")
+      .optional(),
     businessActivity: z.string().optional(),
     nationality: z.string().optional(),
     gender: z.string().optional(),
