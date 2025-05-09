@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 
 /**
- * Formats a date string to dd/MM/yy format
+ * Formats a date string to do MMM yyyy format
  * @param date Date string to format
  * @returns Formatted date string
  */
