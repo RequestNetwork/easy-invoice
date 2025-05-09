@@ -19,6 +19,13 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  ACCOUNT_TYPES,
+  BANK_ACCOUNT_COUNTRIES,
+  BANK_ACCOUNT_CURRENCIES,
+  BENEFICIARY_TYPES,
+  PAYMENT_RAILS,
+} from "@/lib/constants/bank-account";
+import {
   type BankAccountFormValues,
   bankAccountSchema,
 } from "@/lib/schemas/bank-account";
@@ -183,7 +190,7 @@ export function BankAccountForm({
                 )}
               />
 
-              {/* TODO: Move currencies to a constants file for better maintainability and reusability */}
+              {/* Currency field using constants */}
               <FormField
                 control={form.control}
                 name="currency"
@@ -202,16 +209,14 @@ export function BankAccountForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="usd">USD - US Dollar</SelectItem>
-                        <SelectItem value="eur">EUR - Euro</SelectItem>
-                        <SelectItem value="gbp">GBP - British Pound</SelectItem>
-                        <SelectItem value="jpy">JPY - Japanese Yen</SelectItem>
-                        <SelectItem value="cad">
-                          CAD - Canadian Dollar
-                        </SelectItem>
-                        <SelectItem value="aud">
-                          AUD - Australian Dollar
-                        </SelectItem>
+                        {BANK_ACCOUNT_CURRENCIES.map((currency) => (
+                          <SelectItem
+                            key={currency.value}
+                            value={currency.value}
+                          >
+                            {currency.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -237,9 +242,11 @@ export function BankAccountForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="local">Local (SEPA/ACH)</SelectItem>
-                        <SelectItem value="swift">SWIFT</SelectItem>
-                        <SelectItem value="wire">Wire</SelectItem>
+                        {PAYMENT_RAILS.map((rail) => (
+                          <SelectItem key={rail.value} value={rail.value}>
+                            {rail.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -267,8 +274,11 @@ export function BankAccountForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="individual">Individual</SelectItem>
-                        <SelectItem value="business">Business</SelectItem>
+                        {BENEFICIARY_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -374,7 +384,7 @@ export function BankAccountForm({
                 )}
               />
 
-              {/* TODO: Move countries to a constants file for better maintainability and reusability */}
+              {/* Country field using constants */}
               <FormField
                 control={form.control}
                 name="country"
@@ -393,13 +403,11 @@ export function BankAccountForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="US">United States</SelectItem>
-                        <SelectItem value="GB">United Kingdom</SelectItem>
-                        <SelectItem value="CA">Canada</SelectItem>
-                        <SelectItem value="AU">Australia</SelectItem>
-                        <SelectItem value="DE">Germany</SelectItem>
-                        <SelectItem value="FR">France</SelectItem>
-                        <SelectItem value="JP">Japan</SelectItem>
+                        {BANK_ACCOUNT_COUNTRIES.map((country) => (
+                          <SelectItem key={country.value} value={country.value}>
+                            {country.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -498,8 +506,11 @@ export function BankAccountForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="checking">Checking</SelectItem>
-                        <SelectItem value="savings">Savings</SelectItem>
+                        {ACCOUNT_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
