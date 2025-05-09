@@ -450,7 +450,7 @@ export const complianceRouter = router({
           if (row.payment_details_payers) {
             paymentDetailsMap.get(paymentDetail.id)?.paymentDetailsPayers.push({
               ...row.payment_details_payers,
-              ...row.user,
+              ...(row.user ?? {}),
             });
           }
         }
