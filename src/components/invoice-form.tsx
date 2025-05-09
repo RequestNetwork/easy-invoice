@@ -35,6 +35,7 @@ import type {
 } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { Plus, Terminal, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
@@ -273,12 +274,14 @@ export function InvoiceForm({
   isLoading,
   recipientDetails,
 }: InvoiceFormProps) {
+  const router = useRouter();
   const [showBankAccountModal, setShowBankAccountModal] = useState(false);
   const [showPendingApprovalModal, setShowPendingApprovalModal] =
     useState(false);
   const [waitingForPaymentApproval, setWaitingForPaymentApproval] =
     useState(false);
   const [invoiceCreated, setInvoiceCreated] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [linkedPaymentDetails, setLinkedPaymentDetails] = useState<
     LinkedPaymentDetail[]
   >([]);
@@ -286,6 +289,11 @@ export function InvoiceForm({
   // Define a stable reference to the submit handler
   const handleFormSubmit = useCallback(
     async (data: InvoiceFormValues) => {
+      // Prevent multiple submissions
+      if (isSubmitting) return;
+
+      setIsSubmitting(true);
+
       // If Crypto to Fiat is enabled but no payment details are linked, show error
       if (data.isCryptoToFiatAvailable && !data.paymentDetailsId) {
         // Set form error for paymentDetailsId
@@ -293,6 +301,7 @@ export function InvoiceForm({
           type: "required",
           message: "Please select a payment method for Crypto to Fiat payment",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -310,12 +319,14 @@ export function InvoiceForm({
             if (payer.status === "pending") {
               setShowPendingApprovalModal(true);
               setWaitingForPaymentApproval(true);
+              setIsSubmitting(false);
               return;
             }
             if (payer.status !== "approved") {
               toast.error(
                 "Cannot create invoice with unapproved payment method",
               );
+              setIsSubmitting(false);
               return;
             }
           }
@@ -323,9 +334,12 @@ export function InvoiceForm({
       }
 
       try {
-        onSubmit(data);
+        await onSubmit(data);
         setInvoiceCreated(true);
         setWaitingForPaymentApproval(false);
+
+        // Redirect to Dashboard
+        router.push("/dashboard");
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -334,17 +348,18 @@ export function InvoiceForm({
         );
         setInvoiceCreated(false);
         setWaitingForPaymentApproval(false);
+        setIsSubmitting(false);
       }
     },
-    [linkedPaymentDetails, onSubmit, form.setError],
+    [linkedPaymentDetails, onSubmit, form.setError, isSubmitting, router],
   );
 
-  // Add timeout effect for bank account modal
+  // Add timeout effect for pending approval modal
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    if (showBankAccountModal) {
+    if (showPendingApprovalModal) {
       timeoutId = setTimeout(() => {
-        setShowBankAccountModal(false);
+        setShowPendingApprovalModal(false);
         toast.error("Bank account approval timed out. Please try again.");
       }, BANK_ACCOUNT_APPROVAL_TIMEOUT);
     }
@@ -353,7 +368,7 @@ export function InvoiceForm({
         clearTimeout(timeoutId);
       }
     };
-  }, [showBankAccountModal]);
+  }, [showPendingApprovalModal]);
 
   const { fields, append, remove } = useFieldArray({
     name: "items",
@@ -926,9 +941,9 @@ export function InvoiceForm({
           <Button
             type="submit"
             className="bg-black hover:bg-zinc-800 text-white transition-colors"
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
           >
-            {isLoading
+            {isLoading || isSubmitting
               ? "Creating..."
               : invoiceCreated
                 ? "Invoice created"
