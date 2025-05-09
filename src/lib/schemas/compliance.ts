@@ -346,29 +346,36 @@ const baseFormSchema = z.object({
 
 // Export the schema with all refinements
 export const complianceFormSchema = baseFormSchema
+  // Validate companyName for businesses
   .refine(
-    (data) => {
-      // Validate that companyName is provided for businesses
-      if (
-        data.beneficiaryType === BeneficiaryType.BUSINESS &&
-        !data.companyName
-      ) {
-        return false;
-      }
-
-      // Validate that sourceOfFunds and businessActivity are provided for businesses
-      if (
-        data.beneficiaryType === BeneficiaryType.BUSINESS &&
-        (!data.sourceOfFunds || !data.businessActivity)
-      ) {
-        return false;
-      }
-
-      return true;
-    },
+    (data) =>
+      !(data.beneficiaryType === BeneficiaryType.BUSINESS && !data.companyName),
     {
-      message: "Missing required fields based on beneficiary type",
-      path: ["beneficiaryType"],
+      message: "Company name is required for business beneficiaries",
+      path: ["companyName"],
+    },
+  )
+  // Validate sourceOfFunds for businesses
+  .refine(
+    (data) =>
+      !(
+        data.beneficiaryType === BeneficiaryType.BUSINESS && !data.sourceOfFunds
+      ),
+    {
+      message: "Source of funds is required for business beneficiaries",
+      path: ["sourceOfFunds"],
+    },
+  )
+  // Validate businessActivity for businesses
+  .refine(
+    (data) =>
+      !(
+        data.beneficiaryType === BeneficiaryType.BUSINESS &&
+        !data.businessActivity
+      ),
+    {
+      message: "Business activity is required for business beneficiaries",
+      path: ["businessActivity"],
     },
   )
   .refine(
