@@ -92,8 +92,8 @@ export function ComplianceForm({ user }: { user: User }) {
               agreementUrl: data.data.agreementUrl ?? null,
               kycUrl: data.data.kycUrl ?? null,
               status: {
-                agreementStatus: data.data.agreementStatus,
-                kycStatus: data.data.kycStatus,
+                agreementStatus: data.data.agreementStatus as StatusType,
+                kycStatus: data.data.kycStatus as StatusType,
                 isCompliant: data.data.isCompliant,
               },
             });

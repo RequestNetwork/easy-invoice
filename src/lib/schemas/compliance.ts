@@ -306,11 +306,6 @@ const baseFormSchema = z.object({
   dateOfBirth: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
-    .pipe(
-      z.coerce.date({
-        errorMap: () => ({ message: "Invalid date" }),
-      }),
-    )
     .describe("Date of birth in YYYY-MM-DD format"),
   addressLine1: z.string().min(1, "Address is required"),
   addressLine2: z.string().optional(),
