@@ -286,7 +286,13 @@ export const complianceFormSchema = z
         /^\+[1-9]\d{1,14}$/,
         "Phone number must be in E.164 format (e.g., +12025550123)",
       ),
-    ssn: z.string().min(1, "Social Security Number is required"),
+    ssn: z
+      .string()
+      .optional()
+      .refine(
+        (val) => !val || /^(?:\d{3}-\d{2}-\d{4}|\d{9})$/.test(val),
+        "SSN must be in format XXX-XX-XXXX or 9 consecutive digits",
+      ),
     sourceOfFunds: z.string().optional(),
     businessActivity: z.string().optional(),
   })
@@ -313,6 +319,19 @@ export const complianceFormSchema = z
     {
       message: "Missing required fields based on beneficiary type",
       path: ["beneficiaryType"],
+    },
+  )
+  .refine(
+    (data) => {
+      // SSN is required for US citizens or residents
+      if ((data.country === "US" || data.nationality === "US") && !data.ssn) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "SSN is required for US citizens or residents",
+      path: ["ssn"],
     },
   );
 
