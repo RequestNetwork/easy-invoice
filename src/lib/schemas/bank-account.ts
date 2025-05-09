@@ -279,9 +279,14 @@ const validateUSState = (data: any) => {
 const validateUSD = (data: any) => {
   if (data.currency !== "usd") return true;
 
+  // For SWIFT transfers, require SWIFT/BIC and either IBAN or account number
   if (data.rails === "swift") {
-    return !!data.swiftBic && (!!data.iban || !!data.accountNumber);
+    if (!data.swiftBic) return false;
+    if (!data.iban && !data.accountNumber) return false;
+    return true;
   }
+
+  // For local/wire transfers, require account number and routing number
   return !!data.accountNumber && !!data.routingNumber;
 };
 
@@ -300,7 +305,13 @@ const validateEUR = (data: any) => {
 const validateGBP = (data: any) => {
   if (data.currency !== "gbp") return true;
 
-  return !!data.iban && !!data.swiftBic;
+  // For SWIFT transfers, require IBAN and SWIFT/BIC
+  if (data.rails === "swift") {
+    return !!data.iban && !!data.swiftBic;
+  }
+
+  // For local/faster payments, require sort code and account number
+  return !!data.sortCode && !!data.accountNumber;
 };
 
 /**
@@ -407,20 +418,21 @@ export const bankAccountSchema = z
   })
   .refine(validateUSD, {
     message:
-      "For USD, account number and routing number are required (or SWIFT BIC and IBAN for swift rails)",
-    path: ["accountNumber"],
+      "For USD with SWIFT rails: SWIFT/BIC code and either IBAN or account number are required. For local/wire rails: account number and routing number are required.",
+    path: [], // Point to root level since multiple fields could be missing
   })
   .refine(validateEUR, {
     message: "For EUR, IBAN is required (and SWIFT BIC for swift rails)",
     path: ["iban"],
   })
   .refine(validateGBP, {
-    message: "For GBP, IBAN and SWIFT BIC are required",
-    path: ["iban"],
+    message:
+      "For GBP with SWIFT rails: IBAN and SWIFT BIC are required. For local payments: sort code and account number are required.",
+    path: [], // Point to root level since multiple fields could be missing
   })
   .refine(validateINR, {
     message: "For INR, account number, SWIFT BIC, and IFSC are required",
-    path: ["accountNumber"],
+    path: [], // Point to root level since multiple fields could be missing
   });
 
 export type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
