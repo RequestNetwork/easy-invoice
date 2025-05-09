@@ -176,11 +176,13 @@ const PaymentDetailsSelect = ({
   clientEmail,
   onSelect,
   defaultValue,
+  error,
 }: {
   details: LinkedPaymentDetail[];
   clientEmail: string;
   onSelect: (value: string) => void;
   defaultValue?: string;
+  error?: string;
 }) => (
   <div className="space-y-2">
     <Select onValueChange={onSelect} defaultValue={defaultValue}>
@@ -197,6 +199,7 @@ const PaymentDetailsSelect = ({
         ))}
       </SelectContent>
     </Select>
+    {error && <p className="text-sm text-red-500">{error}</p>}
   </div>
 );
 
@@ -209,6 +212,7 @@ const PaymentDetailsSection = ({
   onAddBankAccount,
   onSelectPaymentDetails,
   selectedPaymentDetailsId,
+  error,
 }: {
   clientEmail: string;
   isLoadingUser: boolean;
@@ -225,6 +229,7 @@ const PaymentDetailsSection = ({
   onAddBankAccount: () => void;
   onSelectPaymentDetails: (value: string) => void;
   selectedPaymentDetailsId?: string;
+  error?: string;
 }) => {
   if (!clientEmail) {
     return (
@@ -257,6 +262,7 @@ const PaymentDetailsSection = ({
       clientEmail={clientEmail}
       onSelect={onSelectPaymentDetails}
       defaultValue={selectedPaymentDetailsId}
+      error={error}
     />
   );
 };
@@ -280,9 +286,13 @@ export function InvoiceForm({
   // Define a stable reference to the submit handler
   const handleFormSubmit = useCallback(
     async (data: InvoiceFormValues) => {
-      // If Crypto to Fiat is enabled but no payment details are linked, show bank account modal
+      // If Crypto to Fiat is enabled but no payment details are linked, show error
       if (data.isCryptoToFiatAvailable && !data.paymentDetailsId) {
-        setShowBankAccountModal(true);
+        // Set form error for paymentDetailsId
+        form.setError("paymentDetailsId", {
+          type: "required",
+          message: "Please select a payment method for Crypto to Fiat payment",
+        });
         return;
       }
 
@@ -326,7 +336,7 @@ export function InvoiceForm({
         setWaitingForPaymentApproval(false);
       }
     },
-    [linkedPaymentDetails, onSubmit],
+    [linkedPaymentDetails, onSubmit, form.setError],
   );
 
   // Add timeout effect for bank account modal
@@ -844,25 +854,22 @@ export function InvoiceForm({
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="walletAddress">Your Wallet Address</Label>
-          <Input
-            {...form.register("walletAddress")}
-            placeholder="Enter your wallet address"
-          />
-          {form.formState.errors.walletAddress && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.walletAddress.message}
-            </p>
-          )}
-        </div>
-
         <div className="flex items-center space-x-2">
           <Checkbox
             id="isCryptoToFiatAvailable"
             checked={form.watch("isCryptoToFiatAvailable")}
             onCheckedChange={(checked) => {
               form.setValue("isCryptoToFiatAvailable", checked === true);
+              // When toggling, clear the fields that are no longer relevant
+              if (checked === true) {
+                // Clear wallet address when enabling crypto to fiat
+                form.setValue("walletAddress", "");
+                form.clearErrors("walletAddress");
+              } else {
+                // Clear payment details when disabling crypto to fiat
+                form.setValue("paymentDetailsId", "");
+                form.clearErrors("paymentDetailsId");
+              }
             }}
           />
           <Label htmlFor="isCryptoToFiatAvailable">
@@ -872,18 +879,46 @@ export function InvoiceForm({
 
         {form.watch("isCryptoToFiatAvailable") && (
           <div className="space-y-2">
-            <Label htmlFor="paymentDetailsId">Payment Method</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="paymentDetailsId">Payment Method</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBankAccountModal(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add New
+              </Button>
+            </div>
             <PaymentDetailsSection
               clientEmail={clientEmail}
               isLoadingUser={isLoadingUser}
               clientUserData={clientUserData}
               linkedPaymentDetails={linkedPaymentDetails}
               onAddBankAccount={() => setShowBankAccountModal(true)}
-              onSelectPaymentDetails={(value) =>
-                form.setValue("paymentDetailsId", value)
-              }
+              onSelectPaymentDetails={(value) => {
+                form.setValue("paymentDetailsId", value);
+                // Clear the error when a payment method is selected
+                form.clearErrors("paymentDetailsId");
+              }}
               selectedPaymentDetailsId={form.getValues("paymentDetailsId")}
+              error={form.formState.errors.paymentDetailsId?.message}
             />
+          </div>
+        )}
+
+        {!form.watch("isCryptoToFiatAvailable") && (
+          <div className="space-y-2">
+            <Label htmlFor="walletAddress">Your Wallet Address</Label>
+            <Input
+              {...form.register("walletAddress")}
+              placeholder="Enter your wallet address"
+            />
+            {form.formState.errors.walletAddress && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.walletAddress.message}
+              </p>
+            )}
           </div>
         )}
 

@@ -328,13 +328,7 @@ const baseFormSchema = z.object({
       /^\+[1-9]\d{1,14}$/,
       "Phone number must be in E.164 format (e.g., +12025550123)",
     ),
-  ssn: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || /^(?:\d{3}-\d{2}-\d{4}|\d{9})$/.test(val),
-      "SSN must be in format XXX-XX-XXXX or 9 consecutive digits",
-    ),
+  ssn: z.string(),
   sourceOfFunds: z.string().optional(),
   businessActivity: z.string().optional(),
 });

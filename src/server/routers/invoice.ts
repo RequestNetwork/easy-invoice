@@ -18,9 +18,13 @@ const createInvoiceHelper = async (
     0,
   );
 
+  const payee = input.isCryptoToFiatAvailable
+    ? process.env.PROTOCOL_WALLET_ADDRESS_FOR_CRYPTO_TO_FIAT
+    : input.walletAddress;
+
   const response = await apiClient.post("/v2/request", {
     amount: totalAmount.toString(),
-    payee: input.walletAddress,
+    payee,
     invoiceCurrency: input.invoiceCurrency,
     paymentCurrency: input.paymentCurrency,
     isCryptoToFiatAvailable: input.isCryptoToFiatAvailable,
@@ -42,7 +46,7 @@ const createInvoiceHelper = async (
       paymentCurrency: input.paymentCurrency,
       type: "invoice",
       status: "pending",
-      payee: input.walletAddress,
+      payee,
       dueDate: new Date(input.dueDate).toISOString(),
       requestId: response.data.requestId as string,
       paymentReference: response.data.paymentReference as string,

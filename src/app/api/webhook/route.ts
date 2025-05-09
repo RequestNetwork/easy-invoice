@@ -8,7 +8,7 @@ import {
   requestTable,
   userTable,
 } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, not } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ulid } from "ulid";
 
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       case "payment.confirmed":
         await updateRequestStatus(
           requestId,
-          isCryptoToFiat ? "crypto_paid" : "paid",
+          isCryptoToFiat ? "crypto paid" : "paid",
         );
         break;
       case "settlement.initiated":
@@ -164,9 +164,12 @@ export async function POST(req: Request) {
             status: body.status,
           })
           .where(
-            eq(
-              paymentDetailsPayersTable.paymentDetailsIdReference,
-              body.paymentDetailsId,
+            and(
+              eq(
+                paymentDetailsPayersTable.paymentDetailsIdReference,
+                body.paymentDetailsId,
+              ),
+              not(eq(paymentDetailsPayersTable.status, "approved")),
             ),
           )
           .returning({ id: paymentDetailsPayersTable.id });

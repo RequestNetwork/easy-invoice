@@ -25,9 +25,7 @@ export const invoiceFormSchema = z
       required_error: "Please select an invoice currency",
     }),
     paymentCurrency: z.string().min(1, "Payment currency is required"),
-    walletAddress: z
-      .string()
-      .refine(isEthereumAddress, "Invalid wallet address"),
+    walletAddress: z.string().optional(),
     isRecurring: z.boolean().default(false),
     startDate: z.string().optional(),
     frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
@@ -45,6 +43,32 @@ export const invoiceFormSchema = z
     {
       message: "Start date and frequency are required for recurring invoices",
       path: ["isRecurring"],
+    },
+  )
+  .refine(
+    (data) => {
+      // Wallet address is required when crypto to fiat is not enabled
+      if (!data.isCryptoToFiatAvailable) {
+        return !!data.walletAddress && isEthereumAddress(data.walletAddress);
+      }
+      return true;
+    },
+    {
+      message: "Valid wallet address is required for direct crypto payments",
+      path: ["walletAddress"],
+    },
+  )
+  .refine(
+    (data) => {
+      // Payment details are required when crypto to fiat is enabled
+      if (data.isCryptoToFiatAvailable) {
+        return !!data.paymentDetailsId;
+      }
+      return true;
+    },
+    {
+      message: "Please select a payment method for Crypto to Fiat payment",
+      path: ["paymentDetailsId"],
     },
   );
 

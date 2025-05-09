@@ -355,51 +355,18 @@ export const bankAccountSchema = z
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
       .describe("Date of birth in YYYY-MM-DD format")
       .optional(),
-    sortCode: z
-      .string()
-      .regex(/^\d{6}$/, "Sort code must be 6 digits")
-      .optional(),
-    iban: z
-      .string()
-      .regex(
-        /^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/,
-        "IBAN must follow the standard format",
-      )
-      .optional(),
-    swiftBic: z
-      .string()
-      .regex(
-        /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/,
-        "SWIFT/BIC must be 8 or 11 characters",
-      )
-      .optional(),
+    sortCode: z.string().optional(),
+    iban: z.string().optional(),
+    swiftBic: z.string().optional(),
     documentNumber: z.string().optional(),
     documentType: z.string().optional(),
     accountType: z.enum(["checking", "savings"]).default("checking"),
-    ribNumber: z
-      .string()
-      .regex(/^\d{23}$/, "RIB number must be 23 digits")
-      .optional(),
-    bsbNumber: z
-      .string()
-      .regex(/^\d{6}$/, "BSB number must be 6 digits")
-      .optional(),
-    ncc: z
-      .string()
-      .regex(/^\d{5,20}$/, "NCC must be 5-20 digits")
-      .optional(),
-    branchCode: z
-      .string()
-      .regex(/^\d{3,8}$/, "Branch code must be 3-8 digits")
-      .optional(),
-    bankCode: z
-      .string()
-      .regex(/^\d{3,8}$/, "Bank code must be 3-8 digits")
-      .optional(),
-    ifsc: z
-      .string()
-      .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "IFSC must follow the standard format")
-      .optional(),
+    ribNumber: z.string().optional(),
+    bsbNumber: z.string().optional(),
+    ncc: z.string().optional(),
+    branchCode: z.string().optional(),
+    bankCode: z.string().optional(),
+    ifsc: z.string().optional(),
     phone: z
       .string()
       .regex(/^\+?[1-9]\d{1,14}$/, "Phone number must be in E.164 format")

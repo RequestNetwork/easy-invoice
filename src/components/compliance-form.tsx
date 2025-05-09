@@ -344,7 +344,9 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>First Name</FormLabel>
+                            <FormLabel>
+                              First Name<span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="John" {...field} />
                             </FormControl>
@@ -358,7 +360,9 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="lastName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Last Name</FormLabel>
+                            <FormLabel>
+                              Last Name<span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="Doe" {...field} />
                             </FormControl>
@@ -372,7 +376,10 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="beneficiaryType"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Beneficiary Type</FormLabel>
+                            <FormLabel>
+                              Beneficiary Type
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
@@ -403,7 +410,10 @@ export function ComplianceForm({ user }: { user: User }) {
                             name="companyName"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Company Name</FormLabel>
+                                <FormLabel>
+                                  Company Name
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
                                 <FormControl>
                                   <Input placeholder="Acme Inc." {...field} />
                                 </FormControl>
@@ -417,7 +427,10 @@ export function ComplianceForm({ user }: { user: User }) {
                             name="sourceOfFunds"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Source of Funds</FormLabel>
+                                <FormLabel>
+                                  Source of Funds
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
                                 <FormControl>
                                   <Input
                                     placeholder="Business Revenue"
@@ -434,7 +447,10 @@ export function ComplianceForm({ user }: { user: User }) {
                             name="businessActivity"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Business Activity</FormLabel>
+                                <FormLabel>
+                                  Business Activity
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
                                 <FormControl>
                                   <Input
                                     placeholder="Software Development"
@@ -453,7 +469,10 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="dateOfBirth"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Date of Birth</FormLabel>
+                            <FormLabel>
+                              Date of Birth
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input type="date" {...field} />
                             </FormControl>
@@ -467,7 +486,10 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="addressLine1"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Address Line 1</FormLabel>
+                            <FormLabel>
+                              Address Line 1
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="123 Main Street" {...field} />
                             </FormControl>
@@ -495,7 +517,9 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="city"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>City</FormLabel>
+                            <FormLabel>
+                              City<span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="New York" {...field} />
                             </FormControl>
@@ -509,7 +533,9 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="state"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>State</FormLabel>
+                            <FormLabel>
+                              State<span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="NY" {...field} />
                             </FormControl>
@@ -523,7 +549,9 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="postcode"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Postcode</FormLabel>
+                            <FormLabel>
+                              Postcode<span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="10001" {...field} />
                             </FormControl>
@@ -537,7 +565,9 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="country"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Country</FormLabel>
+                            <FormLabel>
+                              Country<span className="text-red-500">*</span>
+                            </FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
@@ -568,7 +598,9 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="nationality"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nationality</FormLabel>
+                            <FormLabel>
+                              Nationality<span className="text-red-500">*</span>
+                            </FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
@@ -599,7 +631,10 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Phone (E.164 format)</FormLabel>
+                            <FormLabel>
+                              Phone (E.164 format)
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 type="tel"
@@ -617,7 +652,10 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="ssn"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Social Security Number</FormLabel>
+                            <FormLabel>
+                              Social Security Number
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input placeholder="123-45-6789" {...field} />
                             </FormControl>
