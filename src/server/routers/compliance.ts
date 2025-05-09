@@ -1,10 +1,8 @@
 import { apiClient } from "@/lib/axios";
-import {
-  type BankAccountFormValues,
-  bankAccountSchema,
-} from "@/lib/schemas/bank-account";
+import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
 import { TRPCError } from "@trpc/server";
+import { AxiosError, type AxiosResponse } from "axios";
 import { eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
@@ -14,6 +12,25 @@ import {
   userTable,
 } from "../db/schema";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
+
+// Define interfaces for consistent return types
+interface ComplianceStatusResponse {
+  success: boolean;
+  data: {
+    kycStatus: string;
+    agreementStatus: string;
+    isCompliant: boolean;
+    [key: string]: any; // Allow for additional properties from the API
+  };
+}
+
+// Interface for payment details API response
+interface PaymentDetailApiResponse {
+  payment_detail: {
+    id: string;
+    [key: string]: unknown;
+  };
+}
 
 export const complianceRouter = router({
   submitComplianceInfo: publicProcedure
@@ -89,7 +106,7 @@ export const complianceRouter = router({
         clientUserId: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input }): Promise<ComplianceStatusResponse> => {
       try {
         // Get the compliance status from Request Network
         try {
@@ -109,10 +126,10 @@ export const complianceRouter = router({
             success: true,
             data: response.data,
           };
-        } catch (apiError: any) {
+        } catch (error: unknown) {
           // If the user doesn't exist yet in the compliance system, return default status
-          if (apiError.response?.status === 404) {
-            return {
+          if (error instanceof AxiosError && error.response?.status === 404) {
+            const defaultResponse: ComplianceStatusResponse = {
               success: true,
               data: {
                 kycStatus: "not_started",
@@ -120,14 +137,15 @@ export const complianceRouter = router({
                 isCompliant: false,
               },
             };
+            return defaultResponse;
           }
 
           // Wrap API errors in a proper TRPCError
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message:
-              apiError instanceof Error
-                ? `API Error: ${apiError.message}`
+              error instanceof Error
+                ? `API Error: ${error.message}`
                 : "Failed to get compliance status from API",
           });
         }
@@ -160,31 +178,90 @@ export const complianceRouter = router({
     .mutation(async ({ ctx, input }) => {
       try {
         const { userId, paymentDetailsData } = input;
-        // Filter out undefined values before inserting
-        const filteredData = Object.fromEntries(
-          Object.entries(paymentDetailsData).filter(
-            ([_, v]) => v !== undefined,
-          ),
-        ) as BankAccountFormValues;
 
-        // Type assertion to ensure gender is one of the expected values
-        const typedData = {
-          ...filteredData,
-          gender: filteredData.gender as
-            | "male"
-            | "female"
-            | "other"
-            | "prefer_not_to_say"
-            | undefined
-            | null,
-        };
+        // Let's use a direct type-safe approach by explicitly creating a record
+        // that matches the expected database schema types
+
+        // Handle the gender field specially to ensure it matches the enum type
+        let genderValue = null;
+        if (paymentDetailsData.gender) {
+          // Make sure gender is one of the accepted enum values
+          if (
+            ["male", "female", "other", "prefer_not_to_say"].includes(
+              paymentDetailsData.gender,
+            )
+          ) {
+            genderValue = paymentDetailsData.gender;
+          }
+        }
+
+        // Construct a record that explicitly matches the database schema
+        const paymentDetailsRecord = {
+          id: ulid(),
+          userId,
+          bankName: paymentDetailsData.bankName,
+          accountName: paymentDetailsData.accountName,
+          beneficiaryType: paymentDetailsData.beneficiaryType,
+          currency: paymentDetailsData.currency,
+          addressLine1: paymentDetailsData.addressLine1,
+          city: paymentDetailsData.city,
+          postalCode: paymentDetailsData.postalCode,
+          country: paymentDetailsData.country,
+        } as const;
+
+        // Create an object with optional fields
+        const optionalFields: Record<string, unknown> = {};
+
+        // Add optional fields only if they are defined
+        if (paymentDetailsData.accountNumber !== undefined)
+          optionalFields.accountNumber = paymentDetailsData.accountNumber;
+        if (paymentDetailsData.routingNumber !== undefined)
+          optionalFields.routingNumber = paymentDetailsData.routingNumber;
+        if (paymentDetailsData.rails !== undefined)
+          optionalFields.rails = paymentDetailsData.rails;
+        if (paymentDetailsData.addressLine2 !== undefined)
+          optionalFields.addressLine2 = paymentDetailsData.addressLine2;
+        if (paymentDetailsData.state !== undefined)
+          optionalFields.state = paymentDetailsData.state;
+        if (paymentDetailsData.dateOfBirth !== undefined)
+          optionalFields.dateOfBirth = paymentDetailsData.dateOfBirth;
+        if (paymentDetailsData.sortCode !== undefined)
+          optionalFields.sortCode = paymentDetailsData.sortCode;
+        if (paymentDetailsData.iban !== undefined)
+          optionalFields.iban = paymentDetailsData.iban;
+        if (paymentDetailsData.swiftBic !== undefined)
+          optionalFields.swiftBic = paymentDetailsData.swiftBic;
+        if (paymentDetailsData.documentNumber !== undefined)
+          optionalFields.documentNumber = paymentDetailsData.documentNumber;
+        if (paymentDetailsData.documentType !== undefined)
+          optionalFields.documentType = paymentDetailsData.documentType;
+        if (paymentDetailsData.accountType !== undefined)
+          optionalFields.accountType = paymentDetailsData.accountType;
+        if (paymentDetailsData.ribNumber !== undefined)
+          optionalFields.ribNumber = paymentDetailsData.ribNumber;
+        if (paymentDetailsData.bsbNumber !== undefined)
+          optionalFields.bsbNumber = paymentDetailsData.bsbNumber;
+        if (paymentDetailsData.ncc !== undefined)
+          optionalFields.ncc = paymentDetailsData.ncc;
+        if (paymentDetailsData.branchCode !== undefined)
+          optionalFields.branchCode = paymentDetailsData.branchCode;
+        if (paymentDetailsData.bankCode !== undefined)
+          optionalFields.bankCode = paymentDetailsData.bankCode;
+        if (paymentDetailsData.ifsc !== undefined)
+          optionalFields.ifsc = paymentDetailsData.ifsc;
+        if (paymentDetailsData.phone !== undefined)
+          optionalFields.phone = paymentDetailsData.phone;
+        if (paymentDetailsData.businessActivity !== undefined)
+          optionalFields.businessActivity = paymentDetailsData.businessActivity;
+        if (paymentDetailsData.nationality !== undefined)
+          optionalFields.nationality = paymentDetailsData.nationality;
+        if (genderValue !== null) optionalFields.gender = genderValue;
 
         const paymentDetails = await ctx.db
           .insert(paymentDetailsTable)
           .values({
-            id: ulid(),
-            userId: userId,
-            ...typedData, // Use typed data instead of filteredData
+            ...paymentDetailsRecord,
+            ...optionalFields,
           })
           .returning();
 
@@ -270,16 +347,18 @@ export const complianceRouter = router({
           ),
         );
 
-        let response: any;
+        let response: AxiosResponse<PaymentDetailApiResponse>;
         try {
-          response = await apiClient.post(
+          response = await apiClient.post<PaymentDetailApiResponse>(
             `/v2/payer/payment-details/${payerEmail}`,
             cleanedPaymentDetails,
           );
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error(
             "Error creating payment details:",
-            JSON.stringify(error?.response?.data),
+            error instanceof AxiosError
+              ? JSON.stringify(error.response?.data)
+              : error,
           );
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -295,18 +374,22 @@ export const complianceRouter = router({
           paymentDetailsId: paymentDetailsId,
           payerId: payerUser.id,
           status: "pending",
-          paymentDetailsIdReference: response?.data?.payment_detail?.id,
+          paymentDetailsIdReference: response.data?.payment_detail?.id,
         });
 
         return {
           success: true,
-          paymentDetails: response?.data?.payment_detail,
+          paymentDetails: response.data.payment_detail,
           message: "Payment details allowed successfully",
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(
           "Error allowing payment details:",
-          JSON.stringify(error?.response?.data || error),
+          error instanceof AxiosError
+            ? JSON.stringify(error.response?.data)
+            : error instanceof Error
+              ? error.message
+              : error,
         );
 
         // If error is already a TRPCError, rethrow it
