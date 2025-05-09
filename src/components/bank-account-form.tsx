@@ -40,7 +40,7 @@ interface BankAccountFormProps {
   onSuccess: (result: {
     success: boolean;
     message: string;
-    paymentDetails: PaymentDetails;
+    paymentDetails: PaymentDetails | null;
   }) => void;
   onCancel?: () => void;
 }
@@ -65,7 +65,7 @@ export function BankAccountForm({
         message:
           error.message ||
           "Failed to create payment details. Please try again.",
-        paymentDetails: null as any,
+        paymentDetails: null,
       });
     },
   });
@@ -78,13 +78,13 @@ export function BankAccountForm({
       accountName: "",
       bankName: "",
       accountNumber: "",
-      currency: "",
+      currency: "usd",
       addressLine1: "",
       addressLine2: "",
       city: "",
       state: "",
       postalCode: "",
-      country: "",
+      country: undefined,
       dateOfBirth: "",
       routingNumber: "",
       sortCode: "",
