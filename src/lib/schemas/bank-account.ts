@@ -1,12 +1,14 @@
 import { z } from "zod";
 
+export const supportedCurrencies = ["usd", "eur", "gbp", "inr"] as const;
+
 export const bankAccountSchema = z
   .object({
     // Core required fields for all currencies
     bankName: z.string().min(1, "Bank name is required"),
     accountName: z.string().min(1, "Account name is required"),
     beneficiaryType: z.enum(["individual", "business"]),
-    currency: z.string().min(3).max(3).default("usd"),
+    currency: z.enum(supportedCurrencies).default("usd"),
     addressLine1: z.string().min(1, "Address is required"),
     city: z.string().min(1, "City is required"),
     postalCode: z.string().min(1, "Postal code is required"),
