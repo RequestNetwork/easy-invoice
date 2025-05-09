@@ -493,6 +493,7 @@ export const complianceRouter = router({
             id: true,
             email: true,
             name: true,
+            isCompliant: true,
           },
         });
 

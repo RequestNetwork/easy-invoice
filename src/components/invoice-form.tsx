@@ -107,7 +107,7 @@ interface InvoiceFormProps {
 }
 
 // Payment Details Status Component
-const PaymentDetailsStatus = ({ status }: { status: string }) => (
+const PaymentDetailsStatus = ({ status }: { status: string | null }) => (
   <span
     className={`ml-2 text-xs font-medium ${
       status === "approved"
@@ -212,7 +212,15 @@ const PaymentDetailsSection = ({
 }: {
   clientEmail: string;
   isLoadingUser: boolean;
-  clientUserData: User | null | undefined;
+  clientUserData:
+    | {
+        id: string;
+        name: string | null;
+        email: string | null;
+        isCompliant: boolean | null;
+      }
+    | null
+    | undefined;
   linkedPaymentDetails: LinkedPaymentDetail[] | undefined;
   onAddBankAccount: () => void;
   onSelectPaymentDetails: (value: string) => void;
@@ -436,25 +444,32 @@ export function InvoiceForm({
     });
 
   const handleBankAccountSuccess = async (result: {
-    paymentDetails: { id: string; userId: string };
+    success: boolean;
+    message: string;
+    paymentDetails: PaymentDetails | null;
   }) => {
     setShowBankAccountModal(false);
 
     try {
-      // Link the payment method to the client
-      await allowPaymentDetailsMutation.mutateAsync({
-        userId: result.paymentDetails.userId,
-        paymentDetailsId: result.paymentDetails.id,
-        payerEmail: clientEmail,
-      });
+      // Only proceed if we have payment details
+      if (result.success && result.paymentDetails) {
+        // Link the payment method to the client
+        await allowPaymentDetailsMutation.mutateAsync({
+          userId: result.paymentDetails.userId,
+          paymentDetailsId: result.paymentDetails.id,
+          payerEmail: clientEmail,
+        });
 
-      // Update the form with the new payment details
-      form.setValue("paymentDetailsId", result.paymentDetails.id);
+        // Update the form with the new payment details
+        form.setValue("paymentDetailsId", result.paymentDetails.id);
 
-      // Refetch payment details to update the UI
-      await refetchPaymentDetails();
+        // Refetch payment details to update the UI
+        await refetchPaymentDetails();
 
-      toast.success("Payment method linked successfully");
+        toast.success("Payment method linked successfully");
+      } else {
+        toast.error(result.message || "Failed to create payment details");
+      }
     } catch (error) {
       console.error("Error linking payment method:", error);
       toast.error("Failed to link payment method to client");
@@ -473,7 +488,15 @@ export function InvoiceForm({
           </DialogHeader>
           {clientUserData && (
             <BankAccountForm
-              user={clientUserData}
+              user={{
+                id: clientUserData.id,
+                email: clientUserData.email,
+                name: clientUserData.name,
+                googleId: null,
+                agreementStatus: null,
+                kycStatus: null,
+                isCompliant: clientUserData.isCompliant,
+              }}
               onSuccess={handleBankAccountSuccess}
               onCancel={() => setShowBankAccountModal(false)}
             />
