@@ -31,7 +31,13 @@ export const complianceRouter = router({
         };
       } catch (error) {
         console.error("Compliance API error:", error);
-        throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            error instanceof Error
+              ? `Failed to submit compliance information: ${error.message}`
+              : "Failed to submit compliance information",
+        });
       }
     }),
 
@@ -51,7 +57,7 @@ export const complianceRouter = router({
 
         if (response.status !== 200) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: "INTERNAL_SERVER_ERROR",
             message:
               response.data?.message || "Failed to update agreement status",
           });
@@ -93,7 +99,7 @@ export const complianceRouter = router({
 
           if (response.status !== 200) {
             throw new TRPCError({
-              code: "BAD_REQUEST",
+              code: "INTERNAL_SERVER_ERROR",
               message:
                 response.data?.message || "Failed to get compliance status",
             });
@@ -116,16 +122,28 @@ export const complianceRouter = router({
             };
           }
 
-          // Re-throw for other API errors
-          throw apiError;
+          // Wrap API errors in a proper TRPCError
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              apiError instanceof Error
+                ? `API Error: ${apiError.message}`
+                : "Failed to get compliance status from API",
+          });
         }
       } catch (error) {
         console.error("Error getting compliance status:", error);
+
+        // If error is already a TRPCError, rethrow it
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
             error instanceof Error
-              ? error.message
+              ? `Failed to get compliance status: ${error.message}`
               : "Failed to get compliance status",
         });
       }
@@ -149,12 +167,24 @@ export const complianceRouter = router({
           ),
         ) as BankAccountFormValues;
 
+        // Type assertion to ensure gender is one of the expected values
+        const typedData = {
+          ...filteredData,
+          gender: filteredData.gender as
+            | "male"
+            | "female"
+            | "other"
+            | "prefer_not_to_say"
+            | undefined
+            | null,
+        };
+
         const paymentDetails = await ctx.db
           .insert(paymentDetailsTable)
           .values({
             id: ulid(),
             userId: userId,
-            ...filteredData, // Include all other optional fields
+            ...typedData, // Use typed data instead of filteredData
           })
           .returning();
 
@@ -165,12 +195,33 @@ export const complianceRouter = router({
         };
       } catch (error) {
         console.error("Error creating payment details:", error);
+
+        // Check for database-specific errors that could be made more user-friendly
+        const errorMessage = error instanceof Error ? error.message : "";
+        let code: "INTERNAL_SERVER_ERROR" | "BAD_REQUEST" | "CONFLICT" =
+          "INTERNAL_SERVER_ERROR";
+        let message = "Failed to create payment details";
+
+        // Add specific error detection if needed
+        if (
+          errorMessage.includes("duplicate key") ||
+          errorMessage.includes("unique constraint")
+        ) {
+          code = "CONFLICT";
+          message = "Payment details with these values already exist";
+        } else if (
+          errorMessage.includes("validation") ||
+          errorMessage.includes("constraint")
+        ) {
+          code = "BAD_REQUEST";
+          message = "Invalid payment details provided";
+        } else if (error instanceof Error) {
+          message = `Failed to create payment details: ${error.message}`;
+        }
+
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to create payment details",
+          code,
+          message,
         });
       }
     }),
@@ -195,7 +246,7 @@ export const complianceRouter = router({
 
         if (!payerUser || !payerUser?.isCompliant) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: "INTERNAL_SERVER_ERROR",
             message: "Payer user is not compliant",
           });
         }
@@ -234,7 +285,7 @@ export const complianceRouter = router({
             code: "INTERNAL_SERVER_ERROR",
             message:
               error instanceof Error
-                ? error.message
+                ? `API Error: ${error.message}`
                 : "Failed to create payment details",
           });
         }
@@ -254,15 +305,22 @@ export const complianceRouter = router({
         };
       } catch (error: any) {
         console.error(
-          "Error creating payment details:",
-          JSON.stringify(error?.response?.data),
+          "Error allowing payment details:",
+          JSON.stringify(error?.response?.data || error),
         );
+
+        // If error is already a TRPCError, rethrow it
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        // Otherwise wrap it in a TRPCError
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
             error instanceof Error
-              ? error.message
-              : "Failed to create payment details",
+              ? `Failed to allow payment details: ${error.message}`
+              : "Failed to allow payment details",
         });
       }
     }),
@@ -324,8 +382,8 @@ export const complianceRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message:
             error instanceof Error
-              ? error.message
-              : "Failed to get payment details",
+              ? `Failed to retrieve payment details: ${error.message}`
+              : "Failed to retrieve payment details",
         });
       }
     }),
@@ -353,9 +411,18 @@ export const complianceRouter = router({
         };
       } catch (error) {
         console.error("Error getting payment details by ID:", error);
+
+        // If error is already a TRPCError, rethrow it
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get payment details by ID",
+          message:
+            error instanceof Error
+              ? `Failed to retrieve payment details by ID: ${error.message}`
+              : "Failed to retrieve payment details by ID",
         });
       }
     }),
@@ -363,17 +430,33 @@ export const complianceRouter = router({
   getUserByEmail: publicProcedure
     .input(z.object({ email: z.string().email() }))
     .query(async ({ ctx, input }) => {
-      const user = await ctx.db.query.userTable.findFirst({
-        where: eq(userTable.email, input.email),
-      });
+      try {
+        const user = await ctx.db.query.userTable.findFirst({
+          where: eq(userTable.email, input.email),
+        });
 
-      if (!user) {
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        return user;
+      } catch (error) {
+        // If error is already a TRPCError, rethrow it
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        console.error("Error finding user by email:", error);
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            error instanceof Error
+              ? `Failed to find user by email: ${error.message}`
+              : "Failed to find user by email",
         });
       }
-
-      return user;
     }),
 });
