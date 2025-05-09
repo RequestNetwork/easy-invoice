@@ -353,7 +353,8 @@ export const bankAccountSchema = z
     dateOfBirth: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
-      .describe("Date of birth in YYYY-MM-DD format"),
+      .describe("Date of birth in YYYY-MM-DD format")
+      .optional(),
     sortCode: z
       .string()
       .regex(/^\d{6}$/, "Sort code must be 6 digits")
