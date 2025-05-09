@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { COUNTRIES } from "@/lib/constants/compliance";
 import {
   BeneficiaryType,
   type ComplianceFormValues,
@@ -536,14 +537,27 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="country"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Country (2-letter code)</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="US"
-                                maxLength={2}
-                                {...field}
-                              />
-                            </FormControl>
+                            <FormLabel>Country</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select country" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {COUNTRIES.map((country) => (
+                                  <SelectItem
+                                    key={country.value}
+                                    value={country.value}
+                                  >
+                                    {country.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -554,14 +568,27 @@ export function ComplianceForm({ user }: { user: User }) {
                         name="nationality"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nationality (2-letter code)</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="US"
-                                maxLength={2}
-                                {...field}
-                              />
-                            </FormControl>
+                            <FormLabel>Nationality</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select nationality" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {COUNTRIES.map((country) => (
+                                  <SelectItem
+                                    key={country.value}
+                                    value={country.value}
+                                  >
+                                    {country.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
