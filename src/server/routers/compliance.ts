@@ -483,12 +483,17 @@ export const complianceRouter = router({
       }
     }),
 
-  getUserByEmail: publicProcedure
+  getUserByEmail: protectedProcedure
     .input(z.object({ email: z.string().email() }))
     .query(async ({ ctx, input }) => {
       try {
         const user = await ctx.db.query.userTable.findFirst({
           where: eq(userTable.email, input.email),
+          columns: {
+            id: true,
+            email: true,
+            name: true,
+          },
         });
 
         if (!user) {
