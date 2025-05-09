@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const supportedCurrencies = ["usd", "eur", "gbp", "inr"] as const;
+export type SupportedCurrency = (typeof supportedCurrencies)[number];
 
 // ISO 3166-1 alpha-2 country codes
 export const countryCodes = [
@@ -255,6 +256,62 @@ export const countryCodes = [
   "ZW",
 ] as const;
 
+// Define named refinement functions for better readability
+// These functions handle the currency-specific validations
+
+/**
+ * Validates that individual beneficiaries have a date of birth
+ */
+const validateIndividualDateOfBirth = (data: any) => {
+  return !(data.beneficiaryType === "individual" && !data.dateOfBirth);
+};
+
+/**
+ * Validates that US addresses include a state
+ */
+const validateUSState = (data: any) => {
+  return !(data.country === "US" && !data.state);
+};
+
+/**
+ * Validates USD account requirements based on the rails type
+ */
+const validateUSD = (data: any) => {
+  if (data.currency !== "usd") return true;
+
+  if (data.rails === "swift") {
+    return !!data.swiftBic && (!!data.iban || !!data.accountNumber);
+  }
+  return !!data.accountNumber && !!data.routingNumber;
+};
+
+/**
+ * Validates EUR account requirements based on the rails type
+ */
+const validateEUR = (data: any) => {
+  if (data.currency !== "eur") return true;
+
+  return !!data.iban && (data.rails !== "swift" || !!data.swiftBic);
+};
+
+/**
+ * Validates GBP account requirements
+ */
+const validateGBP = (data: any) => {
+  if (data.currency !== "gbp") return true;
+
+  return !!data.iban && !!data.swiftBic;
+};
+
+/**
+ * Validates INR account requirements
+ */
+const validateINR = (data: any) => {
+  if (data.currency !== "inr") return true;
+
+  return !!data.accountNumber && !!data.swiftBic && !!data.ifsc;
+};
+
 export const bankAccountSchema = z
   .object({
     // Core required fields for all currencies
@@ -339,72 +396,31 @@ export const bankAccountSchema = z
     nationality: z.string().optional(),
     gender: z.string().optional(),
   })
-  .refine(
-    (data) => !(data.beneficiaryType === "individual" && !data.dateOfBirth),
-    {
-      message: "Date of birth is required for individual beneficiaries",
-      path: ["dateOfBirth"],
-    },
-  )
-  .refine((data) => !(data.country === "US" && !data.state), {
+  // Apply all the named refinement functions
+  .refine(validateIndividualDateOfBirth, {
+    message: "Date of birth is required for individual beneficiaries",
+    path: ["dateOfBirth"],
+  })
+  .refine(validateUSState, {
     message: "State is required when country is US",
     path: ["state"],
   })
-  .refine(
-    (data) => {
-      // USD specific validations
-      if (data.currency === "usd") {
-        if (data.rails === "swift") {
-          return !!data.swiftBic && (!!data.iban || !!data.accountNumber);
-        }
-        return !!data.accountNumber && !!data.routingNumber;
-      }
-      return true;
-    },
-    {
-      message:
-        "For USD, account number and routing number are required (or SWIFT BIC and IBAN for swift rails)",
-      path: ["accountNumber"],
-    },
-  )
-  .refine(
-    (data) => {
-      // EUR specific validations
-      if (data.currency === "eur") {
-        return !!data.iban && (data.rails !== "swift" || !!data.swiftBic);
-      }
-      return true;
-    },
-    {
-      message: "For EUR, IBAN is required (and SWIFT BIC for swift rails)",
-      path: ["iban"],
-    },
-  )
-  .refine(
-    (data) => {
-      // GBP specific validations
-      if (data.currency === "gbp") {
-        return !!data.iban && !!data.swiftBic;
-      }
-      return true;
-    },
-    {
-      message: "For GBP, IBAN and SWIFT BIC are required",
-      path: ["iban"],
-    },
-  )
-  .refine(
-    (data) => {
-      // INR specific validations
-      if (data.currency === "inr") {
-        return !!data.accountNumber && !!data.swiftBic && !!data.ifsc;
-      }
-      return true;
-    },
-    {
-      message: "For INR, account number, SWIFT BIC, and IFSC are required",
-      path: ["accountNumber"],
-    },
-  );
+  .refine(validateUSD, {
+    message:
+      "For USD, account number and routing number are required (or SWIFT BIC and IBAN for swift rails)",
+    path: ["accountNumber"],
+  })
+  .refine(validateEUR, {
+    message: "For EUR, IBAN is required (and SWIFT BIC for swift rails)",
+    path: ["iban"],
+  })
+  .refine(validateGBP, {
+    message: "For GBP, IBAN and SWIFT BIC are required",
+    path: ["iban"],
+  })
+  .refine(validateINR, {
+    message: "For INR, account number, SWIFT BIC, and IFSC are required",
+    path: ["accountNumber"],
+  });
 
 export type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
