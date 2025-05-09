@@ -316,7 +316,7 @@ export const complianceRouter = router({
         let response: AxiosResponse<PaymentDetailApiResponse>;
         try {
           response = await apiClient.post<PaymentDetailApiResponse>(
-            `/v2/payer/payment-details/${payerEmail}`,
+            `/v2/payer/payment-details/${encodeURIComponent(payerEmail)}`,
             cleanedPaymentDetails,
           );
         } catch (error: unknown) {
