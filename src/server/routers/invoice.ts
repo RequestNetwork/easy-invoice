@@ -18,11 +18,16 @@ const createInvoiceHelper = async (
     0,
   );
 
-  const response = await apiClient.post("/v1/request", {
+  const payee = input.isCryptoToFiatAvailable
+    ? process.env.PROTOCOL_WALLET_ADDRESS_FOR_CRYPTO_TO_FIAT
+    : input.walletAddress;
+
+  const response = await apiClient.post("/v2/request", {
     amount: totalAmount.toString(),
-    payee: input.walletAddress,
+    payee,
     invoiceCurrency: input.invoiceCurrency,
     paymentCurrency: input.paymentCurrency,
+    isCryptoToFiatAvailable: input.isCryptoToFiatAvailable,
     ...(input.isRecurring && {
       recurrence: {
         startDate: input.startDate,
@@ -41,9 +46,9 @@ const createInvoiceHelper = async (
       paymentCurrency: input.paymentCurrency,
       type: "invoice",
       status: "pending",
-      payee: input.walletAddress,
+      payee,
       dueDate: new Date(input.dueDate).toISOString(),
-      requestId: response.data.requestID as string,
+      requestId: response.data.requestId as string,
       paymentReference: response.data.paymentReference as string,
       clientName: input.clientName,
       clientEmail: input.clientEmail,
@@ -60,12 +65,14 @@ const createInvoiceHelper = async (
             frequency: input.frequency,
           }
         : null,
+      isCryptoToFiatAvailable: input.isCryptoToFiatAvailable,
+      paymentDetailsId: input.paymentDetailsId,
     })
     .returning();
 
   return {
     success: true,
-    invoice: invoice[0],
+    invoice: invoice[0] || null,
   };
 };
 
@@ -87,6 +94,13 @@ export const invoiceRouter = router({
         where: eq(userTable.email, input.clientEmail),
       });
 
+      if (!clientUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Client not found",
+        });
+      }
+
       try {
         return await db.transaction(async (tx) => {
           return createInvoiceHelper(
@@ -100,7 +114,7 @@ export const invoiceRouter = router({
         });
       } catch (error) {
         console.error("Error: ", error);
-        return { success: false };
+        return { success: false, invoice: null };
       }
     }),
 
@@ -132,11 +146,17 @@ export const invoiceRouter = router({
       try {
         return await db.transaction(async (tx) => {
           // For invoice-me, the userId is the same as invoicedTo
-          return createInvoiceHelper(tx, input, input.invoicedTo as string);
+          return createInvoiceHelper(
+            tx,
+            {
+              ...input,
+            },
+            input.invoicedTo as string,
+          );
         });
       } catch (error) {
         console.error("Error: ", error);
-        return { success: false };
+        return { success: false, invoice: null };
       }
     }),
 
@@ -192,7 +212,7 @@ export const invoiceRouter = router({
   payRequest: publicProcedure
     .input(
       z.object({
-        paymentReference: z.string(),
+        requestId: z.string(),
         wallet: z.string().optional(),
         chain: z.string().optional(),
         token: z.string().optional(),
@@ -200,15 +220,33 @@ export const invoiceRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
+
+      // Get the request with its payment details
       const invoice = await db.query.requestTable.findFirst({
-        where: eq(requestTable.paymentReference, input.paymentReference),
+        where: eq(requestTable.requestId, input.requestId),
+        with: {
+          paymentDetails: {
+            with: {
+              payers: true,
+            },
+          },
+        },
       });
 
       if (!invoice) {
         return { success: false, message: "Invoice not found" };
       }
 
-      let paymentEndpoint = `/v1/request/${invoice.paymentReference}/pay?wallet=${input.wallet}`;
+      if (!invoice.paymentDetails) {
+        return { success: false, message: "Payment details not found" };
+      }
+
+      const paymentDetails = invoice.paymentDetails.payers[0];
+      if (!paymentDetails) {
+        return { success: false, message: "Payment details not found" };
+      }
+
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${paymentDetails.paymentDetailsIdReference}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;
@@ -232,14 +270,14 @@ export const invoiceRouter = router({
   stopRecurrence: publicProcedure
     .input(
       z.object({
-        paymentReference: z.string(),
+        requestId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { paymentReference } = input;
+      const { requestId } = input;
 
       const request = await apiClient.patch(
-        `/v1/request/${paymentReference}/stop-recurrence`,
+        `/v2/request/${requestId}/stop-recurrence`,
       );
 
       if (request.status !== 200) {
@@ -253,7 +291,7 @@ export const invoiceRouter = router({
         .set({
           isRecurrenceStopped: true,
         })
-        .where(eq(requestTable.paymentReference, paymentReference))
+        .where(eq(requestTable.requestId, requestId))
         .returning();
 
       if (!updatedInvoice.length) {
@@ -268,7 +306,7 @@ export const invoiceRouter = router({
   getPaymentRoutes: publicProcedure
     .input(
       z.object({
-        paymentReference: z.string(),
+        requestId: z.string(),
         walletAddress: z.string().refine(
           (val) => {
             return isEthereumAddress(val);
@@ -280,10 +318,10 @@ export const invoiceRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const { paymentReference, walletAddress } = input;
+      const { requestId, walletAddress } = input;
 
       const response = await apiClient.get(
-        `/v1/request/${paymentReference}/routes?wallet=${walletAddress}`,
+        `/v2/request/${requestId}/routes?wallet=${walletAddress}`,
       );
 
       if (response.status !== 200) {
@@ -306,7 +344,7 @@ export const invoiceRouter = router({
       const { paymentIntent, payload } = input;
 
       const response = await apiClient.post(
-        `/v1/request/${paymentIntent}/send`,
+        `/v2/request/${paymentIntent}/send`,
         payload,
       );
 

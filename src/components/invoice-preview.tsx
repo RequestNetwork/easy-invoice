@@ -1,13 +1,18 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
+import { formatDate, formatRecurringDate } from "@/lib/date-utils";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
-import { format } from "date-fns";
+import { api } from "@/trpc/react";
 
 interface InvoicePreviewProps {
   data: Partial<InvoiceFormValues>;
+  paymentDetailsId: string | undefined;
 }
 
-export function InvoicePreview({ data }: InvoicePreviewProps) {
+export function InvoicePreview({
+  data,
+  paymentDetailsId,
+}: InvoicePreviewProps) {
   const calculateTotal = () => {
     return (data.items || []).reduce(
       (total, item) => total + (item.quantity || 0) * (item.price || 0),
@@ -15,13 +20,13 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
     );
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-GB", {
-      year: "2-digit",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
+  const { data: selectedPaymentDetails } =
+    api.compliance.getPaymentDetailsById.useQuery(
+      typeof paymentDetailsId === "string" ? paymentDetailsId : "",
+      {
+        enabled: !!paymentDetailsId, // only fetch when we _have_ an id
+      },
+    );
 
   return (
     <Card className="w-full bg-white shadow-sm border-0">
@@ -54,9 +59,7 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
               <div className="text-sm flex items-center gap-1">
                 <span>↻ {data.frequency.toLowerCase()}</span>
                 {data.startDate && (
-                  <span>
-                    • Starting {format(new Date(data.startDate), "do MMM yyyy")}
-                  </span>
+                  <span>• Starting {formatRecurringDate(data.startDate)}</span>
                 )}
               </div>
             </div>
@@ -175,6 +178,55 @@ export function InvoicePreview({ data }: InvoicePreviewProps) {
                     )}
               </div>
             </div>
+
+            {/* Bank Account Details */}
+            {selectedPaymentDetails && (
+              <div>
+                <div className="text-xs text-neutral-500 mb-1">
+                  BANK ACCOUNT DETAILS
+                </div>
+                <div className="space-y-1 text-sm">
+                  {selectedPaymentDetails.paymentDetails.accountName && (
+                    <p>
+                      <b>Name:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.accountName}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.bankName && (
+                    <p>
+                      <b>Bank Name:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.bankName}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.accountNumber && (
+                    <p>
+                      <b>Account Number:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.accountNumber.replace(
+                        /^\d+(?=\d{4})/,
+                        "****",
+                      )}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.iban && (
+                    <p>
+                      <b>IBAN:</b> {selectedPaymentDetails.paymentDetails.iban}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.swiftBic && (
+                    <p>
+                      <b>SWIFT BIC:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.swiftBic}
+                    </p>
+                  )}
+                  {selectedPaymentDetails.paymentDetails.currency && (
+                    <p>
+                      <b>Currency:</b>{" "}
+                      {selectedPaymentDetails.paymentDetails.currency.toUpperCase()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           {data.notes && (
             <div>
