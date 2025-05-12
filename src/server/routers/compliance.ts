@@ -289,7 +289,7 @@ export const complianceRouter = router({
 
         if (!payerUser || !payerUser?.isCompliant) {
           throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
+            code: "FORBIDDEN",
             message: "Payer user is not compliant",
           });
         }
