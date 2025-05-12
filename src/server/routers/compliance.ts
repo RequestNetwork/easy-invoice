@@ -37,7 +37,7 @@ export const complianceRouter = router({
     .input(complianceFormSchema)
     .mutation(async ({ input }) => {
       try {
-        const complianceEndpoint = "/v2/payer/compliance";
+        const complianceEndpoint = "/v2/payer";
 
         const response = await apiClient.post(complianceEndpoint, input);
 
@@ -68,7 +68,7 @@ export const complianceRouter = router({
       try {
         // Make the API call to Request Network using apiClient
         const response = await apiClient.patch(
-          `/v2/payer/compliance/${input.clientUserId}`,
+          `/v2/payer/${input.clientUserId}`,
           { agreementCompleted: true },
         );
 
@@ -111,7 +111,7 @@ export const complianceRouter = router({
         // Get the compliance status from Request Network
         try {
           const response = await apiClient.get(
-            `/v2/payer/compliance/${input.clientUserId}`,
+            `/v2/payer/${input.clientUserId}`,
           );
 
           if (response.status !== 200) {
