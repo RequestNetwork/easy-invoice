@@ -21,7 +21,7 @@ interface ComplianceStatusResponse {
     kycStatus: string;
     agreementStatus: string;
     isCompliant: boolean;
-    [key: string]: any; // Allow for additional properties from the API
+    [key: string]: unknown; // More type-safe approach for additional API properties
   };
 }
 
@@ -48,7 +48,7 @@ export const complianceRouter = router({
           message: "Compliance information submitted successfully",
         };
       } catch (error) {
-        console.error("Compliance API error:", error);
+        console.error("Error submitting compliance info:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
