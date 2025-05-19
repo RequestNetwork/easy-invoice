@@ -18,88 +18,52 @@ type ComplianceStatusProps = {
     | undefined;
 };
 
-function getStatusIconForAgreement(status: StatusType) {
-  switch (status) {
-    case "initiated":
-      return <Clock className="h-5 w-5 text-amber-500" />;
-    case "completed":
-    case "approved":
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
-    case "pending":
-      return <Clock className="h-5 w-5 text-amber-500" />;
-    default:
-      return <AlertCircle className="h-5 w-5 text-red-500" />;
-  }
-}
+type StatusConfig = {
+  icon: JSX.Element;
+  text: string;
+  color: string;
+};
 
-function getStatusTextForAgreement(status: StatusType) {
-  switch (status) {
-    case "initiated":
-      return "Initiated";
-    case "completed":
-    case "approved":
-      return "Completed";
-    case "pending":
-      return "Awaiting User Signature";
-    default:
-      return "Not Started";
-  }
-}
+const STATUS_CONFIG: Record<StatusType, StatusConfig> = {
+  not_started: {
+    icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+    text: "Not Started",
+    color: "bg-red-50 border-red-200 text-red-700",
+  },
+  initiated: {
+    icon: <Clock className="h-5 w-5 text-amber-500" />,
+    text: "Initiated",
+    color: "bg-amber-50 border-amber-200 text-amber-700",
+  },
+  pending: {
+    icon: <Clock className="h-5 w-5 text-amber-500" />,
+    text: "Pending",
+    color: "bg-amber-50 border-amber-200 text-amber-700",
+  },
+  completed: {
+    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+    text: "Completed",
+    color: "bg-green-50 border-green-200 text-green-700",
+  },
+  approved: {
+    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+    text: "Completed",
+    color: "bg-green-50 border-green-200 text-green-700",
+  },
+};
 
-function getStatusColorForAgreement(status: StatusType) {
-  switch (status) {
-    case "initiated":
-      return "bg-amber-50 border-amber-200 text-amber-700";
-    case "completed":
-    case "approved":
-      return "bg-green-50 border-green-200 text-green-700";
-    case "pending":
-      return "bg-amber-50 border-amber-200 text-amber-700";
-    default:
-      return "bg-red-50 border-red-200 text-red-700";
+function getStatusConfig(
+  status: StatusType,
+  type: "agreement" | "kyc",
+): StatusConfig {
+  const config = STATUS_CONFIG[status];
+  if (type === "agreement" && status === "pending") {
+    return {
+      ...config,
+      text: "Awaiting User Signature",
+    };
   }
-}
-
-function getStatusIconForKyc(status: StatusType) {
-  switch (status) {
-    case "initiated":
-      return <Clock className="h-5 w-5 text-amber-500" />;
-    case "completed":
-    case "approved":
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
-    case "pending":
-      return <Clock className="h-5 w-5 text-amber-500" />;
-    default:
-      return <AlertCircle className="h-5 w-5 text-red-500" />;
-  }
-}
-
-function getStatusTextForKyc(status: StatusType) {
-  switch (status) {
-    case "initiated":
-      return "Initiated";
-    case "completed":
-    case "approved":
-      return "Completed";
-    case "pending":
-      return "Pending";
-    default:
-      return "Not Started";
-  }
-}
-
-function getStatusColorForKyc(status: StatusType) {
-  switch (status) {
-    case "initiated":
-      return "bg-amber-50 border-amber-200 text-amber-700";
-    case "completed":
-    case "approved":
-      return "bg-green-50 border-green-200 text-green-700";
-    case "pending":
-      return "bg-amber-50 border-amber-200 text-amber-700";
-    default:
-      return "bg-red-50 border-red-200 text-red-700";
-  }
+  return config;
 }
 
 type StatusRowProps = {
@@ -108,22 +72,19 @@ type StatusRowProps = {
 };
 
 function StatusRow({ label, value }: StatusRowProps) {
+  const type = label === "Agreement Status" ? "agreement" : "kyc";
+  const config = getStatusConfig(value, type);
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <span>{label}:</span>
       </div>
       <div
-        className={`flex items-center gap-2 px-3 py-1 rounded-full border ${label === "Agreement Status" ? getStatusColorForAgreement(value) : getStatusColorForKyc(value)}`}
+        className={`flex items-center gap-2 px-3 py-1 rounded-full border ${config.color}`}
       >
-        {label === "Agreement Status"
-          ? getStatusIconForAgreement(value)
-          : getStatusIconForKyc(value)}
-        <span className="text-sm font-medium">
-          {label === "Agreement Status"
-            ? getStatusTextForAgreement(value)
-            : getStatusTextForKyc(value)}
-        </span>
+        {config.icon}
+        <span className="text-sm font-medium">{config.text}</span>
       </div>
     </div>
   );
