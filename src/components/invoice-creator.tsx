@@ -72,7 +72,7 @@ export function InvoiceCreator({
     },
   });
 
-  const onSubmit = async (data: InvoiceFormValues) => {
+  const onSubmit = (data: InvoiceFormValues) => {
     try {
       createInvoice(data);
     } catch (error) {
