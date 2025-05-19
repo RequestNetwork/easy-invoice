@@ -5,7 +5,7 @@ import { PaymentSection } from "@/components/payment-section";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
-import { formatDate, formatRecurringDate } from "@/lib/date-utils";
+import { formatDate } from "@/lib/date-utils";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -87,8 +87,7 @@ export default async function PaymentPage({
                       </span>
                       {invoice.recurrence.startDate && (
                         <span>
-                          • Starting{" "}
-                          {formatRecurringDate(invoice.recurrence.startDate)}
+                          • Starting {formatDate(invoice.recurrence.startDate)}
                         </span>
                       )}
                       {invoice.isRecurrenceStopped && (

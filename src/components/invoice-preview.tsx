@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/currencies";
-import { formatDate, formatRecurringDate } from "@/lib/date-utils";
+import { formatDate } from "@/lib/date-utils";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import { api } from "@/trpc/react";
 
@@ -59,7 +59,7 @@ export function InvoicePreview({
               <div className="text-sm flex items-center gap-1">
                 <span>↻ {data.frequency.toLowerCase()}</span>
                 {data.startDate && (
-                  <span>• Starting {formatRecurringDate(data.startDate)}</span>
+                  <span>• Starting {formatDate(data.startDate)}</span>
                 )}
               </div>
             </div>
