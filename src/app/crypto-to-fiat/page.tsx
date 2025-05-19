@@ -2,7 +2,6 @@ import { CryptoToFiat } from "@/components/crypto-to-fiat";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { getCurrentSession } from "@/server/auth";
-import type { User } from "@/server/db/schema";
 import { redirect } from "next/navigation";
 
 export default async function CryptoToFiatPage() {
@@ -24,7 +23,7 @@ export default async function CryptoToFiatPage() {
           Pay fiat invoices with crypto
         </p>
 
-        <CryptoToFiat user={{ email: "testrsp47@test.com" } as User} />
+        <CryptoToFiat user={user} />
       </main>
       <Footer />
     </>
