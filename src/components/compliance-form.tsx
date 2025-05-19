@@ -60,6 +60,7 @@ export function ComplianceForm({ user }: { user: User }) {
   const [complianceData, setComplianceData] =
     useState<ComplianceResponse | null>(null);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const TRUSTED_ORIGINS = useMemo(() => {
@@ -300,13 +301,11 @@ export function ComplianceForm({ user }: { user: User }) {
                     </div>
                   </DialogHeader>
                   <div className="flex-1 h-[calc(90vh-65px)] relative">
-                    {/* Add loading indicator */}
-                    <div
-                      className="absolute inset-0 flex items-center justify-center bg-background/80 z-10"
-                      id="iframe-loader"
-                    >
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                    </div>
+                    {isIframeLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                      </div>
+                    )}
                     <iframe
                       ref={iframeRef}
                       src={complianceData?.agreementUrl ?? ""}
@@ -314,10 +313,7 @@ export function ComplianceForm({ user }: { user: User }) {
                       title="Compliance Agreement"
                       width="100%"
                       height="100%"
-                      onLoad={() => {
-                        const loader = document.getElementById("iframe-loader");
-                        if (loader) loader.style.display = "none";
-                      }}
+                      onLoad={() => setIsIframeLoading(false)}
                     />
                   </div>
                 </DialogContent>
