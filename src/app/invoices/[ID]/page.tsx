@@ -26,13 +26,14 @@ export default async function PaymentPage({
   params: { ID: string };
 }) {
   const invoice = await api.invoice.getById.query(params.ID);
-  const paymentDetailsData = await api.compliance.getPaymentDetailsById.query(
-    invoice?.paymentDetailsId || "",
-  );
 
   if (!invoice) {
     notFound();
   }
+
+  const paymentDetailsData = await api.compliance.getPaymentDetailsById.query(
+    invoice.paymentDetailsId || "",
+  );
 
   return (
     <BackgroundWrapper
