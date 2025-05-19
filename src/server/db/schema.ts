@@ -44,6 +44,16 @@ export const paymentDetailsStatusEnum = pgEnum("payment_details_status", [
   "approved",
   "rejected",
 ]);
+export const requestStatusEnum = pgEnum("request_status", [
+  "pending",
+  "paid",
+  "crypto_paid",
+  "offramp_initiated",
+  "offramp_failed",
+  "offramp_pending",
+  "processing",
+  "overdue",
+]);
 
 // biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
@@ -153,7 +163,7 @@ export const requestTable = createTable("request", {
   amount: text().notNull(),
   invoiceCurrency: text().notNull(),
   paymentCurrency: text().notNull(),
-  status: text().notNull(),
+  status: requestStatusEnum("request_status").notNull(),
   payee: text().notNull(),
   requestId: text().notNull(),
   paymentReference: text().notNull(),

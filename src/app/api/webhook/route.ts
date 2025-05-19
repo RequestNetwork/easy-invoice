@@ -5,6 +5,7 @@ import { generateInvoiceNumber } from "@/lib/invoice/client";
 import { db } from "@/server/db";
 import {
   paymentDetailsPayersTable,
+  type requestStatusEnum,
   requestTable,
   userTable,
 } from "@/server/db/schema";
@@ -15,7 +16,10 @@ import { ulid } from "ulid";
 /**
  * Updates the request status in the database
  */
-async function updateRequestStatus(requestId: string, status: string) {
+async function updateRequestStatus(
+  requestId: string,
+  status: (typeof requestStatusEnum.enumValues)[number],
+) {
   await db.transaction(async (tx) => {
     const result = await tx
       .update(requestTable)
@@ -63,7 +67,7 @@ export async function POST(req: Request) {
       case "payment.confirmed":
         await updateRequestStatus(
           requestId,
-          isCryptoToFiat ? "crypto paid" : "paid",
+          isCryptoToFiat ? "crypto_paid" : "paid",
         );
         break;
       case "settlement.initiated":

@@ -12,6 +12,10 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrencyLabel } from "@/lib/currencies";
+import {
+  getInvoiceTableStatusClass,
+  getStatusDisplayText,
+} from "@/lib/invoice-status";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format, isPast } from "date-fns";
@@ -295,17 +299,9 @@ const InvoiceRow = ({
       <TableCell>{format(dueDate, "do MMM yyyy")}</TableCell>
       <TableCell>
         <span
-          className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
-            invoice.status === "paid"
-              ? "bg-green-50 text-green-700"
-              : isOverdue
-                ? "bg-red-50 text-red-700"
-                : "bg-yellow-50 text-yellow-700"
-          }`}
+          className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${getInvoiceTableStatusClass(invoice.status, isOverdue)}`}
         >
-          {isOverdue
-            ? "Overdue"
-            : invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+          {getStatusDisplayText(invoice.status, isOverdue)}
         </span>
       </TableCell>
       <TableCell>

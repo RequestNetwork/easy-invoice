@@ -18,6 +18,11 @@ import {
 import { ethers } from "ethers";
 import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
 
+import {
+  getPaymentSectionStatusClass,
+  getStatusDisplayText,
+  getStatusIconName,
+} from "@/lib/invoice-status";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -116,6 +121,19 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
 
   // Extract the chain from invoice currency
   const invoiceChain = getCurrencyChain(invoice.paymentCurrency);
+
+  // A function to render the correct status icon based on status name
+  const renderStatusIcon = (statusName: string) => {
+    const iconName = getStatusIconName(statusName);
+    switch (iconName) {
+      case "CheckCircle":
+        return <CheckCircle className="inline-block w-4 h-4 mr-1" />;
+      case "AlertCircle":
+        return <AlertCircle className="inline-block w-4 h-4 mr-1" />;
+      case "Clock":
+        return <Clock className="inline-block w-4 h-4 mr-1" />;
+    }
+  };
 
   const displayPaymentProgress = () => {
     switch (paymentProgress) {
@@ -328,24 +346,10 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
         <CardTitle className="flex justify-between items-center">
           <span>Payment Details</span>
           <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              paymentStatus === "paid"
-                ? "bg-green-100 text-green-800"
-                : paymentStatus === "processing"
-                  ? "bg-orange-100 text-orange-800"
-                  : "bg-blue-100 text-blue-800"
-            }`}
+            className={`px-3 py-1 rounded-full text-sm font-medium ${getPaymentSectionStatusClass(paymentStatus)}`}
           >
-            {paymentStatus === "paid" && (
-              <CheckCircle className="inline-block w-4 h-4 mr-1" />
-            )}
-            {paymentStatus === "processing" && (
-              <Clock className="inline-block w-4 h-4 mr-1" />
-            )}
-            {paymentStatus === "pending" && (
-              <Clock className="inline-block w-4 h-4 mr-1" />
-            )}
-            {paymentStatus}
+            {renderStatusIcon(paymentStatus)}
+            {getStatusDisplayText(paymentStatus)}
           </span>
         </CardTitle>
       </CardHeader>
