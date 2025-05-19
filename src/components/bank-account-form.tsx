@@ -59,12 +59,9 @@ export function BankAccountForm({
     },
     onError: (error) => {
       console.error("Payment details creation failed:", error);
-      // Provide feedback to the user about the failure
       onSuccess({
         success: false,
-        message:
-          error.message ||
-          "Failed to create payment details. Please try again.",
+        message: `Failed to create payment details: ${error.message}`,
         paymentDetails: null,
       });
     },
