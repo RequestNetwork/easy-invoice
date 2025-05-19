@@ -144,7 +144,7 @@ export const paymentDetailsPayersTable = createTable("payment_details_payers", {
       onDelete: "cascade",
     }),
   status: paymentDetailsStatusEnum("payment_details_status").default("pending"),
-  paymentDetailsIdReference: text().notNull(),
+  externalPaymentDetailId: text().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

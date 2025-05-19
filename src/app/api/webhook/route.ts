@@ -173,7 +173,7 @@ export async function POST(req: Request) {
           .where(
             and(
               eq(
-                paymentDetailsPayersTable.paymentDetailsIdReference,
+                paymentDetailsPayersTable.externalPaymentDetailId,
                 body.paymentDetailsId,
               ),
               not(eq(paymentDetailsPayersTable.status, "approved")),

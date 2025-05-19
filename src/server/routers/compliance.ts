@@ -349,7 +349,7 @@ export const complianceRouter = router({
           paymentDetailsId: paymentDetailsId,
           payerId: payerUser.id,
           status: "pending",
-          paymentDetailsIdReference: response.data?.payment_detail?.id,
+          externalPaymentDetailId: response.data?.payment_detail?.id,
         });
 
         return {
