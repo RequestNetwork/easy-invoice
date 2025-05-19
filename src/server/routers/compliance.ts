@@ -3,12 +3,13 @@ import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
 import { TRPCError } from "@trpc/server";
 import { AxiosError, type AxiosResponse } from "axios";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import {
   paymentDetailsPayersTable,
   paymentDetailsTable,
+  requestTable,
   userTable,
 } from "../db/schema";
 import { protectedProcedure, router } from "../trpc";
@@ -476,6 +477,41 @@ export const complianceRouter = router({
             message: "Payment details not found",
           });
         }
+
+        // Since this is a protected procedure, ctx.user should always exist,
+        // but we'll check just to satisfy the type system
+        if (!ctx.user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You must be logged in to access payment details",
+          });
+        }
+
+        // Only owner, an authorized payer or the payee may access
+        if (paymentDetails.userId !== ctx.user.id) {
+          const isPayer =
+            await ctx.db.query.paymentDetailsPayersTable.findFirst({
+              where: and(
+                eq(paymentDetailsPayersTable.paymentDetailsId, input),
+                eq(paymentDetailsPayersTable.payerId, ctx.user.id),
+              ),
+            });
+
+          const isPayee = await ctx.db.query.requestTable.findFirst({
+            where: and(
+              eq(requestTable.paymentDetailsId, input),
+              eq(requestTable.userId, ctx.user.id),
+            ),
+          });
+
+          if (!isPayer && !isPayee) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "You are not authorized to access these payment details",
+            });
+          }
+        }
+
         return {
           success: true,
           paymentDetails: paymentDetails,
