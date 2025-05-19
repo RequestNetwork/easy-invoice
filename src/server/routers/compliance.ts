@@ -150,7 +150,7 @@ export const complianceRouter = router({
         // Get the compliance status from Request Network
         try {
           const response = await apiClient.get(
-            `/v2/payer/${input.clientUserId}`,
+            `/v2/payer/${encodeURIComponent(input.clientUserId)}`,
           );
 
           if (response.status !== 200) {
