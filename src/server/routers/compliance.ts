@@ -11,7 +11,7 @@ import {
   paymentDetailsTable,
   userTable,
 } from "../db/schema";
-import { protectedProcedure, publicProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
 
 // Define interfaces for consistent return types
 interface ComplianceStatusResponse {
@@ -33,7 +33,7 @@ interface PaymentDetailApiResponse {
 }
 
 export const complianceRouter = router({
-  submitComplianceInfo: publicProcedure
+  submitComplianceInfo: protectedProcedure
     .input(complianceFormSchema)
     .mutation(async ({ input }) => {
       try {
