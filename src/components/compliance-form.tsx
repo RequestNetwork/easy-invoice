@@ -112,7 +112,7 @@ export function ComplianceForm({ user }: { user: User }) {
           toast.success("Compliance information submitted successfully");
         } else {
           toast.error(
-            response.message || "Failed to submit compliance information",
+            `Failed to submit compliance information${response.message ? `. Error: ${response.message}` : ""}`,
           );
         }
       },
