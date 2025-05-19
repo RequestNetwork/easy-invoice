@@ -94,7 +94,7 @@ export const paymentDetailsTable = createTable("payment_details", {
   userId: text()
     .notNull()
     .references(() => userTable.id, {
-      onDelete: "cascade",
+      onDelete: "restrict",
     }),
   bankName: text().notNull(),
   accountName: text().notNull(),
