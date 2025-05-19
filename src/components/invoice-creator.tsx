@@ -82,7 +82,6 @@ export function InvoiceCreator({
             ? error.message
             : "An unexpected error occurred",
       });
-      form.formState.isSubmitSuccessful = false;
     }
   };
 
