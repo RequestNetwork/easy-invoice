@@ -203,7 +203,7 @@ export default async function PaymentPage({
                     {formatCurrencyLabel(invoice.paymentCurrency)}
                   </div>
                 </div>
-                {paymentDetailsData?.paymentDetails && (
+                {paymentDetailsData?.paymentDetails ? (
                   <div>
                     <div className="text-xs text-neutral-500 mb-1">
                       BANK ACCOUNT DETAILS
@@ -241,6 +241,17 @@ export default async function PaymentPage({
                         {paymentDetailsData.paymentDetails.currency.toUpperCase()}
                       </div>
                     )}
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-xs text-neutral-500 mb-1">
+                      BANK ACCOUNT DETAILS
+                    </div>
+                    <div className="text-sm text-neutral-500">
+                      {!invoice.paymentDetailsId
+                        ? "No payment details available"
+                        : "Unable to load payment details"}
+                    </div>
                   </div>
                 )}
                 {invoice.notes && (
