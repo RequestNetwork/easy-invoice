@@ -26,6 +26,16 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+type InvoiceStatus =
+  | "pending"
+  | "paid"
+  | "crypto_paid"
+  | "offramp_initiated"
+  | "offramp_failed"
+  | "offramp_pending"
+  | "processing"
+  | "overdue";
+
 interface PaymentSectionProps {
   invoice: NonNullable<Request>;
 }
@@ -98,7 +108,9 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
     null,
   );
 
-  const [paymentStatus, setPaymentStatus] = useState(invoice.status);
+  const [paymentStatus, setPaymentStatus] = useState<InvoiceStatus>(
+    invoice.status as InvoiceStatus,
+  );
   const [paymentProgress, setPaymentProgress] = useState("idle");
   const [currentStep, setCurrentStep] = useState(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
@@ -123,7 +135,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const invoiceChain = getCurrencyChain(invoice.paymentCurrency);
 
   // A function to render the correct status icon based on status name
-  const renderStatusIcon = (statusName: string) => {
+  const renderStatusIcon = (statusName: InvoiceStatus) => {
     const iconName = getStatusIconName(statusName);
     switch (iconName) {
       case "CheckCircle":
