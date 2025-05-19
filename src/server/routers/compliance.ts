@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
+import { filterDefinedValues } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
 import { AxiosError, type AxiosResponse } from "axios";
 import { and, eq } from "drizzle-orm";
@@ -258,11 +259,7 @@ export const complianceRouter = router({
         }
 
         // Add other fields if they're defined
-        for (const [key, value] of Object.entries(otherFields)) {
-          if (value !== undefined && value !== null) {
-            Object.assign(insertData, { [key]: value });
-          }
-        }
+        Object.assign(insertData, filterDefinedValues(otherFields));
 
         const paymentDetails = await ctx.db
           .insert(paymentDetailsTable)
@@ -353,11 +350,7 @@ export const complianceRouter = router({
         }
 
         // Remove undefined and null values to avoid API validation errors
-        const cleanedPaymentDetails = Object.fromEntries(
-          Object.entries(paymentDetailsData).filter(
-            ([_, v]) => v !== undefined && v !== null,
-          ),
-        );
+        const cleanedPaymentDetails = filterDefinedValues(paymentDetailsData);
 
         let response: AxiosResponse<PaymentDetailApiResponse>;
         try {
