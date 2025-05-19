@@ -107,7 +107,7 @@ export const complianceRouter = router({
       try {
         // Make the API call to Request Network using apiClient
         const response = await apiClient.patch(
-          `/v2/payer/${input.clientUserId}`,
+          `/v2/payer/${encodeURIComponent(input.clientUserId)}`,
           { agreementCompleted: true },
         );
 
