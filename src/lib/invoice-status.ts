@@ -1,7 +1,18 @@
 /**
  * Converts a status code to a human-readable display text
  */
-export const getStatusDisplayText = (status: string, isOverdue?: boolean) => {
+import type { requestStatusEnum } from "../server/db/schema";
+
+/**
+ * Converts invoice status to human-readable display text
+ * @param status - The invoice status from requestStatusEnum
+ * @param isOverdue - Optional flag indicating if the invoice is overdue
+ * @returns A formatted status string for display
+ */
+export const getStatusDisplayText = (
+  status: (typeof requestStatusEnum.enumValues)[number],
+  isOverdue?: boolean,
+) => {
   if (isOverdue) return "Overdue";
 
   switch (status) {
@@ -30,9 +41,12 @@ export const getStatusDisplayText = (status: string, isOverdue?: boolean) => {
 
 /**
  * Returns the CSS class for styling the status badge in the invoice table
+ * @param status - The invoice status from requestStatusEnum
+ * @param isOverdue - Optional flag indicating if the invoice is overdue
+ * @returns The appropriate CSS class string for styling the status badge
  */
 export const getInvoiceTableStatusClass = (
-  status: string,
+  status: (typeof requestStatusEnum.enumValues)[number],
   isOverdue?: boolean,
 ) => {
   if (isOverdue) return "bg-red-50 text-red-700";
@@ -54,8 +68,12 @@ export const getInvoiceTableStatusClass = (
 
 /**
  * Returns the CSS class for styling the status badge in the payment section
+ * @param status - The invoice status from requestStatusEnum
+ * @returns The appropriate CSS class string for styling the payment section status
  */
-export const getPaymentSectionStatusClass = (status: string) => {
+export const getPaymentSectionStatusClass = (
+  status: (typeof requestStatusEnum.enumValues)[number],
+) => {
   if (status === "paid" || status === "crypto_paid") {
     return "bg-green-100 text-green-800";
   }
@@ -74,9 +92,11 @@ export const getPaymentSectionStatusClass = (status: string) => {
 /**
  * Returns the icon component name for the status in the payment section
  * We return the component name instead of JSX to avoid issues with server/client components
+ * @param status - The invoice status from requestStatusEnum
+ * @returns The appropriate icon component name based on status
  */
 export const getStatusIconName = (
-  status: string,
+  status: (typeof requestStatusEnum.enumValues)[number],
 ): "CheckCircle" | "AlertCircle" | "Clock" => {
   if (status === "paid" || status === "crypto_paid") {
     return "CheckCircle";
