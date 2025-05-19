@@ -94,7 +94,15 @@ export function InvoiceCreator({
         </CardHeader>
         <CardContent>
           <InvoiceForm
-            currentUser={currentUser as User}
+            currentUser={
+              currentUser
+                ? ({
+                    id: currentUser.id,
+                    name: currentUser.name,
+                    email: currentUser.email,
+                  } as User)
+                : (undefined as unknown as User)
+            }
             form={form}
             onSubmit={onSubmit}
             isLoading={isLoading}
