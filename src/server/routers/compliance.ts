@@ -252,12 +252,13 @@ export const complianceRouter = router({
         ) {
           code = "CONFLICT";
           message = "Payment details with these values already exist";
-        } else if (
-          errorMessage.includes("validation") ||
-          errorMessage.includes("constraint")
-        ) {
+        } else if (errorMessage.includes("validation")) {
           code = "BAD_REQUEST";
           message = "Invalid payment details provided";
+        } else if (errorMessage.includes("constraint")) {
+          // Constraint errors may indicate server-side issues and not just client input
+          code = "INTERNAL_SERVER_ERROR";
+          message = "Server error: database constraint violation";
         } else if (error instanceof Error) {
           message = `Failed to create payment details: ${error.message}`;
         }
@@ -287,7 +288,14 @@ export const complianceRouter = router({
           where: eq(userTable.email, payerEmail),
         });
 
-        if (!payerUser || !payerUser?.isCompliant) {
+        if (!payerUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Payer user not found",
+          });
+        }
+
+        if (!payerUser.isCompliant) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "Payer user is not compliant",
@@ -361,6 +369,20 @@ export const complianceRouter = router({
         // If error is already a TRPCError, rethrow it
         if (error instanceof TRPCError) {
           throw error;
+        }
+
+        // Map API client errors to appropriate error codes
+        if (error instanceof AxiosError) {
+          const status = error.response?.status;
+          // Map client errors (400, 422) to BAD_REQUEST
+          if (status === 400 || status === 422) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                error.response?.data?.message ||
+                "Invalid payment details provided",
+            });
+          }
         }
 
         // Otherwise wrap it in a TRPCError
@@ -442,13 +464,6 @@ export const complianceRouter = router({
     .input(z.string())
     .query(async ({ ctx, input }) => {
       try {
-        if (!ctx.user || !ctx.user.id) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "You must be logged in to access payment details",
-          });
-        }
-
         const paymentDetails = await ctx.db.query.paymentDetailsTable.findFirst(
           {
             where: eq(paymentDetailsTable.id, input),
