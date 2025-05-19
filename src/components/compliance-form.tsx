@@ -119,8 +119,7 @@ export function ComplianceForm({ user }: { user: User }) {
       onError: (error) => {
         console.error("Compliance submission error:", error);
         toast.error(
-          error.message ||
-            "Failed to submit compliance information. Please try again.",
+          `Failed to submit compliance information${error instanceof Error ? `. Error: ${error.message}` : ". Please try again."}`,
         );
       },
     });
@@ -206,9 +205,7 @@ export function ComplianceForm({ user }: { user: User }) {
       toast.success("Compliance information submitted successfully!");
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to submit compliance information. Please try again.",
+        `Failed to submit compliance information${error instanceof Error ? `. Error: ${error.message}` : ". Please try again."}`,
       );
     }
   }
