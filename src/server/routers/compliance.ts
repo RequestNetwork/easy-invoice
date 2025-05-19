@@ -49,6 +49,43 @@ export const complianceRouter = router({
         };
       } catch (error) {
         console.error("Error submitting compliance info:", error);
+
+        // Determine the appropriate error code based on the error type
+        if (error instanceof AxiosError) {
+          const status = error.response?.status;
+
+          // Client-side errors
+          if (status === 400 || status === 422) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                error.response?.data?.message ||
+                "Invalid compliance information provided",
+            });
+          }
+
+          // Authentication/Authorization errors
+          if (status === 401 || status === 403) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message:
+                error.response?.data?.message ||
+                "Not authorized to submit compliance information",
+            });
+          }
+
+          // Resource not found
+          if (status === 404) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message:
+                error.response?.data?.message ||
+                "Compliance resource not found",
+            });
+          }
+        }
+
+        // Default to INTERNAL_SERVER_ERROR for other errors
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
