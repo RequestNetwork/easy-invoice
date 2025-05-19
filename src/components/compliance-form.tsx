@@ -90,8 +90,8 @@ export function ComplianceForm({ user }: { user: User }) {
           if (data.success) {
             // Set compliance data with status from the API
             setComplianceData({
-              agreementUrl: data.data.agreementUrl ?? null,
-              kycUrl: data.data.kycUrl ?? null,
+              agreementUrl: (data.data.agreementUrl as string) ?? null,
+              kycUrl: (data.data.kycUrl as string) ?? null,
               status: {
                 agreementStatus: data.data.agreementStatus as StatusType,
                 kycStatus: data.data.kycStatus as StatusType,
@@ -107,7 +107,15 @@ export function ComplianceForm({ user }: { user: User }) {
     api.compliance.submitComplianceInfo.useMutation({
       onSuccess: (response) => {
         if (response.success) {
-          setComplianceData(response.data);
+          setComplianceData({
+            agreementUrl: (response.data.agreementUrl as string) ?? null,
+            kycUrl: (response.data.kycUrl as string) ?? null,
+            status: {
+              agreementStatus: response.data.agreementStatus as StatusType,
+              kycStatus: response.data.kycStatus as StatusType,
+              isCompliant: response.data.isCompliant,
+            },
+          });
           getComplianceStatus();
           toast.success("Compliance information submitted successfully");
         } else {
