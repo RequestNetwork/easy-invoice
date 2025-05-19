@@ -97,6 +97,7 @@ const checkPaymentDetailsApproval = (
 };
 
 interface InvoiceFormProps {
+  currentUser: User;
   form: UseFormReturn<InvoiceFormValues>;
   onSubmit: (data: InvoiceFormValues) => void;
   isLoading: boolean;
@@ -269,6 +270,7 @@ const PaymentDetailsSection = ({
 };
 
 export function InvoiceForm({
+  currentUser,
   form,
   onSubmit,
   isLoading,
@@ -388,7 +390,7 @@ export function InvoiceForm({
   // Query to get payment details for the client
   const { data: paymentDetailsData, refetch: refetchPaymentDetails } =
     api.compliance.getPaymentDetails.useQuery(
-      { userId: clientUserData?.id ?? "" },
+      { userId: currentUser.id ?? "" },
       {
         enabled: !!clientUserData?.id,
         // Use the configurable constant for polling interval
@@ -513,15 +515,7 @@ export function InvoiceForm({
           </DialogHeader>
           {clientUserData && (
             <BankAccountForm
-              user={{
-                id: clientUserData.id,
-                email: clientUserData.email,
-                name: clientUserData.name,
-                googleId: null,
-                agreementStatus: null,
-                kycStatus: null,
-                isCompliant: clientUserData.isCompliant,
-              }}
+              user={currentUser}
               onSuccess={handleBankAccountSuccess}
               onCancel={() => setShowBankAccountModal(false)}
             />
@@ -892,35 +886,45 @@ export function InvoiceForm({
           </Label>
         </div>
 
-        {form.watch("isCryptoToFiatAvailable") && (
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label htmlFor="paymentDetailsId">Payment Method</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowBankAccountModal(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" /> Add New
-              </Button>
+        {form.watch("isCryptoToFiatAvailable") &&
+          (clientUserData?.isCompliant ? (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="paymentDetailsId">Payment Method</Label>
+                {linkedPaymentDetails.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowBankAccountModal(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add New
+                  </Button>
+                )}
+              </div>
+              <PaymentDetailsSection
+                clientEmail={clientEmail}
+                isLoadingUser={isLoadingUser}
+                clientUserData={clientUserData}
+                linkedPaymentDetails={linkedPaymentDetails}
+                onAddBankAccount={() => setShowBankAccountModal(true)}
+                onSelectPaymentDetails={(value) => {
+                  form.setValue("paymentDetailsId", value);
+                  // Clear the error when a payment method is selected
+                  form.clearErrors("paymentDetailsId");
+                }}
+                selectedPaymentDetailsId={form.getValues("paymentDetailsId")}
+                error={form.formState.errors.paymentDetailsId?.message}
+              />
             </div>
-            <PaymentDetailsSection
-              clientEmail={clientEmail}
-              isLoadingUser={isLoadingUser}
-              clientUserData={clientUserData}
-              linkedPaymentDetails={linkedPaymentDetails}
-              onAddBankAccount={() => setShowBankAccountModal(true)}
-              onSelectPaymentDetails={(value) => {
-                form.setValue("paymentDetailsId", value);
-                // Clear the error when a payment method is selected
-                form.clearErrors("paymentDetailsId");
-              }}
-              selectedPaymentDetailsId={form.getValues("paymentDetailsId")}
-              error={form.formState.errors.paymentDetailsId?.message}
-            />
-          </div>
-        )}
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="paymentDetailsId">Payment Method</Label>
+              <p className="text-sm text-red-500">
+                Client has not completed KYC. Please use a verified client.
+              </p>
+            </div>
+          ))}
 
         {!form.watch("isCryptoToFiatAvailable") && (
           <div className="space-y-2">

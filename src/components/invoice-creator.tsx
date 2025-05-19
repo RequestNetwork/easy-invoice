@@ -8,6 +8,7 @@ import {
   type InvoiceFormValues,
   invoiceFormSchema,
 } from "@/lib/schemas/invoice";
+import type { User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -93,6 +94,7 @@ export function InvoiceCreator({
         </CardHeader>
         <CardContent>
           <InvoiceForm
+            currentUser={currentUser as User}
             form={form}
             onSubmit={onSubmit}
             isLoading={isLoading}
@@ -103,7 +105,7 @@ export function InvoiceCreator({
 
       <InvoicePreview
         data={form.watch()}
-        paymentDetailsId={form.getValues("paymentDetailsId")}
+        paymentDetailsId={form.watch("paymentDetailsId")}
       />
     </div>
   );
