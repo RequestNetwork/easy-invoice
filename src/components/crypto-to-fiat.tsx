@@ -12,7 +12,7 @@ export function CryptoToFiat({ user }: { user: User }) {
   return (
     <div className="flex justify-center mx-auto w-full max-w-2xl">
       <Card className="w-full shadow-lg border-zinc-200/80">
-        <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80"></CardHeader>
+        <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80" />
         <CardContent className="pt-6">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
@@ -21,7 +21,7 @@ export function CryptoToFiat({ user }: { user: User }) {
                 Compliance Required
               </h3>
               <p className="text-sm text-amber-700 mt-1">
-                To send Crypto to Fiat payments, you need to complete KYC
+                To send Crypto-to-fiat payments, you need to complete KYC
                 verification and sign the compliance agreement.
               </p>
             </div>
