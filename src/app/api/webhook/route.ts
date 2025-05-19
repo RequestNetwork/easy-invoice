@@ -36,8 +36,11 @@ async function updateRequestStatus(
 }
 
 export async function POST(req: Request) {
+  let webhookData: Record<string, unknown> = {};
+
   try {
     const body = await req.json();
+    webhookData = body;
     const signature = req.headers.get("x-request-network-signature");
 
     const webhookSecret = process.env.WEBHOOK_SECRET;
@@ -190,8 +193,12 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error("Payment webhook error:", error);
+  } catch (error: unknown) {
+    console.error("Payment webhook error:", {
+      error,
+      requestId: webhookData?.requestId,
+      event: webhookData?.event,
+    });
 
     if (error instanceof ResourceNotFoundError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
