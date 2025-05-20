@@ -1,9 +1,6 @@
-export interface CountryOption {
-  value: string;
-  label: string;
-}
+import type { CountryOption } from "./countries";
 
-export const COUNTRIES: CountryOption[] = [
+export const COMPLIANCE_COUNTRIES: CountryOption[] = [
   { value: "US", label: "United States" },
   { value: "CA", label: "Canada" },
   { value: "GB", label: "United Kingdom" },

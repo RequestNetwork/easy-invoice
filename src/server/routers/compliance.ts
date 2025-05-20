@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/axios";
-import { PaymentDetailsStatus } from "@/lib/enums";
+import { Gender, PaymentDetailsStatus } from "@/lib/enums";
 import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
 import { filterDefinedValues } from "@/lib/utils";
@@ -124,7 +124,7 @@ export const complianceRouter = router({
           .set({
             agreementStatus: "completed",
           })
-          .where(eq(userTable.id, input.clientUserId));
+          .where(eq(userTable.email, input.clientUserId));
 
         return { success: true };
       } catch (error) {
@@ -254,10 +254,7 @@ export const complianceRouter = router({
         const insertData = { ...paymentDetailsRecord };
 
         // Add gender only if it's a valid value
-        if (
-          gender &&
-          ["male", "female", "other", "prefer_not_to_say"].includes(gender)
-        ) {
+        if (gender && Object.values(Gender).includes(gender as Gender)) {
           Object.assign(insertData, { gender });
         }
 

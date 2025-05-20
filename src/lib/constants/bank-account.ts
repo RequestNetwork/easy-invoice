@@ -1,9 +1,6 @@
-export interface CurrencyOption {
-  value: string;
-  label: string;
-}
+import type { CountryOption } from "./countries";
 
-export interface CountryOption {
+export interface CurrencyOption {
   value: string;
   label: string;
 }

@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { COUNTRIES } from "@/lib/constants/compliance";
+import { COMPLIANCE_COUNTRIES } from "@/lib/constants/compliance";
 import {
   BeneficiaryType,
   type ComplianceFormValues,
@@ -579,7 +579,7 @@ export function ComplianceForm({ user }: { user: User }) {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {COUNTRIES.map((country) => (
+                                {COMPLIANCE_COUNTRIES.map((country) => (
                                   <SelectItem
                                     key={country.value}
                                     value={country.value}
@@ -612,7 +612,7 @@ export function ComplianceForm({ user }: { user: User }) {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {COUNTRIES.map((country) => (
+                                {COMPLIANCE_COUNTRIES.map((country) => (
                                   <SelectItem
                                     key={country.value}
                                     value={country.value}
