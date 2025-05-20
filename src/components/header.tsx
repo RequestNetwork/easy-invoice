@@ -51,7 +51,7 @@ export function Header({ user }: { user?: User | undefined }) {
                 href="/crypto-to-fiat"
                 className="text-zinc-900 hover:text-zinc-600 transition-colors"
               >
-                Crypto to Fiat
+                Crypto-to-fiat
               </Link>
               {demoMeetingUrl && (
                 <Link

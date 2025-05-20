@@ -67,7 +67,7 @@ export const invoiceFormSchema = z
       return true;
     },
     {
-      message: "Please select a payment method for Crypto to Fiat payment",
+      message: "Please select a payment method for Crypto-to-fiat payment",
       path: ["paymentDetailsId"],
     },
   );

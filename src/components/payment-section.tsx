@@ -66,7 +66,7 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
   if (route.id === "REQUEST_NETWORK_PAYMENT" && route.isCryptoToFiat) {
     return {
       type: "crypto-to-fiat" as const,
-      label: "Crypto to Fiat",
+      label: "Crypto-to-fiat",
       description: "Pay with crypto for a fiat invoice",
     };
   }
