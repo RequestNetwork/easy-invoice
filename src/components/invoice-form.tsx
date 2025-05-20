@@ -27,6 +27,7 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForInvoice,
 } from "@/lib/currencies";
+import { PaymentDetailsStatus as PaymentDetailsStatusEnum } from "@/lib/enums";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import type {
   PaymentDetails,
@@ -93,7 +94,7 @@ const checkPaymentDetailsApproval = (
     (p) => p.email === clientEmail,
   );
 
-  return payer?.status === "approved";
+  return payer?.status === PaymentDetailsStatusEnum.APPROVED;
 };
 
 interface InvoiceFormProps {
@@ -112,9 +113,9 @@ interface InvoiceFormProps {
 const PaymentDetailsStatus = ({ status }: { status: string | null }) => (
   <span
     className={`ml-2 text-xs font-medium ${
-      status === "approved"
+      status === PaymentDetailsStatusEnum.APPROVED
         ? "text-green-600"
-        : status === "pending"
+        : status === PaymentDetailsStatusEnum.PENDING
           ? "text-yellow-600"
           : "text-red-600"
     }`}
@@ -318,13 +319,13 @@ export function InvoiceForm({
             (p: User & PaymentDetailsPayers) => p.email === data.clientEmail,
           );
           if (payer) {
-            if (payer.status === "pending") {
+            if (payer.status === PaymentDetailsStatusEnum.PENDING) {
               setShowPendingApprovalModal(true);
               setWaitingForPaymentApproval(true);
               setIsSubmitting(false);
               return;
             }
-            if (payer.status !== "approved") {
+            if (payer.status !== PaymentDetailsStatusEnum.APPROVED) {
               toast.error(
                 "Cannot create invoice with unapproved payment method",
               );

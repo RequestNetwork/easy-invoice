@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { PaymentDetailsStatus } from "@/lib/enums";
 import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
 import { filterDefinedValues } from "@/lib/utils";
@@ -173,6 +174,9 @@ export const complianceRouter = router({
                 kycStatus: "not_started",
                 agreementStatus: "not_started",
                 isCompliant: false,
+                agreementUrl: null,
+                kycUrl: null,
+                userId: null,
               },
             };
             return defaultResponse;
@@ -377,7 +381,7 @@ export const complianceRouter = router({
           id: ulid(),
           paymentDetailsId: paymentDetailsId,
           payerId: payerUser.id,
-          status: "pending",
+          status: PaymentDetailsStatus.PENDING,
           externalPaymentDetailId: response.data?.payment_detail?.id,
         });
 
