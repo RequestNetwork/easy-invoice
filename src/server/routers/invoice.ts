@@ -19,7 +19,7 @@ const createInvoiceHelper = async (
   );
 
   const payee = input.isCryptoToFiatAvailable
-    ? process.env.PROTOCOL_WALLET_ADDRESS_FOR_CRYPTO_TO_FIAT
+    ? process.env.CRYPTO_TO_FIAT_PAYEE_ADDRESS
     : input.walletAddress;
 
   const response = await apiClient.post("/v2/request", {
