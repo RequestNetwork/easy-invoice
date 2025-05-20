@@ -422,8 +422,8 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
             {invoice.payee}
             {selectedRoute?.isCryptoToFiat && (
               <div className="mt-2 text-sm text-amber-700">
-                Note: This address belongs to Request Network for processing
-                your crypto-to-fiat payment.
+                Note: This address belongs to the Request Network Foundation for
+                processing your crypto-to-fiat payment.
               </div>
             )}
           </div>
