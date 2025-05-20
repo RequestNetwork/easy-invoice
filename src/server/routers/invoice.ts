@@ -18,6 +18,11 @@ const createInvoiceHelper = async (
     0,
   );
 
+  // FIXME: This logic can be removed after we implement it inside the Request Network API.
+  // We set the payee address to an address controlled by the Request Network Foundation,
+  // even in the case of crypto-to-fiat, because it's required by the protocol.
+  // This ensures that funds can be recovered if the payer chooses to bypass the Request Network API
+  // and use the Request Network SDK directly (which doesn't handle Crypto-to-fiat correctly).
   const payee = input.isCryptoToFiatAvailable
     ? process.env.CRYPTO_TO_FIAT_PAYEE_ADDRESS
     : input.walletAddress;
