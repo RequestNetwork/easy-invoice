@@ -322,7 +322,7 @@ export function InvoiceForm({
             if (payer.status === PaymentDetailsStatusEnum.PENDING) {
               setShowPendingApprovalModal(true);
               setWaitingForPaymentApproval(true);
-              setIsSubmitting(false);
+              // Keep isSubmitting true while waiting for approval to prevent multiple submissions
               return;
             }
             if (payer.status !== PaymentDetailsStatusEnum.APPROVED) {
@@ -354,7 +354,7 @@ export function InvoiceForm({
         setIsSubmitting(false);
       }
     },
-    [linkedPaymentDetails, onSubmit, form.setError, isSubmitting, router],
+    [linkedPaymentDetails, onSubmit, form.setError, router, isSubmitting],
   );
 
   // Add timeout effect for pending approval modal
@@ -452,6 +452,10 @@ export function InvoiceForm({
           void handleFormSubmit(form.getValues());
         }, 100);
       }
+    } else if (!waitingForPaymentApproval && isSubmitting) {
+      // If we're no longer waiting for approval but isSubmitting is still true
+      // (happens if user cancels or approval fails)
+      setIsSubmitting(false);
     }
   }, [
     waitingForPaymentApproval,
@@ -459,6 +463,7 @@ export function InvoiceForm({
     clientEmail,
     form,
     handleFormSubmit,
+    isSubmitting,
   ]);
 
   const allowPaymentDetailsMutation =
