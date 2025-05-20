@@ -47,7 +47,7 @@ export const invoiceFormSchema = z
   )
   .refine(
     (data) => {
-      // Wallet address is required when crypto to fiat is not enabled
+      // Wallet address is required when crypto-to-fiat is not enabled
       if (!data.isCryptoToFiatAvailable) {
         return !!data.walletAddress && isEthereumAddress(data.walletAddress);
       }
@@ -60,7 +60,7 @@ export const invoiceFormSchema = z
   )
   .refine(
     (data) => {
-      // Payment details are required when crypto to fiat is enabled
+      // Payment details are required when crypto-to-fiat is enabled
       if (data.isCryptoToFiatAvailable) {
         return !!data.paymentDetailsId;
       }

@@ -720,6 +720,7 @@ export function InvoiceForm({
                 <Input
                   {...form.register(`items.${index}.quantity`, {
                     valueAsNumber: true,
+                    min: 1,
                   })}
                   type="number"
                   placeholder="Qty"
@@ -872,11 +873,11 @@ export function InvoiceForm({
               form.setValue("isCryptoToFiatAvailable", checked === true);
               // When toggling, clear the fields that are no longer relevant
               if (checked === true) {
-                // Clear wallet address when enabling crypto to fiat
+                // Clear wallet address when enabling crypto-to-fiat
                 form.setValue("walletAddress", "");
                 form.clearErrors("walletAddress");
               } else {
-                // Clear payment details when disabling crypto to fiat
+                // Clear payment details when disabling crypto-to-fiat
                 form.setValue("paymentDetailsId", "");
                 form.clearErrors("paymentDetailsId");
               }

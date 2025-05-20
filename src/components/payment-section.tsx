@@ -62,7 +62,7 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
       invoiceChain as keyof typeof REQUEST_NETWORK_CHAIN_TO_PAYMENT_NETWORK
     ];
 
-  // Check if this is a crypto to fiat payment
+  // Check if this is a crypto-to-fiat payment
   if (route.id === "REQUEST_NETWORK_PAYMENT" && route.isCryptoToFiat) {
     return {
       type: "crypto-to-fiat" as const,
@@ -423,7 +423,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
             {selectedRoute?.isCryptoToFiat && (
               <div className="mt-2 text-sm text-amber-700">
                 Note: This address belongs to Request Network for processing
-                your crypto to fiat payment.
+                your crypto-to-fiat payment.
               </div>
             )}
           </div>
