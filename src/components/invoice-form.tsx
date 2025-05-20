@@ -297,12 +297,12 @@ export function InvoiceForm({
 
       setIsSubmitting(true);
 
-      // If Crypto to Fiat is enabled but no payment details are linked, show error
+      // If Crypto-to-fiat is enabled but no payment details are linked, show error
       if (data.isCryptoToFiatAvailable && !data.paymentDetailsId) {
         // Set form error for paymentDetailsId
         form.setError("paymentDetailsId", {
           type: "required",
-          message: "Please select a payment method for Crypto to Fiat payment",
+          message: "Please select a payment method for Crypto-to-fiat payment",
         });
         setIsSubmitting(false);
         return;
@@ -884,7 +884,7 @@ export function InvoiceForm({
             }}
           />
           <Label htmlFor="isCryptoToFiatAvailable">
-            Allow payment to your bank account (Crypto to Fiat payment)
+            Allow payment to your bank account (Crypto-to-fiat payment)
           </Label>
         </div>
 
