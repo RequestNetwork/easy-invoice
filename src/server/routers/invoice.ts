@@ -75,9 +75,16 @@ const createInvoiceHelper = async (
     })
     .returning();
 
+  if (!invoice[0]) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to create invoice",
+    });
+  }
+
   return {
     success: true,
-    invoice: invoice[0] || null,
+    invoice: invoice[0],
   };
 };
 
@@ -119,7 +126,10 @@ export const invoiceRouter = router({
         });
       } catch (error) {
         console.error("Error: ", error);
-        return { success: false, invoice: null };
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create invoice",
+        });
       }
     }),
 
@@ -161,7 +171,10 @@ export const invoiceRouter = router({
         });
       } catch (error) {
         console.error("Error: ", error);
-        return { success: false, invoice: null };
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create invoice",
+        });
       }
     }),
 
@@ -272,7 +285,7 @@ export const invoiceRouter = router({
 
       return { success: true, data: response.data };
     }),
-  stopRecurrence: publicProcedure
+  stopRecurrence: protectedProcedure
     .input(
       z.object({
         requestId: z.string(),
