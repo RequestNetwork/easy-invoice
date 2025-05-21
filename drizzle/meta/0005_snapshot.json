@@ -1,0 +1,733 @@
+{
+  "id": "d2b8ba0a-2ee9-479d-94ae-2455fdd6f4c6",
+  "prevId": "a1445486-e7f1-4c77-b5d9-0956ed8c3eae",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.easyinvoice_invoice_me": {
+      "name": "easyinvoice_invoice_me",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "easyinvoice_invoice_me_userId_easyinvoice_user_id_fk": {
+          "name": "easyinvoice_invoice_me_userId_easyinvoice_user_id_fk",
+          "tableFrom": "easyinvoice_invoice_me",
+          "tableTo": "easyinvoice_user",
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.easyinvoice_payment_details_payers": {
+      "name": "easyinvoice_payment_details_payers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "paymentDetailsId": {
+          "name": "paymentDetailsId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payerId": {
+          "name": "payerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_details_status": {
+          "name": "payment_details_status",
+          "type": "payment_details_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'pending'"
+        },
+        "externalPaymentDetailId": {
+          "name": "externalPaymentDetailId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "easyinvoice_payment_details_payers_paymentDetailsId_easyinvoice_payment_details_id_fk": {
+          "name": "easyinvoice_payment_details_payers_paymentDetailsId_easyinvoice_payment_details_id_fk",
+          "tableFrom": "easyinvoice_payment_details_payers",
+          "tableTo": "easyinvoice_payment_details",
+          "columnsFrom": ["paymentDetailsId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "easyinvoice_payment_details_payers_payerId_easyinvoice_user_id_fk": {
+          "name": "easyinvoice_payment_details_payers_payerId_easyinvoice_user_id_fk",
+          "tableFrom": "easyinvoice_payment_details_payers",
+          "tableTo": "easyinvoice_user",
+          "columnsFrom": ["payerId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.easyinvoice_payment_details": {
+      "name": "easyinvoice_payment_details",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bankName": {
+          "name": "bankName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accountName": {
+          "name": "accountName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accountNumber": {
+          "name": "accountNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "routingNumber": {
+          "name": "routingNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "account_type": {
+          "name": "account_type",
+          "type": "account_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'checking'"
+        },
+        "sortCode": {
+          "name": "sortCode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "iban": {
+          "name": "iban",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "swiftBic": {
+          "name": "swiftBic",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "documentNumber": {
+          "name": "documentNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "documentType": {
+          "name": "documentType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ribNumber": {
+          "name": "ribNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bsbNumber": {
+          "name": "bsbNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ncc": {
+          "name": "ncc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "branchCode": {
+          "name": "branchCode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bankCode": {
+          "name": "bankCode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ifsc": {
+          "name": "ifsc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "beneficiary_type": {
+          "name": "beneficiary_type",
+          "type": "beneficiary_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dateOfBirth": {
+          "name": "dateOfBirth",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "addressLine1": {
+          "name": "addressLine1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "addressLine2": {
+          "name": "addressLine2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "postalCode": {
+          "name": "postalCode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rails_type": {
+          "name": "rails_type",
+          "type": "rails_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'local'"
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "businessActivity": {
+          "name": "businessActivity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nationality": {
+          "name": "nationality",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gender": {
+          "name": "gender",
+          "type": "gender",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "easyinvoice_payment_details_userId_easyinvoice_user_id_fk": {
+          "name": "easyinvoice_payment_details_userId_easyinvoice_user_id_fk",
+          "tableFrom": "easyinvoice_payment_details",
+          "tableTo": "easyinvoice_user",
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.easyinvoice_request": {
+      "name": "easyinvoice_request",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dueDate": {
+          "name": "dueDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issuedDate": {
+          "name": "issuedDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "clientName": {
+          "name": "clientName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "clientEmail": {
+          "name": "clientEmail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creatorName": {
+          "name": "creatorName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creatorEmail": {
+          "name": "creatorEmail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invoiceNumber": {
+          "name": "invoiceNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "items": {
+          "name": "items",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invoiceCurrency": {
+          "name": "invoiceCurrency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "paymentCurrency": {
+          "name": "paymentCurrency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_status": {
+          "name": "request_status",
+          "type": "request_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payee": {
+          "name": "payee",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "paymentReference": {
+          "name": "paymentReference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "originalRequestPaymentReference": {
+          "name": "originalRequestPaymentReference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "originalRequestId": {
+          "name": "originalRequestId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invoicedTo": {
+          "name": "invoicedTo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recurrence": {
+          "name": "recurrence",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "isRecurrenceStopped": {
+          "name": "isRecurrenceStopped",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "isCryptoToFiatAvailable": {
+          "name": "isCryptoToFiatAvailable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "paymentDetailsId": {
+          "name": "paymentDetailsId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "easyinvoice_request_userId_easyinvoice_user_id_fk": {
+          "name": "easyinvoice_request_userId_easyinvoice_user_id_fk",
+          "tableFrom": "easyinvoice_request",
+          "tableTo": "easyinvoice_user",
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "easyinvoice_request_paymentDetailsId_easyinvoice_payment_details_id_fk": {
+          "name": "easyinvoice_request_paymentDetailsId_easyinvoice_payment_details_id_fk",
+          "tableFrom": "easyinvoice_request",
+          "tableTo": "easyinvoice_payment_details",
+          "columnsFrom": ["paymentDetailsId"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.easyinvoice_session": {
+      "name": "easyinvoice_session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "easyinvoice_session_userId_easyinvoice_user_id_fk": {
+          "name": "easyinvoice_session_userId_easyinvoice_user_id_fk",
+          "tableFrom": "easyinvoice_session",
+          "tableTo": "easyinvoice_user",
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.easyinvoice_user": {
+      "name": "easyinvoice_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "googleId": {
+          "name": "googleId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agreement_status": {
+          "name": "agreement_status",
+          "type": "agreement_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'pending'"
+        },
+        "kyc_status": {
+          "name": "kyc_status",
+          "type": "kyc_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'pending'"
+        },
+        "isCompliant": {
+          "name": "isCompliant",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "easyinvoice_user_googleId_unique": {
+          "name": "easyinvoice_user_googleId_unique",
+          "nullsNotDistinct": false,
+          "columns": ["googleId"]
+        },
+        "easyinvoice_user_email_unique": {
+          "name": "easyinvoice_user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": ["email"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.account_type": {
+      "name": "account_type",
+      "schema": "public",
+      "values": ["checking", "savings"]
+    },
+    "public.agreement_status": {
+      "name": "agreement_status",
+      "schema": "public",
+      "values": ["not_started", "pending", "completed"]
+    },
+    "public.beneficiary_type": {
+      "name": "beneficiary_type",
+      "schema": "public",
+      "values": ["individual", "business"]
+    },
+    "public.gender": {
+      "name": "gender",
+      "schema": "public",
+      "values": ["male", "female", "other", "prefer_not_to_say"]
+    },
+    "public.kyc_status": {
+      "name": "kyc_status",
+      "schema": "public",
+      "values": ["not_started", "initiated", "pending", "approved"]
+    },
+    "public.payment_details_status": {
+      "name": "payment_details_status",
+      "schema": "public",
+      "values": ["pending", "approved", "rejected"]
+    },
+    "public.rails_type": {
+      "name": "rails_type",
+      "schema": "public",
+      "values": ["local", "swift", "wire"]
+    },
+    "public.request_status": {
+      "name": "request_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "paid",
+        "crypto_paid",
+        "offramp_initiated",
+        "offramp_failed",
+        "offramp_pending",
+        "processing",
+        "overdue"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

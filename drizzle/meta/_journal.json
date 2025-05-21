@@ -36,6 +36,13 @@
       "when": 1741182006473,
       "tag": "0004_thankful_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1747822734112,
+      "tag": "0005_fine_joystick",
+      "breakpoints": true
     }
   ]
 }
