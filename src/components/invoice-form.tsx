@@ -54,27 +54,18 @@ type LinkedPaymentDetail = {
   paymentDetailsPayers: (User & PaymentDetailsPayers)[];
 };
 
-// Filter payment details based on client email and compliance status
+// Filter payment details based on compliance status only
 const filterValidPaymentDetails = (
   paymentDetails: (PaymentDetails & {
     paymentDetailsPayers: (User & PaymentDetailsPayers)[];
   })[],
-  clientEmail: string,
 ): LinkedPaymentDetail[] => {
+  // Return all payment details without filtering by client email
   const validPaymentDetails = paymentDetails.filter((detail) => {
-    const hasMatchingPayer = detail.paymentDetailsPayers.some(
-      (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
+    // Check if any payer is compliant
+    return detail.paymentDetailsPayers.some(
+      (payer: User & PaymentDetailsPayers) => payer.isCompliant,
     );
-
-    if (hasMatchingPayer) {
-      const matchingPayer = detail.paymentDetailsPayers.find(
-        (payer: User & PaymentDetailsPayers) => payer.email === clientEmail,
-      );
-      if (matchingPayer) {
-        return matchingPayer.isCompliant;
-      }
-    }
-    return false;
   });
   return validPaymentDetails as unknown as LinkedPaymentDetail[];
 };
@@ -289,6 +280,81 @@ export function InvoiceForm({
     LinkedPaymentDetail[]
   >([]);
 
+  const { fields, append, remove } = useFieldArray({
+    name: "items",
+    control: form.control,
+  });
+
+  const clientEmail = form.watch("clientEmail");
+  const isCryptoToFiatAvailable = form.watch("isCryptoToFiatAvailable");
+
+  // Query to get user by email
+  const { data: clientUserData, isLoading: isLoadingUser } =
+    api.compliance.getUserByEmail.useQuery(
+      { email: clientEmail || "" },
+      { enabled: !!clientEmail },
+    );
+
+  // Query to get payment details for the client
+  const { data: paymentDetailsData, refetch: refetchPaymentDetails } =
+    api.compliance.getPaymentDetails.useQuery(
+      { userId: currentUser.id ?? "" },
+      {
+        enabled: !!clientUserData?.id,
+        // Use the configurable constant for polling interval
+        refetchInterval: PAYMENT_DETAILS_POLLING_INTERVAL,
+        // Also refetch when the window regains focus
+        refetchOnWindowFocus: true,
+      },
+    );
+
+  const allowPaymentDetailsMutation =
+    api.compliance.allowPaymentDetails.useMutation({
+      onSuccess: () => {
+        refetchPaymentDetails();
+      },
+      onError: (error) => {
+        toast.error(`Failed to link payment method: ${error.message}`);
+      },
+    });
+
+  // Extract handleBankAccountSuccess into useCallback
+  const handleBankAccountSuccess = useCallback(
+    async (result: {
+      success: boolean;
+      message: string;
+      paymentDetails: PaymentDetails | null;
+    }) => {
+      setShowBankAccountModal(false);
+
+      try {
+        // Only proceed if we have payment details
+        if (result.success && result.paymentDetails) {
+          // Link the payment method to the client
+          await allowPaymentDetailsMutation.mutateAsync({
+            userId: result.paymentDetails.userId,
+            paymentDetailsId: result.paymentDetails.id,
+            payerEmail: clientEmail,
+          });
+
+          // Update the form with the new payment details
+          form.setValue("paymentDetailsId", result.paymentDetails.id);
+
+          // Refetch payment details to update the UI
+          await refetchPaymentDetails();
+
+          toast.success("Payment method linked successfully");
+        } else {
+          toast.error(result.message || "Failed to create payment details");
+        }
+      } catch (error) {
+        console.error("Error linking payment method:", error);
+        toast.error("Failed to link payment method to client");
+      }
+    },
+    [clientEmail, form, refetchPaymentDetails, allowPaymentDetailsMutation],
+  );
+
   // Define a stable reference to the submit handler
   const handleFormSubmit = useCallback(
     async (data: InvoiceFormValues) => {
@@ -318,6 +384,7 @@ export function InvoiceForm({
           const payer = selectedPaymentDetail.paymentDetailsPayers.find(
             (p: User & PaymentDetailsPayers) => p.email === data.clientEmail,
           );
+
           if (payer) {
             if (payer.status === PaymentDetailsStatusEnum.PENDING) {
               setShowPendingApprovalModal(true);
@@ -332,6 +399,14 @@ export function InvoiceForm({
               setIsSubmitting(false);
               return;
             }
+          } else {
+            setShowPendingApprovalModal(true);
+            setWaitingForPaymentApproval(true);
+            await handleBankAccountSuccess({
+              success: true,
+              message: "Payment method linked successfully",
+              paymentDetails: selectedPaymentDetail.paymentDetails,
+            });
           }
         }
       }
@@ -354,7 +429,14 @@ export function InvoiceForm({
         setIsSubmitting(false);
       }
     },
-    [linkedPaymentDetails, onSubmit, form.setError, router, isSubmitting],
+    [
+      linkedPaymentDetails,
+      onSubmit,
+      form.setError,
+      router,
+      isSubmitting,
+      handleBankAccountSuccess,
+    ],
   );
 
   // Add timeout effect for pending approval modal
@@ -373,34 +455,6 @@ export function InvoiceForm({
     };
   }, [showPendingApprovalModal]);
 
-  const { fields, append, remove } = useFieldArray({
-    name: "items",
-    control: form.control,
-  });
-
-  const clientEmail = form.watch("clientEmail");
-  const isCryptoToFiatAvailable = form.watch("isCryptoToFiatAvailable");
-
-  // Query to get user by email
-  const { data: clientUserData, isLoading: isLoadingUser } =
-    api.compliance.getUserByEmail.useQuery(
-      { email: clientEmail || "" },
-      { enabled: !!clientEmail },
-    );
-
-  // Query to get payment details for the client
-  const { data: paymentDetailsData, refetch: refetchPaymentDetails } =
-    api.compliance.getPaymentDetails.useQuery(
-      { userId: currentUser.id ?? "" },
-      {
-        enabled: !!clientUserData?.id,
-        // Use the configurable constant for polling interval
-        refetchInterval: PAYMENT_DETAILS_POLLING_INTERVAL,
-        // Also refetch when the window regains focus
-        refetchOnWindowFocus: true,
-      },
-    );
-
   // Effect for processing and setting payment details
   useEffect(() => {
     if (
@@ -412,7 +466,6 @@ export function InvoiceForm({
       if (clientUserData.isCompliant && paymentDetailsData.paymentDetails) {
         const validPaymentDetails = filterValidPaymentDetails(
           paymentDetailsData.paymentDetails,
-          clientEmail,
         );
         setLinkedPaymentDetails(validPaymentDetails);
       } else {
@@ -471,49 +524,6 @@ export function InvoiceForm({
     submitAfterApproval,
     isSubmitting,
   ]);
-
-  const allowPaymentDetailsMutation =
-    api.compliance.allowPaymentDetails.useMutation({
-      onSuccess: () => {
-        refetchPaymentDetails();
-      },
-      onError: (error) => {
-        toast.error(`Failed to link payment method: ${error.message}`);
-      },
-    });
-
-  const handleBankAccountSuccess = async (result: {
-    success: boolean;
-    message: string;
-    paymentDetails: PaymentDetails | null;
-  }) => {
-    setShowBankAccountModal(false);
-
-    try {
-      // Only proceed if we have payment details
-      if (result.success && result.paymentDetails) {
-        // Link the payment method to the client
-        await allowPaymentDetailsMutation.mutateAsync({
-          userId: result.paymentDetails.userId,
-          paymentDetailsId: result.paymentDetails.id,
-          payerEmail: clientEmail,
-        });
-
-        // Update the form with the new payment details
-        form.setValue("paymentDetailsId", result.paymentDetails.id);
-
-        // Refetch payment details to update the UI
-        await refetchPaymentDetails();
-
-        toast.success("Payment method linked successfully");
-      } else {
-        toast.error(result.message || "Failed to create payment details");
-      }
-    } catch (error) {
-      console.error("Error linking payment method:", error);
-      toast.error("Failed to link payment method to client");
-    }
-  };
 
   return (
     <>

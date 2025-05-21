@@ -6,7 +6,7 @@ import { complianceFormSchema } from "@/lib/schemas/compliance";
 import { filterDefinedValues } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
 import { AxiosError, type AxiosResponse } from "axios";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import {
@@ -428,7 +428,7 @@ export const complianceRouter = router({
       }
     }),
 
-  // Procedure for retrieving all payment details associated with a user, including shared payment details
+  // Procedure for retrieving all payment details owned by a user, whether or not they're linked to payers
   getPaymentDetails: protectedProcedure
     .input(
       z.object({
@@ -439,39 +439,54 @@ export const complianceRouter = router({
       try {
         const { userId } = input;
 
-        // Get all payment details with their payers using a join
-        const results = await ctx.db
-          .select()
-          .from(paymentDetailsTable)
-          .leftJoin(
-            paymentDetailsPayersTable,
-            eq(
-              paymentDetailsTable.id,
-              paymentDetailsPayersTable.paymentDetailsId,
-            ),
-          )
-          .leftJoin(
-            userTable,
-            eq(paymentDetailsPayersTable.payerId, userTable.id),
-          )
-          .where(eq(paymentDetailsTable.userId, userId));
+        // First get all payment details owned by the user
+        const ownedPaymentDetails =
+          await ctx.db.query.paymentDetailsTable.findMany({
+            where: eq(paymentDetailsTable.userId, userId),
+          });
 
-        // Process the joined results into the desired structure
+        // Initialize the map with all owned payment details (ensures we include those with no payers)
         const paymentDetailsMap = new Map();
+        for (const detail of ownedPaymentDetails) {
+          paymentDetailsMap.set(detail.id, {
+            paymentDetails: detail,
+            paymentDetailsPayers: [],
+          });
+        }
 
-        for (const row of results) {
-          const paymentDetail = row.payment_details;
-          if (!paymentDetailsMap.has(paymentDetail.id)) {
-            paymentDetailsMap.set(paymentDetail.id, {
-              paymentDetails: paymentDetail,
-              paymentDetailsPayers: [],
-            });
-          }
-          if (row.payment_details_payers) {
-            paymentDetailsMap.get(paymentDetail.id)?.paymentDetailsPayers.push({
-              ...row.payment_details_payers,
-              ...(row.user ?? {}),
-            });
+        // Now get payer information for the payment details that have payers
+        if (ownedPaymentDetails.length > 0) {
+          const paymentDetailIds = ownedPaymentDetails.map(
+            (detail) => detail.id,
+          );
+
+          const results = await ctx.db
+            .select()
+            .from(paymentDetailsPayersTable)
+            .leftJoin(
+              userTable,
+              eq(paymentDetailsPayersTable.payerId, userTable.id),
+            )
+            .where(
+              inArray(
+                paymentDetailsPayersTable.paymentDetailsId,
+                paymentDetailIds,
+              ),
+            );
+
+          // Process the results to add payers to the map
+          for (const row of results) {
+            const paymentDetailId =
+              row.payment_details_payers?.paymentDetailsId;
+            if (paymentDetailId && paymentDetailsMap.has(paymentDetailId)) {
+              const entry = paymentDetailsMap.get(paymentDetailId);
+              if (entry && row.payment_details_payers) {
+                entry.paymentDetailsPayers.push({
+                  ...row.payment_details_payers,
+                  ...(row.user ?? {}),
+                });
+              }
+            }
           }
         }
 

@@ -125,15 +125,12 @@ export const invoiceRouter = router({
           );
         });
       } catch (error) {
-        console.error(
-          "[invoice.create] Failed to create invoice",
-          {
-            userId: user?.id,
-            clientEmail: input.clientEmail,
-            invoiceNumber: input.invoiceNumber,
-            error: error instanceof Error ? error.message : error,
-          }
-      );
+        console.error("[invoice.create] Failed to create invoice", {
+          userId: user?.id,
+          clientEmail: input.clientEmail,
+          invoiceNumber: input.invoiceNumber,
+          error: error instanceof Error ? error.message : error,
+        });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create invoice",
@@ -179,13 +176,13 @@ export const invoiceRouter = router({
         });
       } catch (error) {
         console.error(
-            "[invoice.createFromInvoiceMe] Failed to create invoice",
+          "[invoice.createFromInvoiceMe] Failed to create invoice",
           {
             invoicedTo: input.invoicedTo,
             clientEmail: input.clientEmail,
             invoiceNumber: input.invoiceNumber,
             error: error instanceof Error ? error.message : error,
-          }
+          },
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -261,7 +258,11 @@ export const invoiceRouter = router({
         with: {
           paymentDetails: {
             with: {
-              payers: true,
+              payers: {
+                with: {
+                  payer: true,
+                },
+              },
             },
           },
         },
@@ -275,7 +276,9 @@ export const invoiceRouter = router({
         return { success: false, message: "Payment details not found" };
       }
 
-      const paymentDetails = invoice.paymentDetails.payers[0];
+      const paymentDetails = invoice.paymentDetails.payers.find(
+        (payer) => payer.payer.email === invoice.clientEmail,
+      );
       if (!paymentDetails) {
         return { success: false, message: "Payment details not found" };
       }
