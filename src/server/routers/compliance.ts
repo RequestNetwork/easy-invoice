@@ -517,9 +517,9 @@ export const complianceRouter = router({
           });
         }
 
-        // Only allow access if the payment details belong to the current user
+        // Authorization check: Allow access if the user is either the OWNER OR an authorized PAYER
         if (paymentDetails.userId !== ctx.user?.id) {
-          // Check if the current user is a payer for these payment details
+          // User is not the owner, so check if they are an authorized payer
           const payerAccess =
             await ctx.db.query.paymentDetailsPayersTable.findFirst({
               where: (payers) =>
@@ -527,7 +527,7 @@ export const complianceRouter = router({
                 eq(payers.paymentDetailsId, input),
             });
 
-          // If user is neither the owner nor a payer with access, deny access
+          // If the user is not an authorized payer either, deny access
           if (!payerAccess) {
             throw new TRPCError({
               code: "FORBIDDEN",
