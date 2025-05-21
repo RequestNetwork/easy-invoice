@@ -295,10 +295,10 @@ export const invoiceRouter = router({
           return { success: false, message: "No payment details payers found" };
         }
 
-        const paymentDetails = invoice.paymentDetails?.payers.find(
+        const paymentDetailsPayers = invoice.paymentDetails?.payers.find(
           (payer) => payer.payer.email === invoice.clientEmail,
         );
-        if (!paymentDetails) {
+        if (!paymentDetailsPayers) {
           return { success: false, message: "Payment details not found" };
         }
       }
