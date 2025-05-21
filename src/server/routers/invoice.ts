@@ -178,7 +178,15 @@ export const invoiceRouter = router({
           );
         });
       } catch (error) {
-        console.error("Error: ", error);
+        console.error(
+            "[invoice.createFromInvoiceMe] Failed to create invoice",
+          {
+            invoicedTo: input.invoicedTo,
+            clientEmail: input.clientEmail,
+            invoiceNumber: input.invoiceNumber,
+            error: error instanceof Error ? error.message : error,
+          }
+        );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create invoice",
