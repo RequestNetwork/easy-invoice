@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PaymentDetailsStatus as PaymentDetailsStatusEnum } from "@/lib/constants/bank-account";
 import {
   INVOICE_CURRENCIES,
   type InvoiceCurrency,
@@ -27,7 +28,6 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForInvoice,
 } from "@/lib/currencies";
-import { PaymentDetailsStatus as PaymentDetailsStatusEnum } from "@/lib/enums";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import type {
   PaymentDetails,

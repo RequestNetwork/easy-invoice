@@ -1,5 +1,5 @@
+import { Gender } from "@/lib/constants/compliance";
 import { ALL_COUNTRY_CODES } from "@/lib/constants/countries";
-import { Gender } from "@/lib/enums";
 import { z } from "zod";
 
 export const supportedCurrencies = ["usd", "eur", "gbp", "inr"] as const;

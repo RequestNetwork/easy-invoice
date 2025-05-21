@@ -42,3 +42,13 @@ export const COMPLIANCE_COUNTRIES: CountryOption[] = [
   { value: "AE", label: "United Arab Emirates" },
   { value: "VN", label: "Vietnam" },
 ];
+
+/**
+ * Enum representing the possible gender options for compliance forms
+ */
+export enum Gender {
+  MALE = "male",
+  FEMALE = "female",
+  OTHER = "other",
+  PREFER_NOT_TO_SAY = "prefer_not_to_say",
+}

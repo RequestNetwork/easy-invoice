@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/axios";
-import { Gender, PaymentDetailsStatus } from "@/lib/enums";
+import { PaymentDetailsStatus } from "@/lib/constants/bank-account";
+import { Gender } from "@/lib/constants/compliance";
 import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
 import { filterDefinedValues } from "@/lib/utils";
