@@ -95,8 +95,8 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
   }
 
   return {
-    type: "cross-chain" as const,
-    label: "Cross-Chain Payment",
+    type: "crosschain" as const,
+    label: "Crosschain Payment",
     description: `Pay from ${route.chain} network using ${route.token}`,
   };
 };
@@ -194,7 +194,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
     }
   };
 
-  const handleCrosschaimPayments = async (paymentData: any, signer: any) => {
+  const handleCrosschainPayments = async (paymentData: any, signer: any) => {
     const paymentIntent = JSON.parse(paymentData.paymentIntent);
     const supportsEIP2612 = paymentData.metadata.supportsEIP2612;
     let approvalSignature = undefined;
@@ -336,7 +336,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
       const isPaygrid = paymentData.paymentIntentId;
 
       if (isPaygrid) {
-        await handleCrosschaimPayments(paymentData, signer);
+        await handleCrosschainPayments(paymentData, signer);
       } else {
         await handleDirectPayments(paymentData, signer);
       }

@@ -3,7 +3,7 @@ import { ArrowRight, Globe, Zap } from "lucide-react";
 import Image from "next/image";
 
 interface RouteTypeInfo {
-  type: "direct" | "same-chain-erc20" | "cross-chain" | "crypto-to-fiat";
+  type: "direct" | "same-chain-erc20" | "crosschain" | "crypto-to-fiat";
   label: string;
   description: string;
 }
