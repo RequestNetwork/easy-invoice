@@ -56,6 +56,8 @@ type ComplianceResponse = {
   };
 };
 
+const COMPLIANCE_STATUS_POLLING_INTERVAL = 30000; // 30 seconds
+
 export function ComplianceForm({ user }: { user: User }) {
   const [complianceData, setComplianceData] =
     useState<ComplianceResponse | null>(null);
@@ -83,8 +85,10 @@ export function ComplianceForm({ user }: { user: User }) {
       {
         // Only fetch if we have a user email
         enabled: !!user?.email,
-        // Don't refetch on window focus to avoid disrupting the user
-        refetchOnWindowFocus: false,
+        // Use the configurable constant for polling interval
+        refetchInterval: COMPLIANCE_STATUS_POLLING_INTERVAL,
+        // Also refetch when the window regains focus
+        refetchOnWindowFocus: true,
         onSuccess: (data) => {
           // If the user is already compliant, we can skip the form
           if (data.success) {
