@@ -426,6 +426,16 @@ export function InvoiceForm({
     clientUserData,
   ]);
 
+  // Extract submission logic into a separate function
+  const submitAfterApproval = useCallback(() => {
+    // Show success message
+    toast.success("Payment method approved! Creating invoice...");
+    // Submit the form with a slight delay to ensure state is settled
+    setTimeout(() => {
+      void handleFormSubmit(form.getValues());
+    }, 100);
+  }, [form, handleFormSubmit]);
+
   // Separate effect for handling payment approval and form submission
   useEffect(() => {
     if (
@@ -445,12 +455,8 @@ export function InvoiceForm({
         setWaitingForPaymentApproval(false);
         // Close the modal if it's still open
         setShowPendingApprovalModal(false);
-        // Show success message
-        toast.success("Payment method approved! Creating invoice...");
-        // Submit the form
-        setTimeout(() => {
-          void handleFormSubmit(form.getValues());
-        }, 100);
+        // Use the extracted submission logic
+        submitAfterApproval();
       }
     } else if (!waitingForPaymentApproval && isSubmitting) {
       // If we're no longer waiting for approval but isSubmitting is still true
@@ -462,7 +468,7 @@ export function InvoiceForm({
     linkedPaymentDetails,
     clientEmail,
     form,
-    handleFormSubmit,
+    submitAfterApproval,
     isSubmitting,
   ]);
 
