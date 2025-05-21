@@ -28,7 +28,17 @@ const createInvoiceHelper = async (
   // This ensures that funds can be recovered if the payer chooses to bypass the Request Network API
   // and use the Request Network SDK directly (which doesn't handle Crypto-to-fiat correctly).
   const payee = input.isCryptoToFiatAvailable
-    ? process.env.CRYPTO_TO_FIAT_PAYEE_ADDRESS
+    ? process.env.CRYPTO_TO_FIAT_PAYEE_ADDRESS ||
+      (() => {
+        console.error(
+          "CRYPTO_TO_FIAT_PAYEE_ADDRESS environment variable is not set",
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "Server configuration error: Crypto to fiat payments are not properly configured",
+        });
+      })()
     : input.walletAddress;
 
   const response = await apiClient.post("/v2/request", {
