@@ -1,6 +1,10 @@
 import { apiClient } from "@/lib/axios";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
-import { requestTable, userTable } from "@/server/db/schema";
+import {
+  type PaymentDetailsPayers,
+  requestTable,
+  userTable,
+} from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNull, not, or } from "drizzle-orm";
 import { ulid } from "ulid";
@@ -40,6 +44,13 @@ const createInvoiceHelper = async (
       },
     }),
   });
+
+  if (response.status !== 200) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `Failed to create invoice: ${response.data.message}`,
+    });
+  }
 
   const invoice = await db
     .insert(requestTable)
@@ -105,13 +116,6 @@ export const invoiceRouter = router({
       const clientUser = await db.query.userTable.findFirst({
         where: eq(userTable.email, input.clientEmail),
       });
-
-      if (!clientUser) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Client not found",
-        });
-      }
 
       try {
         return await db.transaction(async (tx) => {
@@ -272,18 +276,24 @@ export const invoiceRouter = router({
         return { success: false, message: "Invoice not found" };
       }
 
-      if (!invoice.paymentDetails) {
-        return { success: false, message: "Payment details not found" };
+      let paymentDetailsPayers: PaymentDetailsPayers | undefined;
+      if (invoice.paymentDetails) {
+        if (
+          !invoice.paymentDetails.payers ||
+          invoice.paymentDetails.payers.length === 0
+        ) {
+          return { success: false, message: "No payment details payers found" };
+        }
+
+        const paymentDetails = invoice.paymentDetails?.payers.find(
+          (payer) => payer.payer.email === invoice.clientEmail,
+        );
+        if (!paymentDetails) {
+          return { success: false, message: "Payment details not found" };
+        }
       }
 
-      const paymentDetails = invoice.paymentDetails.payers.find(
-        (payer) => payer.payer.email === invoice.clientEmail,
-      );
-      if (!paymentDetails) {
-        return { success: false, message: "Payment details not found" };
-      }
-
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}&paymentDetailsId=${paymentDetails.externalPaymentDetailId}`;
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}${paymentDetailsPayers ? `&paymentDetailsId=${paymentDetailsPayers?.externalPaymentDetailId}` : ""}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;

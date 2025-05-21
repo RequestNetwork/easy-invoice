@@ -31,9 +31,9 @@ export default async function PaymentPage({
     notFound();
   }
 
-  const paymentDetailsData = await api.compliance.getPaymentDetailsById.query(
-    invoice.paymentDetailsId || "",
-  );
+  const paymentDetailsData = invoice.paymentDetailsId
+    ? await api.compliance.getPaymentDetailsById.query(invoice.paymentDetailsId)
+    : null;
 
   return (
     <BackgroundWrapper
