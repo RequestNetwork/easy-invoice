@@ -45,7 +45,7 @@ import {
   type PaymentCurrency,
   formatCurrencyLabel,
   getPaymentCurrenciesForInvoice,
-} from "@/lib/currencies";
+} from "@/lib/constants/currencies";
 import {
   type PaymentFormValues,
   paymentFormSchema,

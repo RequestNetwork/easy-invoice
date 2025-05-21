@@ -4,7 +4,7 @@ import { Header } from "@/components/header";
 import { PaymentSection } from "@/components/payment-section";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatCurrencyLabel } from "@/lib/currencies";
+import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { formatDate } from "@/lib/date-utils";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";

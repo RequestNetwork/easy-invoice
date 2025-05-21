@@ -27,7 +27,7 @@ import {
   type MainnetCurrency,
   formatCurrencyLabel,
   getPaymentCurrenciesForInvoice,
-} from "@/lib/currencies";
+} from "@/lib/constants/currencies";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import type {
   PaymentDetails,

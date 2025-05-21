@@ -4,8 +4,11 @@ import { PaymentRoute } from "@/components/payment-route";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { CHAIN_TO_ID, ID_TO_APPKIT_NETWORK } from "@/lib/chains";
-import { MAINNET_CURRENCIES, formatCurrencyLabel } from "@/lib/currencies";
+import { CHAIN_TO_ID, ID_TO_APPKIT_NETWORK } from "@/lib/constants/chains";
+import {
+  MAINNET_CURRENCIES,
+  formatCurrencyLabel,
+} from "@/lib/constants/currencies";
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";

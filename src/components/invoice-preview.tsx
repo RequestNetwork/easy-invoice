@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { formatCurrencyLabel } from "@/lib/currencies";
+import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { formatDate } from "@/lib/date-utils";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import { api } from "@/trpc/react";

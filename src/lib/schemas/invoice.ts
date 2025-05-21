@@ -1,4 +1,4 @@
-import { INVOICE_CURRENCIES } from "@/lib/currencies";
+import { INVOICE_CURRENCIES } from "@/lib/constants/currencies";
 import { isEthereumAddress } from "validator";
 import { z } from "zod";
 

@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatCurrencyLabel } from "@/lib/currencies";
+import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import {
   getInvoiceTableStatusClass,
   getStatusDisplayText,
