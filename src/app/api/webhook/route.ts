@@ -64,6 +64,7 @@ export async function POST(req: Request) {
       originalRequestId,
       isCryptoToFiat,
       paymentReference,
+      subStatus,
     } = body;
 
     switch (event) {
@@ -73,20 +74,24 @@ export async function POST(req: Request) {
           isCryptoToFiat ? "crypto_paid" : "paid",
         );
         break;
-      case "settlement.initiated":
-        await updateRequestStatus(requestId, "offramp_initiated");
-        break;
-      case "settlement.failed":
-      case "settlement.bounced":
-        await updateRequestStatus(requestId, "offramp_failed");
-        break;
-      case "settlement.pending_internal_assessment":
-      case "settlement.ongoing_checks":
-      case "settlement.sending_fiat":
-        await updateRequestStatus(requestId, "offramp_pending");
-        break;
-      case "settlement.fiat_sent":
-        await updateRequestStatus(requestId, "paid");
+      case "payment.processing":
+        switch (subStatus) {
+          case "initiated":
+            await updateRequestStatus(requestId, "offramp_initiated");
+            break;
+          case "failed":
+          case "bounced":
+            await updateRequestStatus(requestId, "offramp_failed");
+            break;
+          case "pending_internal_assessment":
+          case "ongoing_checks":
+          case "sending_fiat":
+            await updateRequestStatus(requestId, "offramp_pending");
+            break;
+          case "fiat_sent":
+            await updateRequestStatus(requestId, "paid");
+            break;
+        }
         break;
       case "request.recurring":
         await db.transaction(async (tx) => {
