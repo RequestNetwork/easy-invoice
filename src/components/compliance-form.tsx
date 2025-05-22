@@ -45,6 +45,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ComplianceStatus, type StatusType } from "./compliance-status";
+import { Skeleton } from "./ui/skeleton";
 
 type ComplianceResponse = {
   agreementUrl: string | null;
@@ -240,11 +241,18 @@ export function ComplianceForm({ user }: { user: User }) {
             </Alert>
           )}
 
-          {complianceData?.status.kycStatus !== "not_started" ||
-          complianceData?.status.agreementStatus !== "not_started" ? (
+          {isLoadingStatus && !complianceData ? (
+            <div className="w-full">
+              <Skeleton className="w-full h-40" />
+            </div>
+          ) : complianceData?.status.kycStatus !== "not_started" ||
+            complianceData?.status.agreementStatus !== "not_started" ? (
             <div className="flex flex-col gap-6 w-full">
               <div>
-                <ComplianceStatus status={complianceData?.status} />
+                <ComplianceStatus
+                  status={complianceData?.status}
+                  isLoading={isLoadingStatus}
+                />
               </div>
 
               <div>

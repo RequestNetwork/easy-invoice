@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
 
 export type StatusType =
   | "not_started"
@@ -16,6 +17,7 @@ type ComplianceStatusProps = {
         isCompliant: boolean;
       }
     | undefined;
+  isLoading?: boolean;
 };
 
 type StatusConfig = {
@@ -68,11 +70,26 @@ function getStatusConfig(
 
 type StatusRowProps = {
   label: string;
-  value: StatusType;
+  value?: StatusType;
+  isLoading?: boolean;
 };
 
-function StatusRow({ label, value }: StatusRowProps) {
+function StatusRow({ label, value, isLoading }: StatusRowProps) {
   const type = label === "Agreement Status" ? "agreement" : "kyc";
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span>{label}:</span>
+        </div>
+        <Skeleton className="h-8 w-32 rounded-full" />
+      </div>
+    );
+  }
+
+  if (!value) return null;
+
   const config = getStatusConfig(value, type);
 
   return (
@@ -90,7 +107,7 @@ function StatusRow({ label, value }: StatusRowProps) {
   );
 }
 
-export function ComplianceStatus({ status }: ComplianceStatusProps) {
+export function ComplianceStatus({ status, isLoading }: ComplianceStatusProps) {
   return (
     <Card>
       <CardContent className="p-6">
@@ -98,11 +115,13 @@ export function ComplianceStatus({ status }: ComplianceStatusProps) {
         <div className="space-y-4">
           <StatusRow
             label="Agreement Status"
-            value={status?.agreementStatus ?? "not_started"}
+            value={status?.agreementStatus}
+            isLoading={isLoading}
           />
           <StatusRow
             label="KYC Status"
-            value={status?.kycStatus ?? "not_started"}
+            value={status?.kycStatus}
+            isLoading={isLoading}
           />
         </div>
       </CardContent>
