@@ -91,6 +91,15 @@ export async function POST(req: Request) {
           case "fiat_sent":
             await updateRequestStatus(requestId, "paid");
             break;
+          default: {
+            console.error(
+              `Unhandled payment.processing subStatus "${subStatus}" for request ${requestId}`,
+            );
+            return NextResponse.json(
+              { error: `Unknown subStatus "${subStatus}"` },
+              { status: 422 },
+            );
+          }
         }
         break;
       case "request.recurring":
