@@ -55,7 +55,7 @@ const createInvoiceHelper = async (
     }),
   });
 
-  if (response.status !== 200) {
+  if (response.status !== 200 && response.status !== 201) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `Failed to create invoice: ${response.data.message}`,
