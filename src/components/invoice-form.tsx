@@ -821,6 +821,11 @@ export function InvoiceForm({
               {INVOICE_CURRENCIES.map((currency) => (
                 <SelectItem key={currency} value={currency}>
                   {formatCurrencyLabel(currency)}
+                  {currency === "fUSDC-sepolia" && (
+                    <span className="ml-2 text-xs text-green-600 font-medium">
+                      (works with Crypto-to-fiat)
+                    </span>
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>
