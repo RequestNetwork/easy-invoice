@@ -490,7 +490,7 @@ export function InvoiceForm({
       form.setValue("paymentDetailsId", "");
       form.clearErrors("paymentDetailsId");
     }
-  }, [form.watch("paymentCurrency"), form.watch("isCryptoToFiatAvailable"), form]);
+  }, [form]);
 
   // Extract submission logic into a separate function
   const submitAfterApproval = useCallback(() => {
