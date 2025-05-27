@@ -531,7 +531,7 @@ export function InvoiceForm({
         open={showBankAccountModal}
         onOpenChange={setShowBankAccountModal}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl overflow-y-auto max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Add Payment Method</DialogTitle>
           </DialogHeader>
