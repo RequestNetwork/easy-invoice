@@ -954,20 +954,29 @@ export function InvoiceForm({
             </div>
           ))}
 
-        {!form.watch("isCryptoToFiatAvailable") && (
-          <div className="space-y-2">
-            <Label htmlFor="walletAddress">Your Wallet Address</Label>
-            <Input
-              {...form.register("walletAddress")}
-              placeholder="Enter your wallet address"
-            />
-            {form.formState.errors.walletAddress && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.walletAddress.message}
-              </p>
-            )}
-          </div>
-        )}
+        <div className="space-y-2">
+          <Label htmlFor="walletAddress">Your Wallet Address</Label>
+          <Input
+            {...form.register("walletAddress")}
+            placeholder="Enter your wallet address"
+            disabled={form.watch("isCryptoToFiatAvailable")}
+            className={
+              form.watch("isCryptoToFiatAvailable")
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }
+          />
+          {form.watch("isCryptoToFiatAvailable") && (
+            <p className="text-xs text-gray-500">
+              Wallet address not required when using Crypto-to-fiat payment
+            </p>
+          )}
+          {form.formState.errors.walletAddress && (
+            <p className="text-sm text-red-500">
+              {form.formState.errors.walletAddress.message}
+            </p>
+          )}
+        </div>
 
         <div className="flex justify-end">
           <Button
