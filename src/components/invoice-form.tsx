@@ -493,14 +493,35 @@ export function InvoiceForm({
   }, [form]);
 
   // Extract submission logic into a separate function
-  const submitAfterApproval = useCallback(() => {
+  const submitAfterApproval = useCallback(async () => {
     // Show success message
     toast.success("Payment method approved! Creating invoice...");
-    // Submit the form with a slight delay to ensure state is settled
-    setTimeout(() => {
-      void handleFormSubmit(form.getValues());
-    }, 100);
-  }, [form, handleFormSubmit]);
+
+    try {
+      // Reset the submitting state and directly call onSubmit
+      setIsSubmitting(false);
+
+      // Get the current form values
+      const formData = form.getValues();
+
+      // Call onSubmit directly, bypassing handleFormSubmit guards
+      await onSubmit(formData);
+      setInvoiceCreated(true);
+      setWaitingForPaymentApproval(false);
+
+      // Redirect to Dashboard
+      router.push("/dashboard");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? `Failed to create invoice: ${error.message}`
+          : "Failed to create invoice due to an unknown error",
+      );
+      setInvoiceCreated(false);
+      setWaitingForPaymentApproval(false);
+      setIsSubmitting(false);
+    }
+  }, [form, onSubmit, router]);
 
   // Separate effect for handling payment approval and form submission
   useEffect(() => {
@@ -522,7 +543,7 @@ export function InvoiceForm({
         // Close the modal if it's still open
         setShowPendingApprovalModal(false);
         // Use the extracted submission logic
-        submitAfterApproval();
+        void submitAfterApproval();
       }
     } else if (!waitingForPaymentApproval && isSubmitting) {
       // If we're no longer waiting for approval but isSubmitting is still true
