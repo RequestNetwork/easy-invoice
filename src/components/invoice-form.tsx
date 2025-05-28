@@ -479,6 +479,19 @@ export function InvoiceForm({
     clientUserData,
   ]);
 
+  // Effect to disable Crypto-to-fiat when payment currency is not Sepolia USDC
+  useEffect(() => {
+    const paymentCurrency = form.watch("paymentCurrency");
+    const isCryptoToFiatEnabled = form.watch("isCryptoToFiatAvailable");
+
+    if (paymentCurrency !== "fUSDC-sepolia" && isCryptoToFiatEnabled) {
+      form.setValue("isCryptoToFiatAvailable", false);
+      // Clear payment details when disabling crypto-to-fiat
+      form.setValue("paymentDetailsId", "");
+      form.clearErrors("paymentDetailsId");
+    }
+  }, [form]);
+
   // Extract submission logic into a separate function
   const submitAfterApproval = useCallback(() => {
     // Show success message
@@ -531,7 +544,7 @@ export function InvoiceForm({
         open={showBankAccountModal}
         onOpenChange={setShowBankAccountModal}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl overflow-y-auto max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Add Payment Method</DialogTitle>
           </DialogHeader>
@@ -821,6 +834,11 @@ export function InvoiceForm({
               {INVOICE_CURRENCIES.map((currency) => (
                 <SelectItem key={currency} value={currency}>
                   {formatCurrencyLabel(currency)}
+                  {currency === "fUSDC-sepolia" && (
+                    <span className="ml-2 text-xs text-green-600 font-medium">
+                      (works with Crypto-to-fiat)
+                    </span>
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -903,11 +921,37 @@ export function InvoiceForm({
                 form.clearErrors("paymentDetailsId");
               }
             }}
+            disabled={form.watch("paymentCurrency") !== "fUSDC-sepolia"}
+            className={
+              form.watch("paymentCurrency") !== "fUSDC-sepolia"
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }
           />
-          <Label htmlFor="isCryptoToFiatAvailable">
+          <Label
+            htmlFor="isCryptoToFiatAvailable"
+            className={
+              form.watch("paymentCurrency") !== "fUSDC-sepolia"
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }
+          >
             Allow payment to your bank account (Crypto-to-fiat payment)
           </Label>
         </div>
+        {form.watch("paymentCurrency") !== "fUSDC-sepolia" &&
+          form.watch("isCryptoToFiatAvailable") && (
+            <p className="text-xs text-amber-600">
+              Crypto-to-fiat is only available with Sepolia USDC. Changing
+              payment currency will disable this option.
+            </p>
+          )}
+        {form.watch("paymentCurrency") !== "fUSDC-sepolia" &&
+          !form.watch("isCryptoToFiatAvailable") && (
+            <p className="text-xs text-gray-500">
+              Crypto-to-fiat is only available with Sepolia USDC
+            </p>
+          )}
 
         {form.watch("isCryptoToFiatAvailable") &&
           (clientUserData?.isCompliant ? (
@@ -949,20 +993,29 @@ export function InvoiceForm({
             </div>
           ))}
 
-        {!form.watch("isCryptoToFiatAvailable") && (
-          <div className="space-y-2">
-            <Label htmlFor="walletAddress">Your Wallet Address</Label>
-            <Input
-              {...form.register("walletAddress")}
-              placeholder="Enter your wallet address"
-            />
-            {form.formState.errors.walletAddress && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.walletAddress.message}
-              </p>
-            )}
-          </div>
-        )}
+        <div className="space-y-2">
+          <Label htmlFor="walletAddress">Your Wallet Address</Label>
+          <Input
+            {...form.register("walletAddress")}
+            placeholder="Enter your wallet address"
+            disabled={form.watch("isCryptoToFiatAvailable")}
+            className={
+              form.watch("isCryptoToFiatAvailable")
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }
+          />
+          {form.watch("isCryptoToFiatAvailable") && (
+            <p className="text-xs text-gray-500">
+              Wallet address not required when using Crypto-to-fiat payment
+            </p>
+          )}
+          {form.formState.errors.walletAddress && (
+            <p className="text-sm text-red-500">
+              {form.formState.errors.walletAddress.message}
+            </p>
+          )}
+        </div>
 
         <div className="flex justify-end">
           <Button
