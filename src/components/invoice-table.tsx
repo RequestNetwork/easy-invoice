@@ -53,6 +53,8 @@ interface StatCardProps {
   icon: React.ReactNode;
 }
 
+const RETRIEVE_ALL_INVOICES_POLLING_INTERVAL = 3000; // 3 seconds in milliseconds
+
 const StatCard = ({ title, value, icon }: StatCardProps) => (
   <Card className="bg-white border border-zinc-100">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -77,6 +79,7 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
+    refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
   });
 
   const activeData =
