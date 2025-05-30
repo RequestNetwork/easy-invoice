@@ -346,6 +346,8 @@ export function DirectPayment() {
                         id="amount"
                         type="number"
                         placeholder="0.00"
+                        step="any"
+                        min="0"
                         {...form.register("amount", {
                           valueAsNumber: true,
                         })}
