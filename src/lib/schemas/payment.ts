@@ -15,3 +15,9 @@ export const paymentFormSchema = z.object({
 });
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
+
+export const batchPaymentFormSchema = z.object({
+  payments: z.array(paymentFormSchema),
+});
+
+export type BatchPaymentFormValues = z.infer<typeof batchPaymentFormSchema>;

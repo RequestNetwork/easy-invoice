@@ -1,4 +1,4 @@
-import { INVOICE_CURRENCIES } from "@/lib/constants/currencies";
+import { EXTENDED_INVOICE_CURRENCIES } from "@/lib/constants/currencies";
 import { isEthereumAddress } from "validator";
 import { z } from "zod";
 
@@ -21,7 +21,7 @@ export const invoiceFormSchema = z
       )
       .min(1, "At least one item is required"),
     notes: z.string().optional(),
-    invoiceCurrency: z.enum(INVOICE_CURRENCIES, {
+    invoiceCurrency: z.enum(EXTENDED_INVOICE_CURRENCIES, {
       required_error: "Please select an invoice currency",
     }),
     paymentCurrency: z.string().min(1, "Payment currency is required"),

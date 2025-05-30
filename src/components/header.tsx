@@ -36,10 +36,10 @@ export function Header({ user }: { user?: User | undefined }) {
                 Dashboard
               </Link>
               <Link
-                href="/direct-payment"
+                href="/payouts"
                 className="text-zinc-900 hover:text-zinc-600 transition-colors"
               >
-                Direct Payment
+                Payouts
               </Link>
               <Link
                 href="/invoice-me"
