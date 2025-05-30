@@ -54,9 +54,10 @@ import {
   type BatchPaymentFormValues,
   batchPaymentFormSchema,
 } from "@/lib/schemas/payment";
+import { api } from "@/trpc/react";
 
 export function BatchPayout() {
-  // const { mutateAsync: pay } = api.payment.batchPay.useMutation();
+  const { mutateAsync: batchPay } = api.payment.batchPay.useMutation();
 
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
@@ -158,12 +159,46 @@ export function BatchPayout() {
         walletProvider as ethers.providers.ExternalProvider,
       );
 
-      const _signer = await ethersProvider.getSigner();
+      const signer = await ethersProvider.getSigner();
 
       toast.info("Initiating batch payment...");
 
-      // Simulate batch payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const batchPaymentData = await batchPay({
+        ...data,
+        payer: address,
+      });
+
+      toast.info("Initiating payment...");
+
+      const isApprovalNeeded =
+        batchPaymentData.ERC20ApprovalTransactions.length > 0;
+
+      if (isApprovalNeeded) {
+        toast.info("Approval required", {
+          description: "Please approve the transaction in your wallet",
+        });
+
+        for (const approvalTransaction of batchPaymentData.ERC20ApprovalTransactions) {
+          const tx = await signer.sendTransaction(approvalTransaction as any);
+          await tx.wait();
+        }
+      }
+
+      if (batchPaymentData.ERC20BatchPaymentTransaction) {
+        toast.info("Sending ERC20 batch payment...");
+        const tx = await signer.sendTransaction(
+          batchPaymentData.ERC20BatchPaymentTransaction as any,
+        );
+        await tx.wait();
+      }
+
+      if (batchPaymentData.ETHBatchPaymentTransaction) {
+        toast.info("Sending ETH batch payment...");
+        const tx = await signer.sendTransaction(
+          batchPaymentData.ETHBatchPaymentTransaction as any,
+        );
+        await tx.wait();
+      }
 
       toast.success("Batch payment successful", {
         description: `Successfully processed ${data.payments.length} payments`,
@@ -186,10 +221,10 @@ export function BatchPayout() {
         setPaymentStatus("idle");
       }, 3000);
     } catch (error) {
-      console.error("Batch payment error:", error);
-      toast.error("Batch payment failed", {
+      console.error("Payment error:", error);
+      toast.error("Payment failed", {
         description:
-          "There was an error processing your payments. Please try again.",
+          "There was an error processing your payment. Please try again.",
       });
       setPaymentStatus("error");
     }
