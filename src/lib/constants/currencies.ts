@@ -24,31 +24,39 @@ export const INVOICE_CURRENCIES = [
   "FAU-sepolia",
   "fUSDC-sepolia",
   "fUSDT-sepolia",
-  ...MAINNET_CURRENCIES,
 ] as const;
-export type InvoiceCurrency = (typeof INVOICE_CURRENCIES)[number];
 
-export const PAYMENT_CURRENCIES: Partial<{
-  [K in InvoiceCurrency]: readonly string[];
-}> = {
+export const PAYMENT_CURRENCIES = {
   USD: ["ETH-sepolia-sepolia", "FAU-sepolia"] as const,
   "ETH-sepolia-sepolia": ["ETH-sepolia-sepolia"] as const,
   "FAU-sepolia": ["FAU-sepolia"] as const,
   "fUSDC-sepolia": ["fUSDC-sepolia"] as const,
   "fUSDT-sepolia": ["fUSDT-sepolia"] as const,
+};
+
+export const EXTENDED_INVOICE_CURRENCIES = [
+  ...INVOICE_CURRENCIES,
+  ...MAINNET_CURRENCIES,
+] as const;
+export type InvoiceCurrency = (typeof EXTENDED_INVOICE_CURRENCIES)[number];
+
+export const EXTENDED_PAYMENT_CURRENCIES: Partial<{
+  [K in InvoiceCurrency]: readonly string[];
+}> = {
+  ...PAYMENT_CURRENCIES,
   ...Object.fromEntries(
     MAINNET_CURRENCIES.map((currency) => [currency, [currency]]),
   ),
 } as const;
 
 export type PaymentCurrency = NonNullable<
-  (typeof PAYMENT_CURRENCIES)[InvoiceCurrency]
+  (typeof EXTENDED_PAYMENT_CURRENCIES)[InvoiceCurrency]
 >[number];
 
 export function getPaymentCurrenciesForInvoice(
   invoiceCurrency: InvoiceCurrency,
 ): PaymentCurrency[] {
-  return [...(PAYMENT_CURRENCIES[invoiceCurrency] || [])];
+  return [...(EXTENDED_PAYMENT_CURRENCIES[invoiceCurrency] || [])];
 }
 
 export function formatCurrencyLabel(currency: string): string {

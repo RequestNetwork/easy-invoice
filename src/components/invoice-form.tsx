@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PaymentDetailsStatus as PaymentDetailsStatusEnum } from "@/lib/constants/bank-account";
 import {
-  INVOICE_CURRENCIES,
+  EXTENDED_INVOICE_CURRENCIES,
   type InvoiceCurrency,
   MAINNET_CURRENCIES,
   type MainnetCurrency,
@@ -831,7 +831,7 @@ export function InvoiceForm({
               <SelectValue placeholder="Select invoice currency" />
             </SelectTrigger>
             <SelectContent>
-              {INVOICE_CURRENCIES.map((currency) => (
+              {EXTENDED_INVOICE_CURRENCIES.map((currency) => (
                 <SelectItem key={currency} value={currency}>
                   {formatCurrencyLabel(currency)}
                   {currency === "fUSDC-sepolia" && (
