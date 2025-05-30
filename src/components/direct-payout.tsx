@@ -190,10 +190,10 @@ export function DirectPayment() {
         <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Direct Payment
+            Direct Payout
           </CardTitle>
           <CardDescription>
-            Send payments instantly without creating a request first
+            Make a single payout instantly without creating a request first
           </CardDescription>
         </CardHeader>
 
