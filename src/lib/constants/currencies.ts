@@ -38,10 +38,14 @@ export const EXTENDED_INVOICE_CURRENCIES = [
   ...INVOICE_CURRENCIES,
   ...MAINNET_CURRENCIES,
 ] as const;
-export type InvoiceCurrency = (typeof EXTENDED_INVOICE_CURRENCIES)[number];
+
+export type InvoiceCurrency = (typeof INVOICE_CURRENCIES)[number];
+
+export type ExtendedInvoiceCurrency =
+  (typeof EXTENDED_INVOICE_CURRENCIES)[number];
 
 export const EXTENDED_PAYMENT_CURRENCIES: Partial<{
-  [K in InvoiceCurrency]: readonly string[];
+  [K in ExtendedInvoiceCurrency]: readonly string[];
 }> = {
   ...PAYMENT_CURRENCIES,
   ...Object.fromEntries(

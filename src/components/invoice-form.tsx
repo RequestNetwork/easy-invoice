@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PaymentDetailsStatus as PaymentDetailsStatusEnum } from "@/lib/constants/bank-account";
 import {
   EXTENDED_INVOICE_CURRENCIES,
-  type InvoiceCurrency,
+  type ExtendedInvoiceCurrency,
   MAINNET_CURRENCIES,
   type MainnetCurrency,
   formatCurrencyLabel,
@@ -818,7 +818,7 @@ export function InvoiceForm({
           <Label htmlFor="invoiceCurrency">Invoice Currency</Label>
           <Select
             onValueChange={(value) => {
-              const currency = value as InvoiceCurrency;
+              const currency = value as ExtendedInvoiceCurrency;
               form.setValue("invoiceCurrency", currency);
               // If not USD, set payment currency to same as invoice currency
               if (currency !== "USD") {
