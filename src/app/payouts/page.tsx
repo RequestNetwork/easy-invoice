@@ -1,7 +1,7 @@
 import { BackgroundWrapper } from "@/components/background-wrapper";
-import { DirectPayment } from "@/components/direct-payout";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { PayoutTabs } from "@/components/payout-tabs";
 import { getCurrentSession } from "@/server/auth";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -32,7 +32,7 @@ export default async function DirectPaymentPage() {
           Send payments quickly without having to create a request first.
         </p>
 
-        <DirectPayment />
+        <PayoutTabs />
       </main>
       <Footer />
     </BackgroundWrapper>
