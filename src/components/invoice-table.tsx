@@ -265,7 +265,7 @@ const InvoiceRow = ({
   setSelectedInvoices: (invoices: Request[]) => void;
   selectedInvoices: Request[];
   lastSelectedNetwork: string | null;
-  setLastSelectedNetwork: (network: string) => void;
+  setLastSelectedNetwork: (network: string | null) => void;
 }) => {
   const utils = api.useUtils();
   const dueDate = new Date(invoice.dueDate);
