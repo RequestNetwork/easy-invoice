@@ -38,7 +38,9 @@ export const paymentRouter = router({
     }),
   batchPay: protectedProcedure
     .input(
-      batchPaymentFormSchema.extend({
+      z.object({
+        payments: batchPaymentFormSchema.shape.payments.optional(),
+        requestIds: z.array(z.string()).optional(),
         payer: z.string().optional(),
       }),
     )
@@ -53,12 +55,15 @@ export const paymentRouter = router({
       }
 
       const reponse = await apiClient.post("v2/payouts/batch", {
-        requests: input.payments.map((payment) => ({
-          amount: payment.amount.toString(),
-          payee: payment.payee,
-          invoiceCurrency: payment.invoiceCurrency,
-          paymentCurrency: payment.paymentCurrency,
-        })),
+        requests: input.payments
+          ? input.payments.map((payment) => ({
+              amount: payment.amount.toString(),
+              payee: payment.payee,
+              invoiceCurrency: payment.invoiceCurrency,
+              paymentCurrency: payment.paymentCurrency,
+            }))
+          : undefined,
+        requestIds: input.requestIds,
         payer: input.payer,
       });
 
