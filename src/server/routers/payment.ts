@@ -1,6 +1,10 @@
 import { apiClient } from "@/lib/axios";
-import { paymentFormSchema } from "@/lib/schemas/payment";
+import {
+  batchPaymentFormSchema,
+  paymentFormSchema,
+} from "@/lib/schemas/payment";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 export const paymentRouter = router({
@@ -16,7 +20,7 @@ export const paymentRouter = router({
         });
       }
 
-      const response = await apiClient.post("v2/pay", {
+      const response = await apiClient.post("v2/payouts", {
         amount: input.amount.toString(),
         payee: input.payee,
         invoiceCurrency: input.invoiceCurrency,
@@ -29,6 +33,34 @@ export const paymentRouter = router({
           message: "Failed to pay",
         });
       }
+
+      return response.data;
+    }),
+  batchPay: protectedProcedure
+    .input(
+      batchPaymentFormSchema.extend({
+        payer: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { user } = ctx;
+
+      if (!user) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to pay",
+        });
+      }
+
+      const response = await apiClient.post("v2/payouts/batch", {
+        requests: input.payouts.map((payout) => ({
+          amount: payout.amount.toString(),
+          payee: payout.payee,
+          invoiceCurrency: payout.invoiceCurrency,
+          paymentCurrency: payout.paymentCurrency,
+        })),
+        payer: input.payer,
+      });
 
       return response.data;
     }),

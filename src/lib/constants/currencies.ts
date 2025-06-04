@@ -1,3 +1,4 @@
+// Network-specific currency lists
 export const MAINNET_CURRENCIES = [
   "USDC-base",
   "USDT-base",
@@ -16,39 +17,69 @@ export const MAINNET_CURRENCIES = [
   "DAI-arbitrum-one",
 ] as const;
 
-export type MainnetCurrency = (typeof MAINNET_CURRENCIES)[number];
-
-export const INVOICE_CURRENCIES = [
-  "USD",
+export const TESTNET_CURRENCIES = [
   "ETH-sepolia-sepolia",
   "FAU-sepolia",
   "fUSDC-sepolia",
   "fUSDT-sepolia",
+] as const;
+
+export const FIAT_CURRENCIES = ["USD"] as const;
+
+// Feature-specific currency lists
+export const INVOICE_CURRENCIES = [
+  ...FIAT_CURRENCIES,
+  ...TESTNET_CURRENCIES,
   ...MAINNET_CURRENCIES,
 ] as const;
-export type InvoiceCurrency = (typeof INVOICE_CURRENCIES)[number];
 
-export const PAYMENT_CURRENCIES: Partial<{
+export const PAYOUT_CURRENCIES = [
+  ...FIAT_CURRENCIES,
+  ...TESTNET_CURRENCIES,
+] as const;
+
+// Type definitions
+export type MainnetCurrency = (typeof MAINNET_CURRENCIES)[number];
+export type TestnetCurrency = (typeof TESTNET_CURRENCIES)[number];
+export type FiatCurrency = (typeof FIAT_CURRENCIES)[number];
+export type InvoiceCurrency = (typeof INVOICE_CURRENCIES)[number];
+export type PayoutCurrency = (typeof PAYOUT_CURRENCIES)[number];
+
+// Currency mappings
+export const INVOICE_PAYMENT_CURRENCIES: Partial<{
   [K in InvoiceCurrency]: readonly string[];
 }> = {
-  USD: ["ETH-sepolia-sepolia", "FAU-sepolia"] as const,
-  "ETH-sepolia-sepolia": ["ETH-sepolia-sepolia"] as const,
-  "FAU-sepolia": ["FAU-sepolia"] as const,
-  "fUSDC-sepolia": ["fUSDC-sepolia"] as const,
-  "fUSDT-sepolia": ["fUSDT-sepolia"] as const,
+  USD: ["ETH-sepolia-sepolia", "FAU-sepolia"],
+  "ETH-sepolia-sepolia": ["ETH-sepolia-sepolia"],
+  "FAU-sepolia": ["FAU-sepolia"],
+  "fUSDC-sepolia": ["fUSDC-sepolia"],
+  "fUSDT-sepolia": ["fUSDT-sepolia"],
   ...Object.fromEntries(
     MAINNET_CURRENCIES.map((currency) => [currency, [currency]]),
   ),
 } as const;
 
-export type PaymentCurrency = NonNullable<
-  (typeof PAYMENT_CURRENCIES)[InvoiceCurrency]
->[number];
+export const PAYOUT_PAYMENT_CURRENCIES: Partial<{
+  [K in PayoutCurrency]: readonly string[];
+}> = {
+  USD: ["ETH-sepolia-sepolia", "FAU-sepolia"],
+  "ETH-sepolia-sepolia": ["ETH-sepolia-sepolia"],
+  "FAU-sepolia": ["FAU-sepolia"],
+  "fUSDC-sepolia": ["fUSDC-sepolia"],
+  "fUSDT-sepolia": ["fUSDT-sepolia"],
+} as const;
 
+// Helper functions
 export function getPaymentCurrenciesForInvoice(
-  invoiceCurrency: InvoiceCurrency,
-): PaymentCurrency[] {
-  return [...(PAYMENT_CURRENCIES[invoiceCurrency] || [])];
+  currency: InvoiceCurrency,
+): string[] {
+  return [...(INVOICE_PAYMENT_CURRENCIES[currency] || [])];
+}
+
+export function getPaymentCurrenciesForPayout(
+  currency: PayoutCurrency,
+): string[] {
+  return [...(PAYOUT_PAYMENT_CURRENCIES[currency] || [])];
 }
 
 export function formatCurrencyLabel(currency: string): string {
