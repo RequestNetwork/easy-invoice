@@ -117,11 +117,10 @@ export function BatchPayout() {
     const newInvoiceCurrency = value as InvoiceCurrency;
     form.setValue(`payouts.${index}.invoiceCurrency`, newInvoiceCurrency);
 
-    if (newInvoiceCurrency !== "USD") {
-      form.setValue(`payouts.${index}.paymentCurrency`, newInvoiceCurrency);
-    } else {
-      const validPaymentCurrencies =
-        getPaymentCurrenciesForInvoice(newInvoiceCurrency);
+    const validPaymentCurrencies =
+      getPaymentCurrenciesForInvoice(newInvoiceCurrency);
+
+    if (validPaymentCurrencies.length > 0) {
       form.setValue(
         `payouts.${index}.paymentCurrency`,
         validPaymentCurrencies[0],
