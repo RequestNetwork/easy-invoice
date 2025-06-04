@@ -162,8 +162,8 @@ export function BatchPayout() {
     const payouts = form.watch("payouts");
     const uniqueAddresses = new Set(
       payouts
-        .filter((payout) => payout.payee)
-        .map((payout) => payout.payee.toLowerCase()),
+        .filter((payout) => ethers.utils.getAddress(payout.payee))
+        .map((payout) => ethers.utils.getAddress(payout.payee)),
     );
     return uniqueAddresses.size;
   };
