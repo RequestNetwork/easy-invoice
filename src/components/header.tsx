@@ -56,9 +56,9 @@ export function Header({ user }: { user?: User | undefined }) {
               {demoMeetingUrl && (
                 <Link
                   href={demoMeetingUrl}
-                  className="font-semibold text-zinc-900 underline underline-offset-4 decoration-zinc-400 hover:text-zinc-600 transition-colors"
+                  className="text-zinc-900 hover:text-zinc-600 transition-colors"
                 >
-                  Book A Demo
+                  Book Demo
                 </Link>
               )}
               <UserMenu user={user} />
@@ -71,7 +71,7 @@ export function Header({ user }: { user?: User | undefined }) {
               className="bg-black hover:bg-zinc-800 text-white transition-colors"
             >
               <Link href={demoMeetingUrl} target="_blank">
-                Book A Demo
+                Book Demo
               </Link>
             </Button>
           )}
