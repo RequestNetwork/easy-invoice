@@ -213,14 +213,14 @@ export function BatchPayout() {
         });
 
         for (const approvalTransaction of batchPaymentData.ERC20ApprovalTransactions) {
-          const tx = await signer.sendTransaction(approvalTransaction as any);
+          const tx = await signer.sendTransaction(approvalTransaction);
           await tx.wait();
         }
       }
 
       toast.info("Sending batch payment...");
       const tx = await signer.sendTransaction(
-        batchPaymentData.batchPaymentTransaction as any,
+        batchPaymentData.batchPaymentTransaction,
       );
       await tx.wait();
 
