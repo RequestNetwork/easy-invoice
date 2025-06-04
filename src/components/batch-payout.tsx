@@ -216,41 +216,113 @@ export function BatchPayout() {
         });
 
         for (const approvalTransaction of batchPaymentData.ERC20ApprovalTransactions) {
-          const tx = await signer.sendTransaction(approvalTransaction);
-          await tx.wait();
+          try {
+            const tx = await signer.sendTransaction(approvalTransaction);
+            await tx.wait();
+          } catch (approvalError: any) {
+            if (approvalError?.code === 4001) {
+              toast.error("Approval rejected", {
+                description: "You rejected the token approval in your wallet.",
+              });
+              setPaymentStatus("error");
+              return;
+            }
+            throw approvalError; // Re-throw to be caught by main error handler
+          }
         }
       }
 
       toast.info("Sending batch payment...");
-      const tx = await signer.sendTransaction(
-        batchPaymentData.batchPaymentTransaction,
-      );
-      await tx.wait();
 
-      toast.success("Batch payment successful", {
-        description: `Successfully processed ${data.payouts.length} payments`,
-      });
+      try {
+        const tx = await signer.sendTransaction(
+          batchPaymentData.batchPaymentTransaction,
+        );
+        await tx.wait();
 
-      setPaymentStatus("success");
+        toast.success("Batch payment successful", {
+          description: `Successfully processed ${data.payouts.length} payments`,
+        });
 
-      // Reset form after successful payment
-      form.reset({
-        payouts: [
-          {
-            payee: "",
-            amount: 0,
-            invoiceCurrency: "USD",
-            paymentCurrency: "ETH-sepolia-sepolia",
-          },
-        ],
-      });
-      setPaymentStatus("idle");
-    } catch (error) {
+        setPaymentStatus("success");
+
+        form.reset({
+          payouts: [
+            {
+              payee: "",
+              amount: 0,
+              invoiceCurrency: "USD",
+              paymentCurrency: "ETH-sepolia-sepolia",
+            },
+          ],
+        });
+        setPaymentStatus("idle");
+      } catch (txError: any) {
+        if (txError?.code === 4001) {
+          toast.error("Transaction rejected", {
+            description: "You rejected the batch payment in your wallet.",
+          });
+        } else {
+          throw txError; // Re-throw to be caught by main error handler
+        }
+        setPaymentStatus("error");
+      }
+    } catch (error: any) {
       console.error("Payment error:", error);
-      toast.error("Payment failed", {
-        description:
-          "There was an error processing your payment. Please try again.",
-      });
+
+      if (
+        error?.code === "INSUFFICIENT_FUNDS" ||
+        error?.message?.toLowerCase().includes("insufficient funds") ||
+        (error?.code === "SERVER_ERROR" && error?.error?.code === -32000)
+      ) {
+        toast.error("Insufficient funds", {
+          description:
+            "You do not have enough funds to complete this batch payment.",
+        });
+      } else if (
+        error?.message?.toLowerCase().includes("network") ||
+        error?.code === "NETWORK_ERROR" ||
+        error?.code === "NETWORK_ERROR" ||
+        (error?.event === "error" && error?.type === "network")
+      ) {
+        toast.error("Network error", {
+          description:
+            "Network error. Please check your connection and try again.",
+        });
+      } else if (error?.reason) {
+        toast.error("Transaction failed", {
+          description: `Smart contract error: ${error.reason}`,
+        });
+      } else {
+        let errorMessage =
+          "There was an error processing your batch payment. Please try again.";
+
+        if (error && typeof error === "object") {
+          if (
+            "data" in error &&
+            error.data &&
+            typeof error.data === "object" &&
+            "message" in error.data
+          ) {
+            errorMessage = error.data.message || errorMessage;
+          } else if ("message" in error) {
+            errorMessage = error.message || errorMessage;
+          } else if ("response" in error && error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          } else if (
+            "error" in error &&
+            typeof error.error === "object" &&
+            error.error &&
+            "message" in error.error
+          ) {
+            errorMessage = error.error.message;
+          }
+        }
+
+        toast.error("Batch payment failed", {
+          description: errorMessage,
+        });
+      }
       setPaymentStatus("error");
     }
   };
