@@ -191,10 +191,13 @@ export function BatchPayout() {
 
     setPaymentStatus("processing");
 
+    if (!walletProvider) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
     try {
-      const ethersProvider = new ethers.providers.Web3Provider(
-        walletProvider as ethers.providers.ExternalProvider,
-      );
+      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
 
       const signer = await ethersProvider.getSigner();
 
