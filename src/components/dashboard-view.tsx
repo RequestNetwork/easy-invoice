@@ -51,8 +51,6 @@ export function DashboardView({ invoices }: DashboardViewProps) {
 
       const signer = await ethersProvider.getSigner();
 
-      toast.info("Initiating batch payment...");
-
       const requestIds = selectedInvoices.map((invoice) => invoice.requestId);
 
       const batchPaymentData = await batchPay({
@@ -60,20 +58,29 @@ export function DashboardView({ invoices }: DashboardViewProps) {
         payer: address,
       });
 
-      await handleBatchPayment({
+      const result = await handleBatchPayment({
         signer,
         batchPaymentData,
-        invoicesCount: selectedInvoices.length,
+        onSuccess: () => {
+          toast.success("Batch payment successful", {
+            description: `Successfully processed ${selectedInvoices.length} invoices`,
+          });
+          setSelectedInvoices([]);
+          setLastSelectedNetwork(null);
+        },
+        onError: () => {
+          setIsPayingInvoices(false);
+        },
+        onStatusChange: (status) => {
+          setIsPayingInvoices(status === "processing");
+        },
       });
 
-      setSelectedInvoices([]);
-      setLastSelectedNetwork(null);
-    } catch (_err) {
-      toast.error("Payment failed", {
-        description:
-          "There was an error processing your payment. Please try again.",
-      });
-    } finally {
+      if (!result.success) {
+        console.error("Batch payment failed:", result.error);
+      }
+    } catch (error) {
+      console.error("Failed to initiate batch payment:", error);
       setIsPayingInvoices(false);
     }
   };
