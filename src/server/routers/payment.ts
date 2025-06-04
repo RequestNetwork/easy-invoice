@@ -38,11 +38,15 @@ export const paymentRouter = router({
     }),
   batchPay: protectedProcedure
     .input(
-      z.object({
-        payouts: batchPaymentFormSchema.shape.payouts.optional(),
-        requestIds: z.array(z.string()).optional(),
-        payer: z.string().optional(),
-      }),
+      z
+        .object({
+          payouts: batchPaymentFormSchema.shape.payouts.optional(),
+          requestIds: z.array(z.string()).optional(),
+          payer: z.string().optional(),
+        })
+        .refine((data) => data.payouts || data.requestIds, {
+          message: "Either payouts or requestIds must be provided",
+        }),
     )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;

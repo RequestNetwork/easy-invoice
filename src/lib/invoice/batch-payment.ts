@@ -1,4 +1,4 @@
-import type { ethers } from "ethers";
+import type { ethers, providers } from "ethers";
 import { toast } from "sonner";
 
 interface BatchPaymentResult {
@@ -7,8 +7,8 @@ interface BatchPaymentResult {
 }
 
 export interface BatchPaymentData {
-  ERC20ApprovalTransactions: any[];
-  batchPaymentTransaction: any;
+  ERC20ApprovalTransactions: providers.TransactionRequest[];
+  batchPaymentTransaction: providers.TransactionRequest;
 }
 
 export const handleBatchPayment = async ({
