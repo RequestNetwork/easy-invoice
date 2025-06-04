@@ -52,16 +52,16 @@ export const paymentRouter = router({
         });
       }
 
-      const reponse = await apiClient.post("v2/payouts/batch", {
-        requests: input.payments.map((payment) => ({
-          amount: payment.amount.toString(),
-          payee: payment.payee,
-          invoiceCurrency: payment.invoiceCurrency,
-          paymentCurrency: payment.paymentCurrency,
+      const response = await apiClient.post("v2/payouts/batch", {
+        requests: input.payouts.map((payout) => ({
+          amount: payout.amount.toString(),
+          payee: payout.payee,
+          invoiceCurrency: payout.invoiceCurrency,
+          paymentCurrency: payout.paymentCurrency,
         })),
         payer: input.payer,
       });
 
-      return reponse.data;
+      return response.data;
     }),
 });

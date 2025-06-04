@@ -17,7 +17,10 @@ export const paymentFormSchema = z.object({
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
 
 export const batchPaymentFormSchema = z.object({
-  payments: z.array(paymentFormSchema),
+  payouts: z
+    .array(paymentFormSchema)
+    .min(1, "At least one payment is required")
+    .max(10, "Maximum 10 payments allowed"),
 });
 
 export type BatchPaymentFormValues = z.infer<typeof batchPaymentFormSchema>;

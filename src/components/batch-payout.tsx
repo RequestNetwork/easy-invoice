@@ -77,7 +77,7 @@ export function BatchPayout() {
   const form = useForm<BatchPaymentFormValues>({
     resolver: zodResolver(batchPaymentFormSchema),
     defaultValues: {
-      payments: [
+      payouts: [
         {
           payee: "",
           amount: 0,
