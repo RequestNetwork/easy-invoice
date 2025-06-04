@@ -29,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -51,13 +50,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  INVOICE_CURRENCIES,
-  type InvoiceCurrency,
-  type PaymentCurrency,
+  PAYOUT_CURRENCIES,
+  type PayoutCurrency,
   formatCurrencyLabel,
-  getPaymentCurrenciesForInvoice,
+  getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
-import { handleBatchPayment } from "@/lib/invoice/batch-payment";
 import {
   type BatchPaymentFormValues,
   batchPaymentFormSchema,
@@ -78,7 +75,7 @@ export function BatchPayout() {
   const form = useForm<BatchPaymentFormValues>({
     resolver: zodResolver(batchPaymentFormSchema),
     defaultValues: {
-      payments: [
+      payouts: [
         {
           payee: "",
           amount: 0,
@@ -91,7 +88,7 @@ export function BatchPayout() {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "payments",
+    name: "payouts",
   });
 
   const { open } = useAppKit();
@@ -115,16 +112,15 @@ export function BatchPayout() {
   }, [isConnected]);
 
   const handleInvoiceCurrencyChange = (value: string, index: number) => {
-    const newInvoiceCurrency = value as InvoiceCurrency;
-    form.setValue(`payments.${index}.invoiceCurrency`, newInvoiceCurrency);
+    const newInvoiceCurrency = value as PayoutCurrency;
+    form.setValue(`payouts.${index}.invoiceCurrency`, newInvoiceCurrency);
 
-    if (newInvoiceCurrency !== "USD") {
-      form.setValue(`payments.${index}.paymentCurrency`, newInvoiceCurrency);
-    } else {
-      const validPaymentCurrencies =
-        getPaymentCurrenciesForInvoice(newInvoiceCurrency);
+    const validPaymentCurrencies =
+      getPaymentCurrenciesForPayout(newInvoiceCurrency);
+
+    if (validPaymentCurrencies.length > 0) {
       form.setValue(
-        `payments.${index}.paymentCurrency`,
+        `payouts.${index}.paymentCurrency`,
         validPaymentCurrencies[0],
       );
     }
@@ -149,34 +145,37 @@ export function BatchPayout() {
 
   const duplicatePayment = (index: number) => {
     if (fields.length < MAX_PAYMENTS) {
-      const payment = form.getValues(`payments.${index}`);
-      append({ ...payment, payee: "" });
+      const payout = form.getValues(`payouts.${index}`);
+      append({ ...payout, payee: "" });
     }
   };
 
   const getValidPaymentsCount = () => {
-    const payments = form.watch("payments");
-    return payments.filter((payment) => payment.payee && payment.amount > 0)
-      .length;
+    const payouts = form.watch("payouts");
+    return payouts.filter((payout) => payout.payee && payout.amount > 0).length;
   };
 
   const getUniqueAddressesCount = () => {
-    const payments = form.watch("payments");
+    const payouts = form.watch("payouts");
     const uniqueAddresses = new Set(
-      payments
-        .filter((payment) => payment.payee)
-        .map((payment) => payment.payee.toLowerCase()),
+      payouts
+        .filter((payout) => payout.payee)
+        .map((payout) => ethers.utils.getAddress(payout.payee)),
     );
     return uniqueAddresses.size;
   };
 
   const getTotalsByCurrency = () => {
-    const payments = form.watch("payments");
-    const totals: Record<string, number> = {};
-    for (const payment of payments) {
-      if (payment.amount > 0) {
-        const currency = payment.invoiceCurrency;
-        totals[currency] = (totals[currency] || 0) + payment.amount;
+    const payouts = form.watch("payouts");
+    const totals: Record<string, ethers.BigNumber> = {};
+    for (const payout of payouts) {
+      if (payout.amount > 0) {
+        const currency = payout.invoiceCurrency;
+        // Convert amount to BigNumber with 18 decimals of precision
+        const amount = ethers.utils.parseUnits(payout.amount.toString(), 18);
+        totals[currency] = (totals[currency] || ethers.BigNumber.from(0)).add(
+          amount,
+        );
       }
     }
     return totals;
@@ -190,10 +189,13 @@ export function BatchPayout() {
 
     setPaymentStatus("processing");
 
+    if (!walletProvider) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
     try {
-      const ethersProvider = new ethers.providers.Web3Provider(
-        walletProvider as ethers.providers.ExternalProvider,
-      );
+      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
 
       const signer = await ethersProvider.getSigner();
 
@@ -204,18 +206,49 @@ export function BatchPayout() {
         payer: address,
       });
 
-      await handleBatchPayment({
-        signer,
-        batchPaymentData,
-        invoicesCount: data.payments.length,
-      });
+      toast.info("Initiating payment...");
 
-      setPaymentStatus("success");
+      const isApprovalNeeded =
+        batchPaymentData.ERC20ApprovalTransactions.length > 0;
 
-      // Reset form after successful payment
-      setTimeout(() => {
+      if (isApprovalNeeded) {
+        toast.info("Approval required", {
+          description: "Please approve the transaction in your wallet",
+        });
+
+        for (const approvalTransaction of batchPaymentData.ERC20ApprovalTransactions) {
+          try {
+            const tx = await signer.sendTransaction(approvalTransaction);
+            await tx.wait();
+          } catch (approvalError: any) {
+            if (approvalError?.code === 4001) {
+              toast.error("Approval rejected", {
+                description: "You rejected the token approval in your wallet.",
+              });
+              setPaymentStatus("error");
+              return;
+            }
+            throw approvalError; // Re-throw to be caught by main error handler
+          }
+        }
+      }
+
+      toast.info("Sending batch payment...");
+
+      try {
+        const tx = await signer.sendTransaction(
+          batchPaymentData.batchPaymentTransaction,
+        );
+        await tx.wait();
+
+        toast.success("Batch payment successful", {
+          description: `Successfully processed ${data.payouts.length} payments`,
+        });
+
+        setPaymentStatus("success");
+
         form.reset({
-          payments: [
+          payouts: [
             {
               payee: "",
               amount: 0,
@@ -225,13 +258,72 @@ export function BatchPayout() {
           ],
         });
         setPaymentStatus("idle");
-      }, 3000);
-    } catch (error) {
+      } catch (txError: any) {
+        if (txError?.code === 4001) {
+          toast.error("Transaction rejected", {
+            description: "You rejected the batch payment in your wallet.",
+          });
+        } else {
+          throw txError; // Re-throw to be caught by main error handler
+        }
+        setPaymentStatus("error");
+      }
+    } catch (error: any) {
       console.error("Payment error:", error);
-      toast.error("Payment failed", {
-        description:
-          "There was an error processing your payment. Please try again.",
-      });
+
+      if (
+        error?.code === "INSUFFICIENT_FUNDS" ||
+        error?.message?.toLowerCase().includes("insufficient funds") ||
+        (error?.code === "SERVER_ERROR" && error?.error?.code === -32000)
+      ) {
+        toast.error("Insufficient funds", {
+          description:
+            "You do not have enough funds to complete this batch payment.",
+        });
+      } else if (
+        error?.message?.toLowerCase().includes("network") ||
+        error?.code === "NETWORK_ERROR" ||
+        error?.code === "NETWORK_ERROR" ||
+        (error?.event === "error" && error?.type === "network")
+      ) {
+        toast.error("Network error", {
+          description:
+            "Network error. Please check your connection and try again.",
+        });
+      } else if (error?.reason) {
+        toast.error("Transaction failed", {
+          description: `Smart contract error: ${error.reason}`,
+        });
+      } else {
+        let errorMessage =
+          "There was an error processing your batch payment. Please try again.";
+
+        if (error && typeof error === "object") {
+          if (
+            "data" in error &&
+            error.data &&
+            typeof error.data === "object" &&
+            "message" in error.data
+          ) {
+            errorMessage = error.data.message || errorMessage;
+          } else if ("message" in error) {
+            errorMessage = error.message || errorMessage;
+          } else if ("response" in error && error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          } else if (
+            "error" in error &&
+            typeof error.error === "object" &&
+            error.error &&
+            "message" in error.error
+          ) {
+            errorMessage = error.error.message;
+          }
+        }
+
+        toast.error("Batch payment failed", {
+          description: errorMessage,
+        });
+      }
       setPaymentStatus("error");
     }
   };
@@ -248,9 +340,6 @@ export function BatchPayout() {
                 <CreditCard className="h-5 w-5" />
                 Batch Payout
               </CardTitle>
-              <CardDescription>
-                Create and send multiple payments efficiently in a single batch
-              </CardDescription>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="text-sm">
@@ -352,8 +441,8 @@ export function BatchPayout() {
                       <TableBody>
                         {fields.map((field, index) => {
                           const invoiceCurrency = form.watch(
-                            `payments.${index}.invoiceCurrency`,
-                          ) as InvoiceCurrency;
+                            `payouts.${index}.invoiceCurrency`,
+                          ) as PayoutCurrency;
                           const showPaymentCurrencySelect =
                             invoiceCurrency === "USD";
 
@@ -368,7 +457,7 @@ export function BatchPayout() {
                               <TableCell>
                                 <Input
                                   placeholder="0x..."
-                                  {...form.register(`payments.${index}.payee`)}
+                                  {...form.register(`payouts.${index}.payee`)}
                                   disabled={paymentStatus === "processing"}
                                   className="font-mono text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-zinc-300"
                                 />
@@ -379,12 +468,9 @@ export function BatchPayout() {
                                   placeholder="0.00"
                                   step="any"
                                   min="0"
-                                  {...form.register(
-                                    `payments.${index}.amount`,
-                                    {
-                                      valueAsNumber: true,
-                                    },
-                                  )}
+                                  {...form.register(`payouts.${index}.amount`, {
+                                    valueAsNumber: true,
+                                  })}
                                   disabled={paymentStatus === "processing"}
                                   className="text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-zinc-300"
                                 />
@@ -401,14 +487,16 @@ export function BatchPayout() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {INVOICE_CURRENCIES.map((currency) => (
-                                      <SelectItem
-                                        key={currency}
-                                        value={currency}
-                                      >
-                                        {formatCurrencyLabel(currency)}
-                                      </SelectItem>
-                                    ))}
+                                    {PAYOUT_CURRENCIES.map(
+                                      (currency: PayoutCurrency) => (
+                                        <SelectItem
+                                          key={currency}
+                                          value={currency}
+                                        >
+                                          {formatCurrencyLabel(currency)}
+                                        </SelectItem>
+                                      ),
+                                    )}
                                   </SelectContent>
                                 </Select>
                               </TableCell>
@@ -416,12 +504,12 @@ export function BatchPayout() {
                                 {showPaymentCurrencySelect ? (
                                   <Select
                                     value={form.watch(
-                                      `payments.${index}.paymentCurrency`,
+                                      `payouts.${index}.paymentCurrency`,
                                     )}
                                     onValueChange={(value) =>
                                       form.setValue(
-                                        `payments.${index}.paymentCurrency`,
-                                        value as PaymentCurrency,
+                                        `payouts.${index}.paymentCurrency`,
+                                        value as PayoutCurrency,
                                       )
                                     }
                                     disabled={paymentStatus === "processing"}
@@ -430,9 +518,9 @@ export function BatchPayout() {
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {getPaymentCurrenciesForInvoice(
+                                      {getPaymentCurrenciesForPayout(
                                         invoiceCurrency,
-                                      ).map((currency) => (
+                                      ).map((currency: string) => (
                                         <SelectItem
                                           key={currency}
                                           value={currency}
@@ -539,10 +627,7 @@ export function BatchPayout() {
                                     {formatCurrencyLabel(currency)}:
                                   </span>
                                   <span className="font-medium">
-                                    {total.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 6,
-                                    })}
+                                    {ethers.utils.formatUnits(total, 18)}
                                   </span>
                                 </div>
                               ),

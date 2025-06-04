@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -40,11 +39,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  INVOICE_CURRENCIES,
-  type InvoiceCurrency,
-  type PaymentCurrency,
+  PAYOUT_CURRENCIES,
+  type PayoutCurrency,
   formatCurrencyLabel,
-  getPaymentCurrenciesForInvoice,
+  getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
 import {
   type PaymentFormValues,
@@ -71,8 +69,8 @@ export function DirectPayment() {
     },
   });
 
-  const invoiceCurrency = form.watch("invoiceCurrency") as InvoiceCurrency;
-  const paymentCurrency = form.watch("paymentCurrency") as PaymentCurrency;
+  const invoiceCurrency = form.watch("invoiceCurrency") as PayoutCurrency;
+  const paymentCurrency = form.watch("paymentCurrency");
 
   const showPaymentCurrencySelect = invoiceCurrency === "USD";
 
@@ -97,14 +95,14 @@ export function DirectPayment() {
   }, [isConnected]);
 
   const handleInvoiceCurrencyChange = (value: string) => {
-    const newInvoiceCurrency = value as InvoiceCurrency;
+    const newInvoiceCurrency = value as PayoutCurrency;
     form.setValue("invoiceCurrency", newInvoiceCurrency);
 
     if (newInvoiceCurrency !== "USD") {
       form.setValue("paymentCurrency", newInvoiceCurrency);
     } else {
       const validPaymentCurrencies =
-        getPaymentCurrenciesForInvoice(newInvoiceCurrency);
+        getPaymentCurrenciesForPayout(newInvoiceCurrency);
       form.setValue("paymentCurrency", validPaymentCurrencies[0]);
     }
   };
@@ -192,9 +190,6 @@ export function DirectPayment() {
             <CreditCard className="h-5 w-5" />
             Direct Payout
           </CardTitle>
-          <CardDescription>
-            Make a single payout instantly without creating a request first
-          </CardDescription>
         </CardHeader>
 
         {!isAppKitReady ? (
@@ -289,7 +284,7 @@ export function DirectPayment() {
                             <SelectValue placeholder="Select currency" />
                           </SelectTrigger>
                           <SelectContent>
-                            {INVOICE_CURRENCIES.map((currency) => (
+                            {PAYOUT_CURRENCIES.map((currency) => (
                               <SelectItem key={currency} value={currency}>
                                 {formatCurrencyLabel(currency)}
                               </SelectItem>
@@ -313,7 +308,7 @@ export function DirectPayment() {
                             onValueChange={(value) =>
                               form.setValue(
                                 "paymentCurrency",
-                                value as PaymentCurrency,
+                                value as PayoutCurrency,
                               )
                             }
                             disabled={paymentStatus === "processing"}
@@ -322,7 +317,7 @@ export function DirectPayment() {
                               <SelectValue placeholder="Select payment currency" />
                             </SelectTrigger>
                             <SelectContent>
-                              {getPaymentCurrenciesForInvoice(
+                              {getPaymentCurrenciesForPayout(
                                 invoiceCurrency,
                               ).map((currency) => (
                                 <SelectItem key={currency} value={currency}>
