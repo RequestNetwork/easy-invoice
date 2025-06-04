@@ -21,8 +21,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PaymentDetailsStatus as PaymentDetailsStatusEnum } from "@/lib/constants/bank-account";
 import {
-  EXTENDED_INVOICE_CURRENCIES,
-  type ExtendedInvoiceCurrency,
+  INVOICE_CURRENCIES,
+  type InvoiceCurrency,
   MAINNET_CURRENCIES,
   type MainnetCurrency,
   formatCurrencyLabel,
@@ -839,7 +839,7 @@ export function InvoiceForm({
           <Label htmlFor="invoiceCurrency">Invoice Currency</Label>
           <Select
             onValueChange={(value) => {
-              const currency = value as ExtendedInvoiceCurrency;
+              const currency = value as InvoiceCurrency;
               form.setValue("invoiceCurrency", currency);
               // If not USD, set payment currency to same as invoice currency
               if (currency !== "USD") {
@@ -852,7 +852,7 @@ export function InvoiceForm({
               <SelectValue placeholder="Select invoice currency" />
             </SelectTrigger>
             <SelectContent>
-              {EXTENDED_INVOICE_CURRENCIES.map((currency) => (
+              {INVOICE_CURRENCIES.map((currency) => (
                 <SelectItem key={currency} value={currency}>
                   {formatCurrencyLabel(currency)}
                   {currency === "fUSDC-sepolia" && (

@@ -50,11 +50,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  INVOICE_CURRENCIES,
-  type InvoiceCurrency,
-  type PaymentCurrency,
+  PAYOUT_CURRENCIES,
+  type PayoutCurrency,
   formatCurrencyLabel,
-  getPaymentCurrenciesForInvoice,
+  getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
 import {
   type BatchPaymentFormValues,
@@ -113,11 +112,11 @@ export function BatchPayout() {
   }, [isConnected]);
 
   const handleInvoiceCurrencyChange = (value: string, index: number) => {
-    const newInvoiceCurrency = value as InvoiceCurrency;
+    const newInvoiceCurrency = value as PayoutCurrency;
     form.setValue(`payouts.${index}.invoiceCurrency`, newInvoiceCurrency);
 
     const validPaymentCurrencies =
-      getPaymentCurrenciesForInvoice(newInvoiceCurrency);
+      getPaymentCurrenciesForPayout(newInvoiceCurrency);
 
     if (validPaymentCurrencies.length > 0) {
       form.setValue(
@@ -443,7 +442,7 @@ export function BatchPayout() {
                         {fields.map((field, index) => {
                           const invoiceCurrency = form.watch(
                             `payouts.${index}.invoiceCurrency`,
-                          ) as InvoiceCurrency;
+                          ) as PayoutCurrency;
                           const showPaymentCurrencySelect =
                             invoiceCurrency === "USD";
 
@@ -488,14 +487,16 @@ export function BatchPayout() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {INVOICE_CURRENCIES.map((currency) => (
-                                      <SelectItem
-                                        key={currency}
-                                        value={currency}
-                                      >
-                                        {formatCurrencyLabel(currency)}
-                                      </SelectItem>
-                                    ))}
+                                    {PAYOUT_CURRENCIES.map(
+                                      (currency: PayoutCurrency) => (
+                                        <SelectItem
+                                          key={currency}
+                                          value={currency}
+                                        >
+                                          {formatCurrencyLabel(currency)}
+                                        </SelectItem>
+                                      ),
+                                    )}
                                   </SelectContent>
                                 </Select>
                               </TableCell>
@@ -508,7 +509,7 @@ export function BatchPayout() {
                                     onValueChange={(value) =>
                                       form.setValue(
                                         `payouts.${index}.paymentCurrency`,
-                                        value as PaymentCurrency,
+                                        value as PayoutCurrency,
                                       )
                                     }
                                     disabled={paymentStatus === "processing"}
@@ -517,9 +518,9 @@ export function BatchPayout() {
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {getPaymentCurrenciesForInvoice(
+                                      {getPaymentCurrenciesForPayout(
                                         invoiceCurrency,
-                                      ).map((currency) => (
+                                      ).map((currency: string) => (
                                         <SelectItem
                                           key={currency}
                                           value={currency}
