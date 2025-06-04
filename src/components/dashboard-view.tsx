@@ -9,7 +9,7 @@ import {
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
-import { CreditCard, PlusCircle } from "lucide-react";
+import { CreditCard, Loader2, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -90,8 +90,16 @@ export function DashboardView({ invoices }: DashboardViewProps) {
               onClick={handleBatchPayInvoices}
               disabled={isPayingInvoices}
             >
-              <CreditCard className="mr-2 h-4 w-4" />
-              Pay {selectedInvoices.length} invoices
+              {isPayingInvoices ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              {isPayingInvoices
+                ? "Paying..."
+                : `Pay ${selectedInvoices.length} ${
+                    selectedInvoices.length === 1 ? "Invoice" : "Invoices"
+                  }`}
             </Button>
           )}
           <Link

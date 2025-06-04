@@ -300,6 +300,12 @@ const InvoiceRow = ({
         );
         return false;
       }
+
+      if (invoice.status === "paid") {
+        toast.error("You can't select a paid invoice");
+        return false;
+      }
+
       setSelectedInvoices([...selectedInvoices, invoice]);
       setLastSelectedNetwork(invoiceNetwork);
     } else {
