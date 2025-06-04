@@ -16,6 +16,16 @@ export const CHAIN_TO_ID = {
   POLYGON: 137,
 };
 
+export const NETWORK_TO_ID = {
+  matic: 137,
+  base: 8453,
+  "arbitrum-one": 42161,
+  arbitrum: 42161,
+  optimism: 10,
+  mainnet: 1,
+  sepolia: 11155111,
+};
+
 export const ID_TO_APPKIT_NETWORK = {
   [sepolia.id]: sepolia,
   [base.id]: base,

@@ -1,11 +1,13 @@
 "use client";
 
+import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
 import { handleBatchPayment } from "@/lib/invoice/batch-payment";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import {
   useAppKit,
   useAppKitAccount,
+  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
@@ -35,6 +37,7 @@ export function DashboardView({ invoices }: DashboardViewProps) {
   const { open } = useAppKit();
   const { isConnected, address } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
+  const { chainId, switchNetwork } = useAppKitNetwork();
 
   const handleBatchPayInvoices = async () => {
     setIsPayingInvoices(true);
@@ -42,6 +45,25 @@ export function DashboardView({ invoices }: DashboardViewProps) {
     if (!isConnected) {
       open();
       return setIsPayingInvoices(false);
+    }
+
+    const targetChain =
+      NETWORK_TO_ID[lastSelectedNetwork as keyof typeof NETWORK_TO_ID];
+
+    if (targetChain !== chainId) {
+      const targetAppkitNetwork =
+        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK];
+
+      toast("Switching to network", {
+        description: `Switching to ${targetAppkitNetwork.name} network`,
+      });
+
+      try {
+        await switchNetwork(targetAppkitNetwork);
+      } catch (_) {
+        toast("Error switching network");
+        return;
+      }
     }
 
     try {
