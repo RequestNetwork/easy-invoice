@@ -162,7 +162,7 @@ export function BatchPayout() {
     const payouts = form.watch("payouts");
     const uniqueAddresses = new Set(
       payouts
-        .filter((payout) => ethers.utils.getAddress(payout.payee))
+        .filter((payout) => payout.payee)
         .map((payout) => ethers.utils.getAddress(payout.payee)),
     );
     return uniqueAddresses.size;
@@ -170,11 +170,15 @@ export function BatchPayout() {
 
   const getTotalsByCurrency = () => {
     const payouts = form.watch("payouts");
-    const totals: Record<string, number> = {};
+    const totals: Record<string, ethers.BigNumber> = {};
     for (const payout of payouts) {
       if (payout.amount > 0) {
         const currency = payout.invoiceCurrency;
-        totals[currency] = (totals[currency] || 0) + payout.amount;
+        // Convert amount to BigNumber with 18 decimals of precision
+        const amount = ethers.utils.parseUnits(payout.amount.toString(), 18);
+        totals[currency] = (totals[currency] || ethers.BigNumber.from(0)).add(
+          amount,
+        );
       }
     }
     return totals;
@@ -552,10 +556,7 @@ export function BatchPayout() {
                                     {formatCurrencyLabel(currency)}:
                                   </span>
                                   <span className="font-medium">
-                                    {total.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 6,
-                                    })}
+                                    {ethers.utils.formatUnits(total, 18)}
                                   </span>
                                 </div>
                               ),
