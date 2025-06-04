@@ -90,7 +90,7 @@ export function BatchPayout() {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "payments",
+    name: "payouts",
   });
 
   const { open } = useAppKit();
@@ -115,15 +115,15 @@ export function BatchPayout() {
 
   const handleInvoiceCurrencyChange = (value: string, index: number) => {
     const newInvoiceCurrency = value as InvoiceCurrency;
-    form.setValue(`payments.${index}.invoiceCurrency`, newInvoiceCurrency);
+    form.setValue(`payouts.${index}.invoiceCurrency`, newInvoiceCurrency);
 
     if (newInvoiceCurrency !== "USD") {
-      form.setValue(`payments.${index}.paymentCurrency`, newInvoiceCurrency);
+      form.setValue(`payouts.${index}.paymentCurrency`, newInvoiceCurrency);
     } else {
       const validPaymentCurrencies =
         getPaymentCurrenciesForInvoice(newInvoiceCurrency);
       form.setValue(
-        `payments.${index}.paymentCurrency`,
+        `payouts.${index}.paymentCurrency`,
         validPaymentCurrencies[0],
       );
     }
@@ -148,34 +148,33 @@ export function BatchPayout() {
 
   const duplicatePayment = (index: number) => {
     if (fields.length < MAX_PAYMENTS) {
-      const payment = form.getValues(`payments.${index}`);
-      append({ ...payment, payee: "" });
+      const payout = form.getValues(`payouts.${index}`);
+      append({ ...payout, payee: "" });
     }
   };
 
   const getValidPaymentsCount = () => {
-    const payments = form.watch("payments");
-    return payments.filter((payment) => payment.payee && payment.amount > 0)
-      .length;
+    const payouts = form.watch("payouts");
+    return payouts.filter((payout) => payout.payee && payout.amount > 0).length;
   };
 
   const getUniqueAddressesCount = () => {
-    const payments = form.watch("payments");
+    const payouts = form.watch("payouts");
     const uniqueAddresses = new Set(
-      payments
-        .filter((payment) => payment.payee)
-        .map((payment) => payment.payee.toLowerCase()),
+      payouts
+        .filter((payout) => payout.payee)
+        .map((payout) => payout.payee.toLowerCase()),
     );
     return uniqueAddresses.size;
   };
 
   const getTotalsByCurrency = () => {
-    const payments = form.watch("payments");
+    const payouts = form.watch("payouts");
     const totals: Record<string, number> = {};
-    for (const payment of payments) {
-      if (payment.amount > 0) {
-        const currency = payment.invoiceCurrency;
-        totals[currency] = (totals[currency] || 0) + payment.amount;
+    for (const payout of payouts) {
+      if (payout.amount > 0) {
+        const currency = payout.invoiceCurrency;
+        totals[currency] = (totals[currency] || 0) + payout.amount;
       }
     }
     return totals;
@@ -226,25 +225,23 @@ export function BatchPayout() {
       await tx.wait();
 
       toast.success("Batch payment successful", {
-        description: `Successfully processed ${data.payments.length} payments`,
+        description: `Successfully processed ${data.payouts.length} payments`,
       });
 
       setPaymentStatus("success");
 
       // Reset form after successful payment
-      setTimeout(() => {
-        form.reset({
-          payments: [
-            {
-              payee: "",
-              amount: 0,
-              invoiceCurrency: "USD",
-              paymentCurrency: "ETH-sepolia-sepolia",
-            },
-          ],
-        });
-        setPaymentStatus("idle");
-      }, 3000);
+      form.reset({
+        payouts: [
+          {
+            payee: "",
+            amount: 0,
+            invoiceCurrency: "USD",
+            paymentCurrency: "ETH-sepolia-sepolia",
+          },
+        ],
+      });
+      setPaymentStatus("idle");
     } catch (error) {
       console.error("Payment error:", error);
       toast.error("Payment failed", {
@@ -371,7 +368,7 @@ export function BatchPayout() {
                       <TableBody>
                         {fields.map((field, index) => {
                           const invoiceCurrency = form.watch(
-                            `payments.${index}.invoiceCurrency`,
+                            `payouts.${index}.invoiceCurrency`,
                           ) as InvoiceCurrency;
                           const showPaymentCurrencySelect =
                             invoiceCurrency === "USD";
@@ -387,7 +384,7 @@ export function BatchPayout() {
                               <TableCell>
                                 <Input
                                   placeholder="0x..."
-                                  {...form.register(`payments.${index}.payee`)}
+                                  {...form.register(`payouts.${index}.payee`)}
                                   disabled={paymentStatus === "processing"}
                                   className="font-mono text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-zinc-300"
                                 />
@@ -398,12 +395,9 @@ export function BatchPayout() {
                                   placeholder="0.00"
                                   step="any"
                                   min="0"
-                                  {...form.register(
-                                    `payments.${index}.amount`,
-                                    {
-                                      valueAsNumber: true,
-                                    },
-                                  )}
+                                  {...form.register(`payouts.${index}.amount`, {
+                                    valueAsNumber: true,
+                                  })}
                                   disabled={paymentStatus === "processing"}
                                   className="text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-zinc-300"
                                 />
@@ -435,11 +429,11 @@ export function BatchPayout() {
                                 {showPaymentCurrencySelect ? (
                                   <Select
                                     value={form.watch(
-                                      `payments.${index}.paymentCurrency`,
+                                      `payouts.${index}.paymentCurrency`,
                                     )}
                                     onValueChange={(value) =>
                                       form.setValue(
-                                        `payments.${index}.paymentCurrency`,
+                                        `payouts.${index}.paymentCurrency`,
                                         value as PaymentCurrency,
                                       )
                                     }
