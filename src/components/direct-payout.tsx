@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -192,9 +191,6 @@ export function DirectPayment() {
             <CreditCard className="h-5 w-5" />
             Direct Payout
           </CardTitle>
-          <CardDescription>
-            Make a single payout instantly without creating a request first
-          </CardDescription>
         </CardHeader>
 
         {!isAppKitReady ? (

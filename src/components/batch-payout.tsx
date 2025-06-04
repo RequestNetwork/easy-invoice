@@ -29,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -342,9 +341,6 @@ export function BatchPayout() {
                 <CreditCard className="h-5 w-5" />
                 Batch Payout
               </CardTitle>
-              <CardDescription>
-                Create and send multiple payments efficiently in a single batch
-              </CardDescription>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="text-sm">

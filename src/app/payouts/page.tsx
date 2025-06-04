@@ -8,8 +8,7 @@ import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Payouts | Easy Invoice",
-  description:
-    "Make a single or batch payouts without having to create a request first",
+  description: "Send a single or batch payouts creating a request first",
 };
 
 export default async function DirectPaymentPage() {
@@ -29,7 +28,7 @@ export default async function DirectPaymentPage() {
       <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">Payouts</h1>
         <p className="mb-8 text-lg text-muted-foreground">
-          Send payments quickly without having to create a request first.
+          Send a single or batch payouts creating a request first
         </p>
 
         <PayoutTabs />
