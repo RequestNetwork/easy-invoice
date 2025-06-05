@@ -36,7 +36,7 @@ export function InvoiceCreator({
 }: InvoiceCreatorProps) {
   const router = useRouter();
   const isInvoiceMe = !!recipientDetails?.userId;
-
+  const utils = api.useUtils();
   const { mutate: createInvoice, isLoading } = isInvoiceMe
     ? api.invoice.createFromInvoiceMe.useMutation({
         onSuccess: () => {
@@ -46,11 +46,10 @@ export function InvoiceCreator({
         },
       })
     : api.invoice.create.useMutation({
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success("Invoice created successfully");
-          setTimeout(() => {
-            router.push("/dashboard");
-          }, 3000);
+          await utils.invoice.getAll.invalidate();
+          router.push("/dashboard");
         },
       });
 
