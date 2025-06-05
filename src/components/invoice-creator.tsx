@@ -107,7 +107,11 @@ export function InvoiceCreator({
             onSubmit={onSubmit}
             isLoading={isLoading}
             recipientDetails={recipientDetails}
-            isInvoiceMe={isInvoiceMe}
+            complianceUserId={
+              isInvoiceMe
+                ? (recipientDetails?.userId ?? "")
+                : (currentUser?.id ?? "")
+            }
           />
         </CardContent>
       </Card>
