@@ -147,7 +147,7 @@ export function BatchPayout() {
   const duplicatePayment = (index: number) => {
     if (fields.length < MAX_PAYMENTS) {
       const payout = form.getValues(`payouts.${index}`);
-      append({ ...payout, payee: "" });
+      append({ ...payout });
     }
   };
 
@@ -161,7 +161,7 @@ export function BatchPayout() {
     const uniqueAddresses = new Set(
       payouts
         .filter((payout) => payout.payee)
-        .map((payout) => ethers.utils.getAddress(payout.payee)),
+        .map((payout) => payout.payee.toLowerCase()),
     );
     return uniqueAddresses.size;
   };
@@ -169,17 +169,27 @@ export function BatchPayout() {
   const getTotalsByCurrency = () => {
     const payouts = form.watch("payouts");
     const totals: Record<string, ethers.BigNumber> = {};
+
     for (const payout of payouts) {
       if (payout.amount > 0) {
         const currency = payout.invoiceCurrency;
-        // Convert amount to BigNumber with 18 decimals of precision
+
         const amount = ethers.utils.parseUnits(payout.amount.toString(), 18);
         totals[currency] = (totals[currency] || ethers.BigNumber.from(0)).add(
           amount,
         );
       }
     }
-    return totals;
+
+    const humanReadableTotals: Record<string, string> = {};
+    for (const [currency, bigNumberTotal] of Object.entries(totals)) {
+      humanReadableTotals[currency] = ethers.utils.formatUnits(
+        bigNumberTotal,
+        18,
+      );
+    }
+
+    return humanReadableTotals;
   };
 
   const onSubmit = async (data: BatchPaymentFormValues) => {
@@ -195,7 +205,8 @@ export function BatchPayout() {
 
     try {
       const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
-      const signer = await ethersProvider.getSigner();
+
+      const signer = ethersProvider.getSigner();
 
       const batchPaymentData = await batchPay({
         ...data,
@@ -534,9 +545,7 @@ export function BatchPayout() {
                                   <span className="text-zinc-600">
                                     {formatCurrencyLabel(currency)}:
                                   </span>
-                                  <span className="font-medium">
-                                    {ethers.utils.formatUnits(total, 18)}
-                                  </span>
+                                  <span className="font-medium">{total}</span>
                                 </div>
                               ),
                             )
