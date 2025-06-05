@@ -47,6 +47,12 @@ export function DashboardView({ invoices }: DashboardViewProps) {
       return setIsPayingInvoices(false);
     }
 
+    if (!lastSelectedNetwork) {
+      toast.error("No network selected for batch payment");
+      setIsPayingInvoices(false);
+      return;
+    }
+
     const targetChain =
       NETWORK_TO_ID[lastSelectedNetwork as keyof typeof NETWORK_TO_ID];
 
@@ -59,9 +65,10 @@ export function DashboardView({ invoices }: DashboardViewProps) {
       });
 
       try {
-        await switchNetwork(targetAppkitNetwork);
+        switchNetwork(targetAppkitNetwork);
       } catch (_) {
         toast("Error switching network");
+        setIsPayingInvoices(false);
         return;
       }
     }
