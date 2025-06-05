@@ -36,7 +36,6 @@ import type {
 } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { Plus, Terminal, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
@@ -268,7 +267,6 @@ export function InvoiceForm({
   isLoading,
   recipientDetails,
 }: InvoiceFormProps) {
-  const router = useRouter();
   const [showBankAccountModal, setShowBankAccountModal] = useState(false);
   const [showPendingApprovalModal, setShowPendingApprovalModal] =
     useState(false);
@@ -415,9 +413,6 @@ export function InvoiceForm({
         await onSubmit(data);
         setInvoiceCreated(true);
         setWaitingForPaymentApproval(false);
-
-        // Redirect to Dashboard
-        router.push("/dashboard");
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -433,7 +428,6 @@ export function InvoiceForm({
       linkedPaymentDetails,
       onSubmit,
       form.setError,
-      router,
       isSubmitting,
       handleBankAccountSuccess,
     ],
@@ -508,9 +502,6 @@ export function InvoiceForm({
       await onSubmit(formData);
       setInvoiceCreated(true);
       setWaitingForPaymentApproval(false);
-
-      // Redirect to Dashboard
-      router.push("/dashboard");
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -521,7 +512,7 @@ export function InvoiceForm({
       setWaitingForPaymentApproval(false);
       setIsSubmitting(false);
     }
-  }, [form, onSubmit, router]);
+  }, [form, onSubmit]);
 
   // Separate effect for handling payment approval and form submission
   useEffect(() => {
