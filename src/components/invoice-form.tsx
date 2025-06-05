@@ -98,6 +98,7 @@ interface InvoiceFormProps {
     clientEmail: string;
     userId: string;
   };
+  isInvoiceMe: boolean;
 }
 
 // Payment Details Status Component
@@ -267,6 +268,7 @@ export function InvoiceForm({
   onSubmit,
   isLoading,
   recipientDetails,
+  isInvoiceMe,
 }: InvoiceFormProps) {
   const router = useRouter();
   const [showBankAccountModal, setShowBankAccountModal] = useState(false);
@@ -298,7 +300,11 @@ export function InvoiceForm({
   // Query to get payment details for the client
   const { data: paymentDetailsData, refetch: refetchPaymentDetails } =
     api.compliance.getPaymentDetails.useQuery(
-      { userId: currentUser.id ?? "" },
+      {
+        userId: isInvoiceMe
+          ? (recipientDetails?.userId ?? "")
+          : (currentUser.id ?? ""),
+      },
       {
         enabled: !!clientUserData?.id,
         // Use the configurable constant for polling interval

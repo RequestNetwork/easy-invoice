@@ -107,6 +107,7 @@ export function InvoiceCreator({
             onSubmit={onSubmit}
             isLoading={isLoading}
             recipientDetails={recipientDetails}
+            isInvoiceMe={isInvoiceMe}
           />
         </CardContent>
       </Card>
