@@ -1,5 +1,4 @@
 import type { ethers, providers } from "ethers";
-import { toast } from "sonner";
 
 interface BatchPaymentResult {
   success: boolean;
@@ -28,25 +27,17 @@ export const handleBatchPayment = async ({
 }): Promise<BatchPaymentResult> => {
   try {
     onStatusChange?.("processing");
-    toast.info("Initiating payment...");
 
     const isApprovalNeeded =
       batchPaymentData.ERC20ApprovalTransactions.length > 0;
 
     if (isApprovalNeeded) {
-      toast.info("Approval required", {
-        description: "Please approve the transaction in your wallet",
-      });
-
       for (const approvalTransaction of batchPaymentData.ERC20ApprovalTransactions) {
         try {
           const tx = await signer.sendTransaction(approvalTransaction);
           await tx.wait();
         } catch (approvalError: any) {
           if (approvalError?.code === 4001) {
-            toast.error("Approval rejected", {
-              description: "You rejected the token approval in your wallet.",
-            });
             onStatusChange?.("error");
             onError?.();
             return { success: false, error: "approval_rejected" };
@@ -55,8 +46,6 @@ export const handleBatchPayment = async ({
         }
       }
     }
-
-    toast.info("Sending batch payment...");
 
     try {
       const tx = await signer.sendTransaction(
@@ -70,9 +59,6 @@ export const handleBatchPayment = async ({
       return { success: true };
     } catch (txError: any) {
       if (txError?.code === 4001) {
-        toast.error("Transaction rejected", {
-          description: "You rejected the batch payment in your wallet.",
-        });
         onStatusChange?.("error");
         onError?.();
         return { success: false, error: "transaction_rejected" };
@@ -87,10 +73,6 @@ export const handleBatchPayment = async ({
       error?.message?.toLowerCase().includes("insufficient funds") ||
       (error?.code === "SERVER_ERROR" && error?.error?.code === -32000)
     ) {
-      toast.error("Insufficient funds", {
-        description:
-          "You do not have enough funds to complete this batch payment.",
-      });
       onStatusChange?.("error");
       onError?.();
       return { success: false, error: "insufficient_funds" };
@@ -101,19 +83,12 @@ export const handleBatchPayment = async ({
       error?.code === "NETWORK_ERROR" ||
       (error?.event === "error" && error?.type === "network")
     ) {
-      toast.error("Network error", {
-        description:
-          "Network error. Please check your connection and try again.",
-      });
       onStatusChange?.("error");
       onError?.();
       return { success: false, error: "network_error" };
     }
 
     if (error?.reason) {
-      toast.error("Transaction failed", {
-        description: `Smart contract error: ${error.reason}`,
-      });
       onStatusChange?.("error");
       onError?.();
       return { success: false, error: "contract_error" };
@@ -143,10 +118,6 @@ export const handleBatchPayment = async ({
         errorMessage = error.error.message;
       }
     }
-
-    toast.error("Batch payment failed", {
-      description: errorMessage,
-    });
 
     onStatusChange?.("error");
     onError?.();
