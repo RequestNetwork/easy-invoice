@@ -92,7 +92,10 @@ const createInvoiceHelper = async (
           }
         : null,
       isCryptoToFiatAvailable: input.isCryptoToFiatAvailable,
-      paymentDetailsId: input.paymentDetailsId,
+      paymentDetailsId:
+        input.paymentDetailsId && input.paymentDetailsId !== ""
+          ? input.paymentDetailsId
+          : null,
     })
     .returning();
 

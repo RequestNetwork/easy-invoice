@@ -97,6 +97,7 @@ interface InvoiceFormProps {
     clientEmail: string;
     userId: string;
   };
+  complianceUserId: string;
 }
 
 // Payment Details Status Component
@@ -266,6 +267,7 @@ export function InvoiceForm({
   onSubmit,
   isLoading,
   recipientDetails,
+  complianceUserId,
 }: InvoiceFormProps) {
   const [showBankAccountModal, setShowBankAccountModal] = useState(false);
   const [showPendingApprovalModal, setShowPendingApprovalModal] =
@@ -296,7 +298,9 @@ export function InvoiceForm({
   // Query to get payment details for the client
   const { data: paymentDetailsData, refetch: refetchPaymentDetails } =
     api.compliance.getPaymentDetails.useQuery(
-      { userId: currentUser.id ?? "" },
+      {
+        userId: complianceUserId,
+      },
       {
         enabled: !!clientUserData?.id,
         // Use the configurable constant for polling interval
