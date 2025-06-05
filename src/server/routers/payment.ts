@@ -38,9 +38,15 @@ export const paymentRouter = router({
     }),
   batchPay: protectedProcedure
     .input(
-      batchPaymentFormSchema.extend({
-        payer: z.string().optional(),
-      }),
+      z
+        .object({
+          payouts: batchPaymentFormSchema.shape.payouts.optional(),
+          requestIds: z.array(z.string()).optional(),
+          payer: z.string().optional(),
+        })
+        .refine((data) => data.payouts || data.requestIds, {
+          message: "Either payouts or requestIds must be provided",
+        }),
     )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
@@ -53,12 +59,15 @@ export const paymentRouter = router({
       }
 
       const response = await apiClient.post("v2/payouts/batch", {
-        requests: input.payouts.map((payout) => ({
-          amount: payout.amount.toString(),
-          payee: payout.payee,
-          invoiceCurrency: payout.invoiceCurrency,
-          paymentCurrency: payout.paymentCurrency,
-        })),
+        requests: input.payouts
+          ? input.payouts.map((payout) => ({
+              amount: payout.amount.toString(),
+              payee: payout.payee,
+              invoiceCurrency: payout.invoiceCurrency,
+              paymentCurrency: payout.paymentCurrency,
+            }))
+          : undefined,
+        requestIds: input.requestIds,
         payer: input.payer,
       });
 

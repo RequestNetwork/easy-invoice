@@ -317,7 +317,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
       walletProvider as ethers.providers.ExternalProvider,
     );
 
-    const signer = await ethersProvider.getSigner();
+    const signer = ethersProvider.getSigner();
 
     try {
       const paymentData = await payRequest({

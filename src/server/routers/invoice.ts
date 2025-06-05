@@ -401,7 +401,7 @@ export const invoiceRouter = router({
       const { paymentIntent, payload } = input;
 
       const response = await apiClient.post(
-        `/v2/request/${paymentIntent}/send`,
+        `/v2/request/payment-intents/${paymentIntent}`,
         payload,
       );
 

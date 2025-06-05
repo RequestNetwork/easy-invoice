@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import {
@@ -45,6 +47,10 @@ interface InvoiceTableProps {
     issuedByMe: InvoiceType;
     issuedToMe: InvoiceType;
   };
+  setSelectedInvoices: (invoices: Request[]) => void;
+  selectedInvoices: Request[];
+  lastSelectedNetwork: string | null;
+  setLastSelectedNetwork: (network: string | null) => void;
 }
 
 interface StatCardProps {
@@ -69,7 +75,13 @@ const StatCard = ({ title, value, icon }: StatCardProps) => (
   </Card>
 );
 
-export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
+export function InvoiceTable({
+  initialInvoices,
+  setSelectedInvoices,
+  selectedInvoices,
+  lastSelectedNetwork,
+  setLastSelectedNetwork,
+}: InvoiceTableProps) {
   const [receivablePage, setReceivablePage] = useState(1);
   const [payablePage, setPayablePage] = useState(1);
   const [activeTab, setActiveTab] = useState("sent");
@@ -170,6 +182,10 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
                           key={invoice.id}
                           invoice={invoice}
                           activeTab="sent"
+                          setSelectedInvoices={setSelectedInvoices}
+                          selectedInvoices={selectedInvoices}
+                          lastSelectedNetwork={lastSelectedNetwork}
+                          setLastSelectedNetwork={setLastSelectedNetwork}
                         />
                       ))
                   )}
@@ -211,6 +227,10 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
                           key={invoice.id}
                           invoice={invoice}
                           activeTab="received"
+                          setSelectedInvoices={setSelectedInvoices}
+                          selectedInvoices={selectedInvoices}
+                          lastSelectedNetwork={lastSelectedNetwork}
+                          setLastSelectedNetwork={setLastSelectedNetwork}
                         />
                       ))
                   )}
@@ -235,7 +255,18 @@ export function InvoiceTable({ initialInvoices }: InvoiceTableProps) {
 const InvoiceRow = ({
   invoice,
   activeTab,
-}: { invoice: Request; activeTab: "sent" | "received" }) => {
+  setSelectedInvoices,
+  selectedInvoices,
+  lastSelectedNetwork,
+  setLastSelectedNetwork,
+}: {
+  invoice: Request;
+  activeTab: "sent" | "received";
+  setSelectedInvoices: (invoices: Request[]) => void;
+  selectedInvoices: Request[];
+  lastSelectedNetwork: string | null;
+  setLastSelectedNetwork: (network: string | null) => void;
+}) => {
   const utils = api.useUtils();
   const dueDate = new Date(invoice.dueDate);
   const isOverdue = invoice.status === "pending" && isPast(dueDate);
@@ -260,8 +291,41 @@ const InvoiceRow = ({
     }
   };
 
+  const handleSelectInvoice = (isChecked: boolean) => {
+    if (isChecked) {
+      const invoiceNetwork = invoice.paymentCurrency.split("-")[1];
+      if (lastSelectedNetwork && invoiceNetwork !== lastSelectedNetwork) {
+        toast.error(
+          "You can only select invoices from the same network as the last selected invoice",
+        );
+        return false;
+      }
+
+      if (invoice.status === "paid") {
+        toast.error("You can't select a paid invoice");
+        return false;
+      }
+
+      setSelectedInvoices([...selectedInvoices, invoice]);
+      setLastSelectedNetwork(invoiceNetwork);
+    } else {
+      setSelectedInvoices(selectedInvoices.filter((i) => i.id !== invoice.id));
+      if (selectedInvoices.length === 1) {
+        setLastSelectedNetwork(null);
+      }
+    }
+
+    return true;
+  };
+
   return (
     <TableRow className="hover:bg-zinc-50/50">
+      <TableCell>
+        <Checkbox
+          onCheckedChange={handleSelectInvoice}
+          checked={selectedInvoices.some((i) => i.id === invoice.id)}
+        />
+      </TableCell>
       <TableCell className="font-medium">
         <div className="flex flex-col">
           <span>{invoice.invoiceNumber}</span>
@@ -344,6 +408,7 @@ const InvoiceRow = ({
 // Update the table headers based on tab
 const TableColumns = ({ type }: { type: "sent" | "received" }) => (
   <TableRow className="hover:bg-transparent border-none">
+    <TableHead className="text-zinc-500 font-medium w-[1%]">Select</TableHead>
     <TableHead className="text-zinc-500 font-medium">Invoice #</TableHead>
     <TableHead className="text-zinc-500 font-medium">
       {type === "sent" ? "Client" : "From"}

@@ -55,6 +55,7 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
+import { handleBatchPayment } from "@/lib/invoice/batch-payment";
 import {
   type BatchPaymentFormValues,
   batchPaymentFormSchema,
@@ -146,7 +147,7 @@ export function BatchPayout() {
   const duplicatePayment = (index: number) => {
     if (fields.length < MAX_PAYMENTS) {
       const payout = form.getValues(`payouts.${index}`);
-      append({ ...payout, payee: "" });
+      append({ ...payout });
     }
   };
 
@@ -160,7 +161,7 @@ export function BatchPayout() {
     const uniqueAddresses = new Set(
       payouts
         .filter((payout) => payout.payee)
-        .map((payout) => ethers.utils.getAddress(payout.payee)),
+        .map((payout) => payout.payee.toLowerCase()),
     );
     return uniqueAddresses.size;
   };
@@ -168,17 +169,27 @@ export function BatchPayout() {
   const getTotalsByCurrency = () => {
     const payouts = form.watch("payouts");
     const totals: Record<string, ethers.BigNumber> = {};
+
     for (const payout of payouts) {
       if (payout.amount > 0) {
         const currency = payout.invoiceCurrency;
-        // Convert amount to BigNumber with 18 decimals of precision
+
         const amount = ethers.utils.parseUnits(payout.amount.toString(), 18);
         totals[currency] = (totals[currency] || ethers.BigNumber.from(0)).add(
           amount,
         );
       }
     }
-    return totals;
+
+    const humanReadableTotals: Record<string, string> = {};
+    for (const [currency, bigNumberTotal] of Object.entries(totals)) {
+      humanReadableTotals[currency] = ethers.utils.formatUnits(
+        bigNumberTotal,
+        18,
+      );
+    }
+
+    return humanReadableTotals;
   };
 
   const onSubmit = async (data: BatchPaymentFormValues) => {
@@ -186,8 +197,6 @@ export function BatchPayout() {
       toast.error("Please connect your wallet first");
       return;
     }
-
-    setPaymentStatus("processing");
 
     if (!walletProvider) {
       toast.error("Please connect your wallet first");
@@ -197,133 +206,43 @@ export function BatchPayout() {
     try {
       const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
 
-      const signer = await ethersProvider.getSigner();
-
-      toast.info("Initiating batch payment...");
+      const signer = ethersProvider.getSigner();
 
       const batchPaymentData = await batchPay({
         ...data,
         payer: address,
       });
 
-      toast.info("Initiating payment...");
-
-      const isApprovalNeeded =
-        batchPaymentData.ERC20ApprovalTransactions.length > 0;
-
-      if (isApprovalNeeded) {
-        toast.info("Approval required", {
-          description: "Please approve the transaction in your wallet",
-        });
-
-        for (const approvalTransaction of batchPaymentData.ERC20ApprovalTransactions) {
-          try {
-            const tx = await signer.sendTransaction(approvalTransaction);
-            await tx.wait();
-          } catch (approvalError: any) {
-            if (approvalError?.code === 4001) {
-              toast.error("Approval rejected", {
-                description: "You rejected the token approval in your wallet.",
-              });
-              setPaymentStatus("error");
-              return;
-            }
-            throw approvalError; // Re-throw to be caught by main error handler
-          }
-        }
-      }
-
-      toast.info("Sending batch payment...");
-
-      try {
-        const tx = await signer.sendTransaction(
-          batchPaymentData.batchPaymentTransaction,
-        );
-        await tx.wait();
-
-        toast.success("Batch payment successful", {
-          description: `Successfully processed ${data.payouts.length} payments`,
-        });
-
-        setPaymentStatus("success");
-
-        form.reset({
-          payouts: [
-            {
-              payee: "",
-              amount: 0,
-              invoiceCurrency: "USD",
-              paymentCurrency: "ETH-sepolia-sepolia",
-            },
-          ],
-        });
-        setPaymentStatus("idle");
-      } catch (txError: any) {
-        if (txError?.code === 4001) {
-          toast.error("Transaction rejected", {
-            description: "You rejected the batch payment in your wallet.",
+      const result = await handleBatchPayment({
+        signer,
+        batchPaymentData,
+        onSuccess: () => {
+          toast.success("Batch payment successful", {
+            description: `Successfully processed ${data.payouts.length} payments`,
           });
-        } else {
-          throw txError; // Re-throw to be caught by main error handler
-        }
-        setPaymentStatus("error");
+          form.reset({
+            payouts: [
+              {
+                payee: "",
+                amount: 0,
+                invoiceCurrency: "USD",
+                paymentCurrency: "ETH-sepolia-sepolia",
+              },
+            ],
+          });
+          setPaymentStatus("idle");
+        },
+        onError: () => {
+          setPaymentStatus("error");
+        },
+        onStatusChange: setPaymentStatus,
+      });
+
+      if (!result.success) {
+        console.error("Batch payment failed:", result.error);
       }
-    } catch (error: any) {
-      console.error("Payment error:", error);
-
-      if (
-        error?.code === "INSUFFICIENT_FUNDS" ||
-        error?.message?.toLowerCase().includes("insufficient funds") ||
-        (error?.code === "SERVER_ERROR" && error?.error?.code === -32000)
-      ) {
-        toast.error("Insufficient funds", {
-          description:
-            "You do not have enough funds to complete this batch payment.",
-        });
-      } else if (
-        error?.message?.toLowerCase().includes("network") ||
-        error?.code === "NETWORK_ERROR" ||
-        error?.code === "NETWORK_ERROR" ||
-        (error?.event === "error" && error?.type === "network")
-      ) {
-        toast.error("Network error", {
-          description:
-            "Network error. Please check your connection and try again.",
-        });
-      } else if (error?.reason) {
-        toast.error("Transaction failed", {
-          description: `Smart contract error: ${error.reason}`,
-        });
-      } else {
-        let errorMessage =
-          "There was an error processing your batch payment. Please try again.";
-
-        if (error && typeof error === "object") {
-          if (
-            "data" in error &&
-            error.data &&
-            typeof error.data === "object" &&
-            "message" in error.data
-          ) {
-            errorMessage = error.data.message || errorMessage;
-          } else if ("message" in error) {
-            errorMessage = error.message || errorMessage;
-          } else if ("response" in error && error.response?.data?.message) {
-            errorMessage = error.response.data.message;
-          } else if (
-            "error" in error &&
-            typeof error.error === "object" &&
-            error.error &&
-            "message" in error.error
-          ) {
-            errorMessage = error.error.message;
-          }
-        }
-
-        toast.error("Batch payment failed", {
-          description: errorMessage,
-        });
-      }
+    } catch (error) {
+      console.error("Failed to initiate batch payment:", error);
       setPaymentStatus("error");
     }
   };
@@ -626,9 +545,7 @@ export function BatchPayout() {
                                   <span className="text-zinc-600">
                                     {formatCurrencyLabel(currency)}:
                                   </span>
-                                  <span className="font-medium">
-                                    {ethers.utils.formatUnits(total, 18)}
-                                  </span>
+                                  <span className="font-medium">{total}</span>
                                 </div>
                               ),
                             )

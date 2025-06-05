@@ -120,7 +120,7 @@ export function DirectPayment() {
         walletProvider as ethers.providers.ExternalProvider,
       );
 
-      const signer = await ethersProvider.getSigner();
+      const signer = ethersProvider.getSigner();
 
       toast.info("Initiating payment...");
 
