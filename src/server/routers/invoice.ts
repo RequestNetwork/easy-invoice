@@ -298,7 +298,7 @@ export const invoiceRouter = router({
           return { success: false, message: "No payment details payers found" };
         }
 
-        paymentDetailsPayers = invoice.paymentDetails?.payers.find(
+        paymentDetailsPayers = invoice.paymentDetails.payers.find(
           (payer) => payer.payer.email === invoice.clientEmail,
         );
         if (!paymentDetailsPayers) {
