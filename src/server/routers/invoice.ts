@@ -306,9 +306,11 @@ export const invoiceRouter = router({
         }
       }
 
-      const params = new URLSearchParams({
-        wallet: input.wallet || "",
-      });
+      const params = new URLSearchParams();
+
+      if (input.wallet) {
+        params.append("wallet", input.wallet);
+      }
 
       if (invoice.paymentDetails) {
         params.append("clientUserId", invoice.clientEmail);
