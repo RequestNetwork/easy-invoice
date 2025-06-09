@@ -306,7 +306,22 @@ export const invoiceRouter = router({
         }
       }
 
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}${invoice.paymentDetails ? `&clientUserId=${invoice.clientEmail}` : ""}${paymentDetailsPayers ? `&paymentDetailsId=${paymentDetailsPayers?.externalPaymentDetailId}` : ""}`;
+      const params = new URLSearchParams({
+        wallet: input.wallet || "",
+      });
+
+      if (invoice.paymentDetails) {
+        params.append("clientUserId", invoice.clientEmail);
+      }
+
+      if (paymentDetailsPayers) {
+        params.append(
+          "paymentDetailsId",
+          paymentDetailsPayers.externalPaymentDetailId,
+        );
+      }
+
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?${params.toString()}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;
