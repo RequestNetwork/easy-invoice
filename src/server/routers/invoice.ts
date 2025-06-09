@@ -298,7 +298,7 @@ export const invoiceRouter = router({
           return { success: false, message: "No payment details payers found" };
         }
 
-        const paymentDetailsPayers = invoice.paymentDetails?.payers.find(
+        paymentDetailsPayers = invoice.paymentDetails.payers.find(
           (payer) => payer.payer.email === invoice.clientEmail,
         );
         if (!paymentDetailsPayers) {
@@ -306,15 +306,32 @@ export const invoiceRouter = router({
         }
       }
 
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}${paymentDetailsPayers ? `&paymentDetailsId=${paymentDetailsPayers?.externalPaymentDetailId}` : ""}`;
+      const params = new URLSearchParams();
+
+      if (input.wallet) {
+        params.append("wallet", input.wallet);
+      }
+
+      if (invoice.paymentDetails) {
+        params.append("clientUserId", invoice.clientEmail);
+      }
+
+      if (paymentDetailsPayers) {
+        params.append(
+          "paymentDetailsId",
+          paymentDetailsPayers.externalPaymentDetailId,
+        );
+      }
 
       if (input.chain) {
-        paymentEndpoint += `&chain=${input.chain}`;
+        params.append("chain", input.chain);
       }
 
       if (input.token) {
-        paymentEndpoint += `&token=${input.token}`;
+        params.append("token", input.token);
       }
+
+      const paymentEndpoint = `/v2/request/${invoice.requestId}/pay?${params.toString()}`;
 
       const response = await apiClient.get(paymentEndpoint);
 
