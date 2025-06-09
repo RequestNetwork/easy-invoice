@@ -321,15 +321,15 @@ export const invoiceRouter = router({
         );
       }
 
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?${params.toString()}`;
-
       if (input.chain) {
-        paymentEndpoint += `&chain=${input.chain}`;
+        params.append("chain", input.chain);
       }
 
       if (input.token) {
-        paymentEndpoint += `&token=${input.token}`;
+        params.append("token", input.token);
       }
+
+      const paymentEndpoint = `/v2/request/${invoice.requestId}/pay?${params.toString()}`;
 
       const response = await apiClient.get(paymentEndpoint);
 
