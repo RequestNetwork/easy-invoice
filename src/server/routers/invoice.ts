@@ -306,7 +306,7 @@ export const invoiceRouter = router({
         }
       }
 
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}${paymentDetailsPayers ? `&paymentDetailsId=${paymentDetailsPayers?.externalPaymentDetailId}` : ""}`;
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}${invoice.paymentDetails ? `&clientUserId=${invoice.clientEmail}` : ""}${paymentDetailsPayers ? `&paymentDetailsId=${paymentDetailsPayers?.externalPaymentDetailId}` : ""}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;
