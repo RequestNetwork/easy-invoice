@@ -298,7 +298,7 @@ export const invoiceRouter = router({
           return { success: false, message: "No payment details payers found" };
         }
 
-        const paymentDetailsPayers = invoice.paymentDetails?.payers.find(
+        paymentDetailsPayers = invoice.paymentDetails?.payers.find(
           (payer) => payer.payer.email === invoice.clientEmail,
         );
         if (!paymentDetailsPayers) {
@@ -306,7 +306,7 @@ export const invoiceRouter = router({
         }
       }
 
-      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}&clientUserId=${invoice.clientEmail}${paymentDetailsPayers ? `&paymentDetailsId=${paymentDetailsPayers?.externalPaymentDetailId}` : ""}`;
+      let paymentEndpoint = `/v2/request/${invoice.requestId}/pay?wallet=${input.wallet}${invoice.paymentDetails ? `&clientUserId=${invoice.clientEmail}` : ""}${paymentDetailsPayers ? `&paymentDetailsId=${paymentDetailsPayers?.externalPaymentDetailId}` : ""}&feePercentage=${process.env.FEE_PERCENTAGE_FOR_PAYMENT}&feeAddress=${process.env.FEE_ADDRESS_FOR_PAYMENT}`;
 
       if (input.chain) {
         paymentEndpoint += `&chain=${input.chain}`;
@@ -381,7 +381,7 @@ export const invoiceRouter = router({
       const { requestId, walletAddress } = input;
 
       const response = await apiClient.get(
-        `/v2/request/${requestId}/routes?wallet=${walletAddress}`,
+        `/v2/request/${requestId}/routes?wallet=${walletAddress}&feePercentage=${process.env.FEE_PERCENTAGE_FOR_PAYMENT}&feeAddress=${process.env.FEE_ADDRESS_FOR_PAYMENT}`,
       );
 
       if (response.status !== 200) {
@@ -391,7 +391,10 @@ export const invoiceRouter = router({
         });
       }
 
-      return response.data.routes;
+      return {
+        routes: response.data.routes,
+        platformFee: response.data.platformFee,
+      };
     }),
   sendPaymentIntent: publicProcedure
     .input(

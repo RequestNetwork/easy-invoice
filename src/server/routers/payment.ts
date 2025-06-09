@@ -25,6 +25,8 @@ export const paymentRouter = router({
         payee: input.payee,
         invoiceCurrency: input.invoiceCurrency,
         paymentCurrency: input.paymentCurrency,
+        feePercentage: process.env.FEE_PERCENTAGE_FOR_PAYMENT,
+        feeAddress: process.env.FEE_ADDRESS_FOR_PAYMENT,
       });
 
       if (response.status !== 201) {
@@ -65,6 +67,8 @@ export const paymentRouter = router({
               payee: payout.payee,
               invoiceCurrency: payout.invoiceCurrency,
               paymentCurrency: payout.paymentCurrency,
+              feePercentage: process.env.FEE_PERCENTAGE_FOR_PAYMENT,
+              feeAddress: process.env.FEE_ADDRESS_FOR_PAYMENT,
             }))
           : undefined,
         requestIds: input.requestIds,

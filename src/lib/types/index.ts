@@ -6,4 +6,5 @@ export interface PaymentRoute {
   chain: string;
   token: string;
   isCryptoToFiat?: boolean;
+  platformFee?: number;
 }
