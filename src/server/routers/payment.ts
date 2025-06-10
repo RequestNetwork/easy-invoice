@@ -20,13 +20,20 @@ export const paymentRouter = router({
         });
       }
 
+      const feePercentage = process.env.FEE_PERCENTAGE_FOR_PAYMENT;
+      const feeAddress = process.env.FEE_ADDRESS_FOR_PAYMENT;
+
       const response = await apiClient.post("v2/payouts", {
         amount: input.amount.toString(),
         payee: input.payee,
         invoiceCurrency: input.invoiceCurrency,
         paymentCurrency: input.paymentCurrency,
-        feePercentage: process.env.FEE_PERCENTAGE_FOR_PAYMENT,
-        feeAddress: process.env.FEE_ADDRESS_FOR_PAYMENT,
+        ...(feePercentage && feeAddress
+          ? {
+              feePercentage: feePercentage,
+              feeAddress: feeAddress,
+            }
+          : {}),
       });
 
       if (response.status !== 201) {
