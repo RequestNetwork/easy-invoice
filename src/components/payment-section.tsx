@@ -121,7 +121,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const { mutateAsync: sendPaymentIntent } =
     api.invoice.sendPaymentIntent.useMutation();
   const {
-    data: paymentRoutes,
+    data: paymentRoutesData,
     refetch,
     isLoading: isLoadingPaymentRoutes,
   } = api.invoice.getPaymentRoutes.useQuery(
@@ -133,6 +133,9 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
       enabled: !!address,
     },
   );
+
+  const paymentRoutes = paymentRoutesData?.routes;
+  const platformFee = paymentRoutesData?.platformFee;
 
   // Extract the chain from invoice currency
   const invoiceChain = getCurrencyChain(invoice.paymentCurrency);
@@ -587,6 +590,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                               selectedRoute,
                               invoiceChain,
                             )}
+                            platformFee={platformFee}
                           />
                         )}
 
@@ -603,6 +607,7 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                                 isSelected={selectedRoute?.id === route.id}
                                 onClick={() => setSelectedRoute(route)}
                                 routeType={getRouteType(route, invoiceChain)}
+                                platformFee={platformFee}
                               />
                             ))}
                           </div>

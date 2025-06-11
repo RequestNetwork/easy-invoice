@@ -331,6 +331,13 @@ export const invoiceRouter = router({
         params.append("token", input.token);
       }
 
+      if (process.env.FEE_PERCENTAGE_FOR_PAYMENT) {
+        params.append("feePercentage", process.env.FEE_PERCENTAGE_FOR_PAYMENT);
+      }
+      if (process.env.FEE_ADDRESS_FOR_PAYMENT) {
+        params.append("feeAddress", process.env.FEE_ADDRESS_FOR_PAYMENT);
+      }
+
       const paymentEndpoint = `/v2/request/${invoice.requestId}/pay?${params.toString()}`;
 
       const response = await apiClient.get(paymentEndpoint);
@@ -398,7 +405,7 @@ export const invoiceRouter = router({
       const { requestId, walletAddress } = input;
 
       const response = await apiClient.get(
-        `/v2/request/${requestId}/routes?wallet=${walletAddress}`,
+        `/v2/request/${requestId}/routes?wallet=${walletAddress}&feePercentage=${process.env.FEE_PERCENTAGE_FOR_PAYMENT}&feeAddress=${process.env.FEE_ADDRESS_FOR_PAYMENT}`,
       );
 
       if (response.status !== 200) {
@@ -408,7 +415,10 @@ export const invoiceRouter = router({
         });
       }
 
-      return response.data.routes;
+      return {
+        routes: response.data.routes,
+        platformFee: response.data.platformFee,
+      };
     }),
   sendPaymentIntent: publicProcedure
     .input(
