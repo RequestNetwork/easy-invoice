@@ -4,6 +4,7 @@ import { type InferSelectModel, relations } from "drizzle-orm";
 import {
   boolean,
   customType,
+  integer,
   json,
   pgEnum,
   pgTableCreator,
@@ -54,6 +55,17 @@ export const requestStatusEnum = pgEnum("request_status", [
   "processing",
   "overdue",
 ]);
+
+export const RecurrenceFrequency = [
+  "DAILY",
+  "WEEKLY",
+  "MONTHLY",
+  "YEARLY",
+] as const;
+
+export const frequencyEnum = pgEnum("frequency_enum", RecurrenceFrequency);
+
+export type RecurrenceFrequencyType = (typeof RecurrenceFrequency)[number];
 
 // biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
@@ -185,6 +197,38 @@ export const requestTable = createTable("request", {
   paymentDetailsId: text().references(() => paymentDetailsTable.id, {
     onDelete: "set null",
   }),
+});
+
+export const recurringPaymentTable = createTable("recurringPayment", {
+  id: text().primaryKey().notNull(),
+  totalAmountPerMonth: text().notNull(),
+  paymentCurrency: text().notNull(),
+  chain: text().notNull(),
+  totalNumberOfPayments: integer(),
+  currentNumberOfPayments: integer().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  recurrence: json().$type<{
+    startDate: Date;
+    frequency: RecurrenceFrequencyType;
+  }>(),
+  recipient: json().$type<{
+    amount: string;
+    currencyAddress: string;
+    currencySymbol: string;
+  }>(),
+  payments:
+    json().$type<
+      Array<{
+        date: string;
+        txHash: string;
+      }>
+    >(),
+  isRecurrenceStopped: boolean().default(false),
 });
 
 export const sessionTable = createTable("session", {

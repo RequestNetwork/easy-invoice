@@ -6,7 +6,7 @@ import { createTRPCReact } from "@trpc/react-query";
 import { useState } from "react";
 import superjson from "superjson";
 
-import { type AppRouter } from "@/server/index";
+import type { AppRouter } from "@/server/index";
 import { getUrl } from "./shared";
 
 export const api = createTRPCReact<AppRouter>();
@@ -25,7 +25,7 @@ export function TRPCReactProvider(props: {
             staleTime: 5 * 1000,
           },
         },
-      })
+      }),
   );
 
   const [trpcClient] = useState(() =>
@@ -47,7 +47,7 @@ export function TRPCReactProvider(props: {
           },
         }),
       ],
-    })
+    }),
   );
 
   return (

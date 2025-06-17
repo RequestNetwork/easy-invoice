@@ -9,7 +9,6 @@ export default async function PayoutsLayout({
   children,
 }: {
   children: React.ReactNode;
-  tabs: React.ReactNode;
 }) {
   const { user } = await getCurrentSession();
   if (!user) redirect("/");
