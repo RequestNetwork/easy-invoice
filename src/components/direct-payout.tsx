@@ -49,6 +49,7 @@ import {
   paymentFormSchema,
 } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
+import { PaymentSecuredUsingRequest } from "./payment-secured-using-request";
 
 export function DirectPayment() {
   const { mutateAsync: pay } = api.payment.pay.useMutation();
@@ -372,19 +373,7 @@ export function DirectPayment() {
                       )}
                     </div>
                   </div>
-
-                  {/* Security notice */}
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-4">
-                    <h3 className="font-semibold text-green-800 mb-1 text-sm">
-                      Secure Transaction
-                    </h3>
-                    <p className="text-xs text-green-700">
-                      This payment is secured using Request Network. Your
-                      transaction will be processed safely and transparently on
-                      the blockchain.
-                    </p>
-                  </div>
-
+                  <PaymentSecuredUsingRequest />
                   <CardFooter className="flex justify-between items-center pt-2 pb-0 px-0">
                     <button
                       type="button"
