@@ -217,7 +217,7 @@ export const requestTable = createTable("request", {
 
 export const recurringPaymentTable = createTable("recurring_payment", {
   id: text().primaryKey().notNull(),
-  status: recurringPaymentStatusEnum().default("pending").notNull(),
+  status: recurringPaymentStatusEnum("status").default("pending").notNull(),
   totalAmountPerMonth: text().notNull(),
   paymentCurrency: text().notNull(),
   chain: text().notNull(),

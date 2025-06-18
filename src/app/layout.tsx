@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
 import { TRPCReactProvider } from "@/trpc/react";
 import { GoogleTagManager } from "@next/third-parties/google";
+import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
@@ -37,10 +38,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AppKit>
-          <TRPCReactProvider cookies={cookies().toString()}>
-            <BackgroundWrapper>{children}</BackgroundWrapper>
-          </TRPCReactProvider>
-          <Toaster />
+          <TooltipProvider>
+            <TRPCReactProvider cookies={cookies().toString()}>
+              <BackgroundWrapper>{children}</BackgroundWrapper>
+            </TRPCReactProvider>
+            <Toaster />
+          </TooltipProvider>
         </AppKit>
         <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
       </body>
