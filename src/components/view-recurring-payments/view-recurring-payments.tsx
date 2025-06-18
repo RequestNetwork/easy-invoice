@@ -13,7 +13,7 @@ import {
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { formatDate } from "@/lib/date-utils";
 import { api } from "@/trpc/react";
-import { Eye } from "lucide-react";
+import { AlertCircle, Eye, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { ShortAddress } from "../short-address";
 import { FrequencyBadge } from "./blocks/frequency-badge";
@@ -22,8 +22,13 @@ import { StatusBadge } from "./blocks/status-badge";
 const ITEMS_PER_PAGE = 10;
 
 export function ViewRecurringPayments() {
-  const { data: recurringPayments, isLoading } =
-    api.recurringPayment.getRecurringRequests.useQuery();
+  const {
+    data: recurringPayments,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = api.recurringPayment.getRecurringRequests.useQuery();
   const [currentPage, setCurrentPage] = useState(1);
 
   if (isLoading) {
@@ -33,6 +38,40 @@ export function ViewRecurringPayments() {
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
               <p className="text-zinc-500">Loading recurring payments...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center mx-auto w-full max-w-6xl">
+        <Card className="w-full shadow-lg border-red-200/80">
+          <CardHeader className="bg-red-50 rounded-t-lg border-b border-red-200/80">
+            <CardTitle className="flex items-center gap-2 text-red-800">
+              <AlertCircle className="h-5 w-5" />
+              Error Loading Recurring Payments
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="py-16">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <p className="text-red-600">
+                {error.message || "Failed to load recurring payments"}
+              </p>
+              <Button
+                onClick={() => refetch()}
+                disabled={isRefetching}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isRefetching ? "animate-spin" : ""}`}
+                />
+                {isRefetching ? "Retrying..." : "Try Again"}
+              </Button>
             </div>
           </CardContent>
         </Card>
