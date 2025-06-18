@@ -183,7 +183,7 @@ export function DirectPayment() {
   };
 
   return (
-    <div className="flex justify-center mx-auto w-full max-w-2xl">
+    <div className="flex justify-center mx-auto w-full">
       <Card className="w-full shadow-lg border-zinc-200/80">
         <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
           <CardTitle className="flex items-center gap-2">

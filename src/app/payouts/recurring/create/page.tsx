@@ -1,5 +1,5 @@
-import { RecurringPayments } from "@/components/recurring-payments/recurring-payments";
+import { CreateRecurringPayment } from "@/components/create-recurring-payment";
 
 export default function CreateRecurringPaymentSlot() {
-  return <RecurringPayments />;
+  return <CreateRecurringPayment />;
 }

@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { ViewRecurringPayments } from "@/components/view-recurring-payments/view-recurring-payments";
 
 export default function RecurringPaymentsSlot() {
-  redirect("/payouts/recurring/create");
+  return <ViewRecurringPayments />;
 }
