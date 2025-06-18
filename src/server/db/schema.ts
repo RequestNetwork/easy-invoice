@@ -67,6 +67,22 @@ export const frequencyEnum = pgEnum("frequency_enum", RecurrenceFrequency);
 
 export type RecurrenceFrequencyType = (typeof RecurrenceFrequency)[number];
 
+export const RecurringPaymentStatus = [
+  "pending",
+  "active",
+  "paused",
+  "completed",
+  "cancelled",
+] as const;
+
+export const recurringPaymentStatusEnum = pgEnum(
+  "recurring_payment_status",
+  RecurringPaymentStatus,
+);
+
+export type RecurringPaymentStatusType =
+  (typeof RecurringPaymentStatus)[number];
+
 // biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
   dataType() {
@@ -201,6 +217,7 @@ export const requestTable = createTable("request", {
 
 export const recurringPaymentTable = createTable("recurringPayment", {
   id: text().primaryKey().notNull(),
+  status: recurringPaymentStatusEnum().default("pending").notNull(),
   totalAmountPerMonth: text().notNull(),
   paymentCurrency: text().notNull(),
   chain: text().notNull(),
@@ -212,23 +229,26 @@ export const recurringPaymentTable = createTable("recurringPayment", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
-  recurrence: json().$type<{
-    startDate: Date;
-    frequency: RecurrenceFrequencyType;
-  }>(),
-  recipient: json().$type<{
-    amount: string;
-    currencyAddress: string;
-    currencySymbol: string;
-  }>(),
+  recurrence: json()
+    .$type<{
+      startDate: Date;
+      frequency: RecurrenceFrequencyType;
+    }>()
+    .notNull(),
+  recipient: json()
+    .$type<{
+      amount: string;
+      address: string;
+    }>()
+    .notNull(),
   payments:
     json().$type<
       Array<{
         date: string;
         txHash: string;
+        requestScanUrl?: string;
       }>
     >(),
-  isRecurrenceStopped: boolean().default(false),
 });
 
 export const sessionTable = createTable("session", {
@@ -322,3 +342,4 @@ export type PaymentDetails = InferSelectModel<typeof paymentDetailsTable>;
 export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable
 >;
+export type RecurringPayment = InferSelectModel<typeof recurringPaymentTable>;

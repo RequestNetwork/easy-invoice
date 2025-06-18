@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,30 +10,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { formatDate } from "@/lib/date-utils";
 import { api } from "@/trpc/react";
-import { ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useState } from "react";
+import { ShortAddress } from "../short-address";
+import { FrequencyBadge } from "./blocks/frequency-badge";
+import { StatusBadge } from "./blocks/status-badge";
 
 const ITEMS_PER_PAGE = 10;
 
 export function ViewRecurringPayments() {
   const { data: recurringPayments, isLoading } =
     api.recurringPayment.getRecurringRequests.useQuery();
-  const [expandedPayments, setExpandedPayments] = useState<Set<string>>(
-    new Set(),
-  );
   const [currentPage, setCurrentPage] = useState(1);
-
-  const togglePayments = (id: string) => {
-    const newExpanded = new Set(expandedPayments);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedPayments(newExpanded);
-  };
 
   if (isLoading) {
     return (
@@ -84,7 +74,7 @@ export function ViewRecurringPayments() {
   );
 
   return (
-    <div className="flex justify-center mx-auto w-full max-w-6xl">
+    <div className="flex justify-center mx-auto w-full">
       <Card className="w-full shadow-lg border-zinc-200/80">
         <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
           <CardTitle className="flex items-center gap-2">
@@ -98,91 +88,65 @@ export function ViewRecurringPayments() {
             <TableHeader>
               <TableRow>
                 <TableHead>Start Date</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Frequency</TableHead>
                 <TableHead>Total Payments</TableHead>
                 <TableHead>Current Payments</TableHead>
+                <TableHead>Chain</TableHead>
                 <TableHead>Recipient</TableHead>
                 <TableHead>Payment History</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedPayments.map((payment) => {
-                const isExpanded = expandedPayments.has(payment.id);
-                const payments = payment.payments || [];
-                const visiblePayments = isExpanded
-                  ? payments
-                  : payments.slice(0, 3);
-
                 return (
                   <TableRow key={payment.id}>
                     <TableCell>
                       {payment.recurrence?.startDate
-                        ? payment.recurrence.startDate.toString()
+                        ? formatDate(payment.recurrence.startDate.toString())
                         : "N/A"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {payment.recurrence?.frequency || "N/A"}
-                      </Badge>
+                      <StatusBadge status={payment.status} />
                     </TableCell>
                     <TableCell>
-                      {payment.totalNumberOfPayments || "Unlimited"}
+                      <FrequencyBadge
+                        frequency={payment.recurrence.frequency}
+                      />
                     </TableCell>
                     <TableCell>
-                      {payment.currentNumberOfPayments || 0}
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-sm font-bold">
+                          {payment.totalNumberOfPayments}
+                        </span>
+                        <span className="text-xs text-zinc-500">scheduled</span>
+                      </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-sm font-bold">
+                          {payment.currentNumberOfPayments}
+                        </span>
+                        <span className="text-xs text-zinc-500">completed</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{payment.chain}</TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="font-mono text-xs">
-                          {payment.recipient?.currencyAddress
-                            ? `${payment.recipient.currencyAddress.substring(
-                                0,
-                                6,
-                              )}...${payment.recipient.currencyAddress.substring(
-                                payment.recipient.currencyAddress.length - 4,
-                              )}`
-                            : "N/A"}
-                        </div>
+                        <ShortAddress address={payment.recipient.address} />
                         <div className="text-sm">
-                          {payment.recipient?.amount}{" "}
-                          {payment.recipient?.currencySymbol}
+                          {payment.recipient.amount} {payment.paymentCurrency}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-2">
-                        {visiblePayments.map((pay) => (
-                          <div
-                            key={`recurring_payment_${payment.id}_payment_${pay.txHash}`}
-                            className="text-xs space-y-1"
-                          >
-                            <div>{formatDate(pay.date)}</div>
-                            <div className="font-mono text-zinc-500">
-                              {pay.txHash.substring(0, 10)}...
-                            </div>
-                          </div>
-                        ))}
-                        {payments.length > 3 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => togglePayments(payment.id)}
-                            className="h-6 px-2 text-xs"
-                          >
-                            {isExpanded ? (
-                              <>
-                                <ChevronUp className="h-3 w-3 mr-1" />
-                                Collapse
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="h-3 w-3 mr-1" />
-                                Show {payments.length - 3} more
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </div>
+                      <CompletedPayments payments={payment.payments || []} />
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Pause
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

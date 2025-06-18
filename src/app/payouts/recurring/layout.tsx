@@ -1,9 +1,14 @@
-import { RecurringPayments } from "@/components/recurring-payments/recurring-payments";
+import { RecurringPaymentsNavigation } from "@/components/recurring-payments-navigation";
 
-export default function RecurringLayout() {
+export default function RecurringLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="mt-8">
-      <RecurringPayments />
+    <div>
+      <RecurringPaymentsNavigation />
+      <div className="mt-8">{children}</div>
     </div>
   );
 }
