@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { batchPaymentApiSchema, paymentApiSchema } from "@/lib/schemas/payment";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 export const paymentRouter = router({
@@ -68,6 +69,39 @@ export const paymentRouter = router({
         requestIds: input.requestIds,
         payer: input.payer,
       });
+
+      return response.data;
+    }),
+  submitRecurringSignature: protectedProcedure
+    .input(
+      z.object({
+        recurringPaymentId: z
+          .string()
+          .min(1, "Recurring payment ID is required"),
+        permitSignature: z.string().min(1, "Permit signature is required"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { user } = ctx;
+
+      if (!user) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to submit signature",
+        });
+      }
+
+      const response = await apiClient.post(
+        `v2/payouts/recurring/${input.recurringPaymentId}/signature`,
+        { permitSignature: input.permitSignature },
+      );
+
+      if (response.status !== 201) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to submit recurring payment signature",
+        });
+      }
 
       return response.data;
     }),
