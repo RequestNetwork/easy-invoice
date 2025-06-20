@@ -56,14 +56,21 @@ import {
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
 import { handleBatchPayment } from "@/lib/invoice/batch-payment";
-import {
-  type BatchPaymentFormValues,
-  batchPaymentFormSchema,
-} from "@/lib/schemas/payment";
+import { payoutSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
+import { z } from "zod";
 import { PaymentSecuredUsingRequest } from "./payment-secured-using-request";
 
 const MAX_PAYMENTS = 10;
+
+const batchPaymentFormSchema = z.object({
+  payouts: z
+    .array(payoutSchema)
+    .min(1, "At least one payment is required")
+    .max(10, "Maximum 10 payments allowed"),
+});
+
+export type BatchPaymentFormValues = z.infer<typeof batchPaymentFormSchema>;
 
 export function BatchPayout() {
   const { mutateAsync: batchPay } = api.payment.batchPay.useMutation();

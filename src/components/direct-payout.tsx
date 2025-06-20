@@ -44,12 +44,16 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
-import {
-  type PaymentFormValues,
-  paymentFormSchema,
-} from "@/lib/schemas/payment";
+import { paymentApiSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
+import type { z } from "zod";
 import { PaymentSecuredUsingRequest } from "./payment-secured-using-request";
+
+export const directPaymentFormSchema = paymentApiSchema.omit({
+  recurrence: true,
+});
+
+export type DirectPaymentFormValues = z.infer<typeof directPaymentFormSchema>;
 
 export function DirectPayment() {
   const { mutateAsync: pay } = api.payment.pay.useMutation();
@@ -60,8 +64,8 @@ export function DirectPayment() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
 
-  const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentFormSchema),
+  const form = useForm<DirectPaymentFormValues>({
+    resolver: zodResolver(directPaymentFormSchema),
     defaultValues: {
       payee: "",
       amount: 0,
@@ -108,7 +112,7 @@ export function DirectPayment() {
     }
   };
 
-  const onSubmit = async (data: PaymentFormValues) => {
+  const onSubmit = async (data: DirectPaymentFormValues) => {
     if (!isConnected) {
       toast.error("Please connect your wallet first");
       return;
