@@ -69,6 +69,15 @@ export const PAYOUT_PAYMENT_CURRENCIES: Partial<{
   "fUSDT-sepolia": ["fUSDT-sepolia"],
 } as const;
 
+export const RECURRING_PAYMENT_CURRENCIES = [
+  "FAU-sepolia",
+  "fUSDC-sepolia",
+  "fUSDT-sepolia",
+] as const;
+
+export type RecurringPaymentCurrency =
+  (typeof RECURRING_PAYMENT_CURRENCIES)[number];
+
 // Helper functions
 export function getPaymentCurrenciesForInvoice(
   currency: InvoiceCurrency,
