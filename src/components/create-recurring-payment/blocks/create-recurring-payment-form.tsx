@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  PAYOUT_CURRENCIES,
+  type PayoutCurrency,
+  RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
 import type { PaymentAPIValues } from "@/lib/schemas/payment";
@@ -31,6 +32,7 @@ import {
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { CheckCircle, Loader2, LogOut, Plus, X } from "lucide-react";
+import { redirect } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -71,7 +73,7 @@ export function CreateRecurringPaymentForm() {
       frequency: "MONTHLY",
       amount: 0,
       totalExecutions: 12,
-      invoiceCurrency: "ETH-sepolia-sepolia",
+      invoiceCurrency: "FAU-sepolia",
     },
   });
 
@@ -159,15 +161,7 @@ export function CreateRecurringPaymentForm() {
       setPaymentStatus("success");
 
       setTimeout(() => {
-        form.reset({
-          payee: "",
-          amount: 0,
-          startDate: new Date(),
-          frequency: "MONTHLY",
-          totalExecutions: 12,
-          invoiceCurrency: "ETH-sepolia-sepolia",
-        });
-        setPaymentStatus("idle");
+        redirect("/recurring-payments");
       }, 3000);
     } catch (error) {
       console.error("Recurring payment error:", error);
@@ -277,7 +271,7 @@ export function CreateRecurringPaymentForm() {
             <Select
               value={form.watch("invoiceCurrency")}
               onValueChange={(value) =>
-                form.setValue("invoiceCurrency", value as any)
+                form.setValue("invoiceCurrency", value as PayoutCurrency)
               }
               disabled={isProcessing}
             >
@@ -285,7 +279,7 @@ export function CreateRecurringPaymentForm() {
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
-                {PAYOUT_CURRENCIES.map((currency) => (
+                {RECURRING_PAYMENT_CURRENCIES.map((currency) => (
                   <SelectItem key={currency} value={currency}>
                     {formatCurrencyLabel(currency)}
                   </SelectItem>

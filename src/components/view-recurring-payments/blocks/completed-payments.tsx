@@ -1,5 +1,6 @@
 "use client";
 
+import { ShortAddress } from "@/components/short-address";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date-utils";
 import type { RecurringPayment } from "@/server/db/schema";
@@ -27,18 +28,19 @@ export function CompletedPayments({ payments }: CompletedPaymentsProps) {
           className="text-sm space-y-1 font-normal"
         >
           <div>{formatDate(payment.date)}</div>
-          <a
-            href={
-              payment.requestScanUrl ||
-              `https://sepolia.etherscan.io/tx/${payment.txHash}`
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
-          >
-            View transaction
-            <ExternalLink className="h-3 w-3" />
-          </a>
+          {payment.requestScanUrl ? (
+            <a
+              href={payment.requestScanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
+            >
+              View transaction
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          ) : (
+            <ShortAddress address={payment.txHash} className="text-xs" />
+          )}
         </div>
       ))}
       {payments.length > 2 && (
