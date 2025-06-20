@@ -1,15 +1,11 @@
 import { apiClient } from "@/lib/axios";
-import {
-  batchPaymentFormSchema,
-  paymentFormSchema,
-} from "@/lib/schemas/payment";
+import { batchPaymentApiSchema, paymentApiSchema } from "@/lib/schemas/payment";
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 export const paymentRouter = router({
   pay: protectedProcedure
-    .input(paymentFormSchema)
+    .input(paymentApiSchema)
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
 
@@ -28,6 +24,7 @@ export const paymentRouter = router({
         payee: input.payee,
         invoiceCurrency: input.invoiceCurrency,
         paymentCurrency: input.paymentCurrency,
+        recurrence: input.recurrence ?? undefined,
         ...(feePercentage && feeAddress
           ? {
               feePercentage: feePercentage,
@@ -46,17 +43,7 @@ export const paymentRouter = router({
       return response.data;
     }),
   batchPay: protectedProcedure
-    .input(
-      z
-        .object({
-          payouts: batchPaymentFormSchema.shape.payouts.optional(),
-          requestIds: z.array(z.string()).optional(),
-          payer: z.string().optional(),
-        })
-        .refine((data) => data.payouts || data.requestIds, {
-          message: "Either payouts or requestIds must be provided",
-        }),
-    )
+    .input(batchPaymentApiSchema)
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
 

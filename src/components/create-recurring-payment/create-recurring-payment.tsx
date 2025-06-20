@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { Loader2, Plus, Send, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CreateRecurringPaymentForm } from "./blocks/create-recurring-payment.form";
+import { CreateRecurringPaymentForm } from "./blocks/create-recurring-payment-form";
 
 type RecurringPaymentStep = "connect-wallet" | "create-payment";
 

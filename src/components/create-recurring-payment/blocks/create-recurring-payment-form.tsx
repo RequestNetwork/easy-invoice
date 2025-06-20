@@ -16,7 +16,8 @@ import {
   PAYOUT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
-import type { RecurringPaymentAPIValues } from "@/lib/schemas/recurring-payment";
+import type { PaymentAPIValues } from "@/lib/schemas/payment";
+import { paymentApiSchema } from "@/lib/schemas/payment";
 import {
   RecurrenceFrequency,
   type RecurrenceFrequencyType,
@@ -25,10 +26,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { LogOut, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
-import {
-  type RecurringPaymentFormValues,
-  recurringPaymentFormSchema,
-} from "./schema";
+import type { z } from "zod";
+
+const recurrenceFields = paymentApiSchema.shape.recurrence.unwrap().shape;
+const recurringPaymentFormSchema = paymentApiSchema
+  .omit({ recurrence: true })
+  .extend(recurrenceFields);
+
+type RecurringPaymentFormValues = z.infer<typeof recurringPaymentFormSchema>;
 
 export function CreateRecurringPaymentForm() {
   const { address } = useAppKitAccount();
@@ -48,7 +53,7 @@ export function CreateRecurringPaymentForm() {
   });
 
   const onSubmit = (data: RecurringPaymentFormValues) => {
-    const _recurringPaymentBody: RecurringPaymentAPIValues = {
+    const _recurringPaymentBody: PaymentAPIValues = {
       payee: data.payee,
       amount: data.amount,
       invoiceCurrency: data.invoiceCurrency,
