@@ -70,9 +70,9 @@ export const PAYOUT_PAYMENT_CURRENCIES: Partial<{
 } as const;
 
 export const RECURRING_PAYMENT_CURRENCIES = [
-  "FAU-sepolia",
-  "fUSDC-sepolia",
-  "fUSDT-sepolia",
+  TESTNET_CURRENCIES[1], // "FAU-sepolia"
+  TESTNET_CURRENCIES[2], // "fUSDC-sepolia"
+  TESTNET_CURRENCIES[3], // "fUSDT-sepolia"
 ] as const;
 
 export type RecurringPaymentCurrency =
