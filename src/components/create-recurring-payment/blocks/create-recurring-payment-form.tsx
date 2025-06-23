@@ -3,8 +3,15 @@
 import { PaymentSecuredUsingRequest } from "@/components/payment-secured-using-request";
 import { Button } from "@/components/ui/button";
 import { CardFooter } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -13,16 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  type PayoutCurrency,
   RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
 import type { PaymentAPIValues } from "@/lib/schemas/payment";
 import { paymentApiSchema } from "@/lib/schemas/payment";
-import {
-  RecurrenceFrequency,
-  type RecurrenceFrequencyType,
-} from "@/server/db/schema";
+import { RecurrenceFrequency } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -32,7 +35,7 @@ import {
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { CheckCircle, Loader2, LogOut, Plus, X } from "lucide-react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -48,6 +51,8 @@ const recurringPaymentFormSchema = paymentApiSchema
 type RecurringPaymentFormValues = z.infer<typeof recurringPaymentFormSchema>;
 
 export function CreateRecurringPaymentForm() {
+  const router = useRouter();
+
   const { mutateAsync: pay } = api.payment.pay.useMutation();
   const { mutateAsync: submitRecurringSignature } =
     api.payment.submitRecurringSignature.useMutation();
@@ -83,12 +88,15 @@ export function CreateRecurringPaymentForm() {
       return;
     }
 
+    if (!walletProvider) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
     setPaymentStatus("processing");
 
     try {
-      const ethersProvider = new ethers.providers.Web3Provider(
-        walletProvider as ethers.providers.ExternalProvider,
-      );
+      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
       const recurringPaymentCurrency = data.invoiceCurrency;
 
       const signer = ethersProvider.getSigner();
@@ -158,10 +166,9 @@ export function CreateRecurringPaymentForm() {
           "Your recurring payment is now active and will execute on schedule",
       });
 
-      setPaymentStatus("success");
-
       setTimeout(() => {
-        redirect("/recurring-payments");
+        setPaymentStatus("success");
+        router.push("/payouts/recurring");
       }, 3000);
     } catch (error) {
       console.error("Recurring payment error:", error);
@@ -174,182 +181,207 @@ export function CreateRecurringPaymentForm() {
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="startDate">Start Date</Label>
-          <Input
-            id="startDate"
-            type="date"
-            {...form.register("startDate", {
-              valueAsDate: true,
-            })}
-            min={new Date().toISOString().split("T")[0]}
-            disabled={isProcessing}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="startDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Start Date</FormLabel>
+                <FormControl>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={
+                      field.value
+                        ? field.value instanceof Date
+                          ? field.value.toISOString().split("T")[0]
+                          : field.value
+                        : ""
+                    }
+                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    min={new Date().toISOString().split("T")[0]}
+                    disabled={isProcessing}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {form.formState.errors.startDate && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.startDate.message}
-            </p>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="frequency">Recurrence Frequency</Label>
-            <Select
-              value={form.watch("frequency")}
-              onValueChange={(value) =>
-                form.setValue("frequency", value as RecurrenceFrequencyType)
-              }
-              disabled={isProcessing}
-            >
-              <SelectTrigger id="frequency">
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                {RecurrenceFrequency.map((freq) => (
-                  <SelectItem key={freq} value={freq}>
-                    {freq}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {form.formState.errors.frequency && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.frequency.message}
-              </p>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="totalExecutions">Total Number of Executions</Label>
-            <Input
-              id="totalExecutions"
-              type="number"
-              placeholder="12"
-              min="2"
-              max="256"
-              {...form.register("totalExecutions", {
-                valueAsNumber: true,
-              })}
-              disabled={isProcessing}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="frequency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Recurrence Frequency</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isProcessing}
+                    >
+                      <SelectTrigger id="frequency">
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RecurrenceFrequency.map((freq) => (
+                          <SelectItem key={freq} value={freq}>
+                            {freq}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {form.formState.errors.totalExecutions && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.totalExecutions.message}
-              </p>
-            )}
-            <p className="text-xs text-zinc-500">
-              Minimum 2, maximum 256 executions
-            </p>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder="0.00"
-              step="any"
-              min="0"
-              {...form.register("amount", {
-                valueAsNumber: true,
-              })}
-              disabled={isProcessing}
+            <FormField
+              control={form.control}
+              name="totalExecutions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Total Number of Executions</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="totalExecutions"
+                      type="number"
+                      placeholder="12"
+                      min="2"
+                      max="256"
+                      value={field.value}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      disabled={isProcessing}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <p className="text-xs text-zinc-500">
+                    Minimum 2, maximum 256 executions
+                  </p>
+                </FormItem>
+              )}
             />
-            {form.formState.errors.amount && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.amount.message}
-              </p>
-            )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="invoiceCurrency">Invoice Currency</Label>
-            <Select
-              value={form.watch("invoiceCurrency")}
-              onValueChange={(value) =>
-                form.setValue("invoiceCurrency", value as PayoutCurrency)
-              }
-              disabled={isProcessing}
-            >
-              <SelectTrigger id="invoiceCurrency">
-                <SelectValue placeholder="Select currency" />
-              </SelectTrigger>
-              <SelectContent>
-                {RECURRING_PAYMENT_CURRENCIES.map((currency) => (
-                  <SelectItem key={currency} value={currency}>
-                    {formatCurrencyLabel(currency)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {form.formState.errors.invoiceCurrency && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.invoiceCurrency.message}
-              </p>
-            )}
-          </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="payee">Recipient Wallet Address</Label>
-          <Input
-            id="payee"
-            placeholder="0x..."
-            {...form.register("payee")}
-            className="font-mono"
-            disabled={isProcessing}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="amount"
+                      type="number"
+                      placeholder="0.00"
+                      step="any"
+                      min="0"
+                      value={field.value}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      disabled={isProcessing}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="invoiceCurrency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Invoice Currency</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isProcessing}
+                    >
+                      <SelectTrigger id="invoiceCurrency">
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RECURRING_PAYMENT_CURRENCIES.map((currency) => (
+                          <SelectItem key={currency} value={currency}>
+                            {formatCurrencyLabel(currency)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="payee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Recipient Wallet Address</FormLabel>
+                <FormControl>
+                  <Input
+                    id="payee"
+                    placeholder="0x..."
+                    className="font-mono"
+                    disabled={isProcessing}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {form.formState.errors.payee && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.payee.message}
-            </p>
-          )}
         </div>
-      </div>
 
-      <PaymentSecuredUsingRequest />
+        <PaymentSecuredUsingRequest />
 
-      <CardFooter className="flex justify-between items-center pt-2 pb-6 px-0">
-        <button
-          type="button"
-          onClick={() => open()}
-          className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
-          disabled={isProcessing}
-        >
-          <span className="font-mono mr-2">
-            {address?.substring(0, 6)}...
-            {address?.substring(address?.length - 4)}
-          </span>
-          <LogOut className="h-3 w-3" />
-        </button>
-        <Button type="submit" className="relative" disabled={isProcessing}>
-          {isProcessing ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Payment...
-            </>
-          ) : paymentStatus === "success" ? (
-            <>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Payment Created
-            </>
-          ) : paymentStatus === "error" ? (
-            <>
-              <X className="mr-2 h-4 w-4" />
-              Try Again
-            </>
-          ) : (
-            <>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Recurring Payment
-            </>
-          )}
-        </Button>
-      </CardFooter>
-    </form>
+        <CardFooter className="flex justify-between items-center pt-2 pb-6 px-0">
+          <button
+            type="button"
+            onClick={() => open()}
+            className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+            disabled={isProcessing}
+          >
+            <span className="font-mono mr-2">
+              {address?.substring(0, 6)}...
+              {address?.substring(address?.length - 4)}
+            </span>
+            <LogOut className="h-3 w-3" />
+          </button>
+          <Button type="submit" className="relative" disabled={isProcessing}>
+            {isProcessing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Payment...
+              </>
+            ) : paymentStatus === "success" ? (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Payment Created
+              </>
+            ) : paymentStatus === "error" ? (
+              <>
+                <X className="mr-2 h-4 w-4" />
+                Try Again
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Recurring Payment
+              </>
+            )}
+          </Button>
+        </CardFooter>
+      </form>
+    </Form>
   );
 }
