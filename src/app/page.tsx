@@ -49,6 +49,18 @@ export default async function LoginPage() {
               />
               Continue with Google
             </Link>
+            <p className="text-center text-sm text-zinc-500">
+              By continuing, you agree to our{" "}
+              <Link
+                href={process.env.NEXT_PUBLIC_API_TERMS_CONDITIONS as string}
+                className="underline hover:text-zinc-900"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms and Conditions
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </main>
