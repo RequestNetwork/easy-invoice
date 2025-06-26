@@ -28,6 +28,7 @@ createAppKit({
   adapters: [new Ethers5Adapter()],
   metadata,
   networks: [sepolia, base, mainnet, arbitrum, optimism, polygon],
+  themeMode: "light",
   projectId,
   features: {
     analytics: false,
