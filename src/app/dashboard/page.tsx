@@ -28,7 +28,7 @@ export default async function DashboardPage() {
       bottomGradient={{ from: "zinc-100", to: "zinc-200" }}
     >
       <Header user={user} />
-      <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
+      <main className="flex-grow flex flex-col max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10 w-full">
         <DashboardView invoices={invoices} />
       </main>
       <Footer />
