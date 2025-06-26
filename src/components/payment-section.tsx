@@ -17,6 +17,7 @@ import {
   useAppKitAccount,
   useAppKitNetwork,
   useAppKitProvider,
+  useDisconnect,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
@@ -103,6 +104,7 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
 
 export function PaymentSection({ invoice }: PaymentSectionProps) {
   const { open } = useAppKit();
+  const { disconnect } = useDisconnect();
   const { isConnected, address } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
   const { chainId, switchNetwork } = useAppKitNetwork();
@@ -194,6 +196,12 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const handleConnectWallet = () => {
     if (isAppKitReady) {
       open();
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (isAppKitReady) {
+      disconnect();
     }
   };
 
@@ -515,10 +523,10 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleConnectWallet}
-                        disabled={!isAppKitReady}
+                        onClick={handleDisconnect}
+                        disabled={!isAppKitReady || paymentProgress !== "idle"}
                       >
-                        Switch Wallet
+                        Disconnect
                       </Button>
                     </div>
                     <div className="font-mono bg-zinc-100 p-2 rounded">
