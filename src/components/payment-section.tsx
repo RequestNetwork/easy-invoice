@@ -41,7 +41,7 @@ type InvoiceStatus =
   | "overdue";
 
 interface PaymentSectionProps {
-  invoice: NonNullable<Request>;
+  serverInvoice: NonNullable<Request>;
 }
 
 const getCurrencyChain = (currency: string) => {
@@ -102,7 +102,7 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
   };
 };
 
-export function PaymentSection({ invoice }: PaymentSectionProps) {
+export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const { open } = useAppKit();
   const { disconnect } = useDisconnect();
   const { isConnected, address } = useAppKitAccount();
@@ -112,6 +112,19 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType | null>(
     null,
   );
+
+  const [invoice, setInvoice] = useState(serverInvoice);
+  const [polling, setPolling] = useState(false);
+
+  // Poll the invoice status every 3 seconds until it's paid
+  api.invoice.getById.useQuery(serverInvoice.id, {
+    enabled: polling,
+    refetchInterval: polling ? 3000 : false,
+    onSuccess: (data) => {
+      setInvoice(data);
+      if (data.status === "paid") setPolling(false);
+    },
+  });
 
   const [paymentStatus, setPaymentStatus] = useState<InvoiceStatus>(
     invoice.status as InvoiceStatus,
