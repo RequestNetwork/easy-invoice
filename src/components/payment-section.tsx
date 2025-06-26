@@ -17,6 +17,7 @@ import {
   useAppKitAccount,
   useAppKitNetwork,
   useAppKitProvider,
+  useDisconnect,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
@@ -40,7 +41,7 @@ type InvoiceStatus =
   | "overdue";
 
 interface PaymentSectionProps {
-  invoice: NonNullable<Request>;
+  serverInvoice: NonNullable<Request>;
 }
 
 const getCurrencyChain = (currency: string) => {
@@ -101,8 +102,9 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
   };
 };
 
-export function PaymentSection({ invoice }: PaymentSectionProps) {
+export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const { open } = useAppKit();
+  const { disconnect } = useDisconnect();
   const { isConnected, address } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
   const { chainId, switchNetwork } = useAppKitNetwork();
@@ -110,6 +112,19 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType | null>(
     null,
   );
+
+  const [invoice, setInvoice] = useState(serverInvoice);
+  const [polling, setPolling] = useState(false);
+
+  // Poll the invoice status every 3 seconds until it's paid
+  api.invoice.getById.useQuery(serverInvoice.id, {
+    enabled: polling,
+    refetchInterval: polling ? 3000 : false,
+    onSuccess: (data) => {
+      setInvoice(data);
+      if (data.status === "paid") setPolling(false);
+    },
+  });
 
   const [paymentStatus, setPaymentStatus] = useState<InvoiceStatus>(
     invoice.status as InvoiceStatus,
@@ -194,6 +209,12 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const handleConnectWallet = () => {
     if (isAppKitReady) {
       open();
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (isAppKitReady) {
+      disconnect();
     }
   };
 
@@ -515,10 +536,10 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleConnectWallet}
-                        disabled={!isAppKitReady}
+                        onClick={handleDisconnect}
+                        disabled={!isAppKitReady || paymentProgress !== "idle"}
                       >
-                        Switch Wallet
+                        Disconnect
                       </Button>
                     </div>
                     <div className="font-mono bg-zinc-100 p-2 rounded">

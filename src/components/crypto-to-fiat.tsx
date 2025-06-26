@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { User } from "@/server/db/schema";
 import { AlertTriangle } from "lucide-react";
 import { ComplianceForm } from "./compliance-form";
@@ -7,8 +7,6 @@ export function CryptoToFiat({ user }: { user: User }) {
   return (
     <div className="flex justify-center mx-auto w-full">
       <Card className="w-[800px] shadow-lg border-zinc-200/80">
-        <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80" />
-
         <CardContent className="p-8">
           {!user.isCompliant && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">

@@ -44,12 +44,28 @@ export function InvoiceCreator({
             description: "You can safely close this page now",
           });
         },
+        onError: (error) => {
+          toast.error("Failed to create invoice", {
+            description:
+              error instanceof Error
+                ? error.message
+                : "An unexpected error occurred",
+          });
+        },
       })
     : api.invoice.create.useMutation({
         onSuccess: async () => {
           toast.success("Invoice created successfully");
           await utils.invoice.getAll.invalidate();
           router.push("/dashboard");
+        },
+        onError: (error) => {
+          toast.error("Failed to create invoice", {
+            description:
+              error instanceof Error
+                ? error.message
+                : "An unexpected error occurred",
+          });
         },
       });
 
@@ -72,9 +88,9 @@ export function InvoiceCreator({
     },
   });
 
-  const onSubmit = (data: InvoiceFormValues) => {
+  const onSubmit = async (data: InvoiceFormValues) => {
     try {
-      createInvoice(data);
+      await createInvoice(data);
     } catch (error) {
       toast.error("Failed to create invoice", {
         description:

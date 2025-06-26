@@ -17,3 +17,10 @@ export function filterDefinedValues<T extends Record<string, unknown>>(
     Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null),
   ) as Partial<T>;
 }
+
+export function truncateEmail(email: string, maxLength = 20): string {
+  if (email.length <= maxLength) return email;
+  const [user, domain] = email.split("@");
+  const keep = maxLength - domain.length - 4;
+  return `${user.slice(0, keep)}...@${domain}`;
+}
