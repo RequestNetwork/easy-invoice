@@ -5,6 +5,7 @@ import { generateInvoiceNumber } from "@/lib/invoice/client";
 import { db } from "@/server/db";
 import {
   paymentDetailsPayersTable,
+  recurringPaymentTable,
   type requestStatusEnum,
   requestTable,
   userTable,
@@ -32,6 +33,43 @@ async function updateRequestStatus(
         `No request found with request ID: ${requestId}`,
       );
     }
+  });
+}
+
+/**
+ * Adds a payment to the recurring payment's payments array
+ */
+async function addPaymentToRecurringPayment(
+  externalPaymentId: string,
+  payment: {
+    date: string;
+    txHash: string;
+    requestScanUrl?: string;
+  },
+) {
+  await db.transaction(async (tx) => {
+    const recurringPayments = await tx
+      .select()
+      .from(recurringPaymentTable)
+      .where(eq(recurringPaymentTable.externalPaymentId, externalPaymentId));
+
+    if (!recurringPayments.length) {
+      throw new ResourceNotFoundError(
+        `No recurring payment found with external payment ID: ${externalPaymentId}`,
+      );
+    }
+
+    const recurringPayment = recurringPayments[0];
+    const currentPayments = recurringPayment.payments || [];
+    const updatedPayments = [...currentPayments, payment];
+
+    await tx
+      .update(recurringPaymentTable)
+      .set({
+        payments: updatedPayments,
+        currentNumberOfPayments: updatedPayments.length,
+      })
+      .where(eq(recurringPaymentTable.externalPaymentId, externalPaymentId));
   });
 }
 
@@ -69,10 +107,19 @@ export async function POST(req: Request) {
 
     switch (event) {
       case "payment.confirmed":
-        await updateRequestStatus(
-          requestId,
-          isCryptoToFiat ? "crypto_paid" : "paid",
-        );
+        // if this is defined, it's a payment that's part of a recurring payment
+        if (body.recurringPayment?.id) {
+          await addPaymentToRecurringPayment(body.recurringPayment.id, {
+            date: body.timestamp,
+            txHash: body.txHash || "",
+            requestScanUrl: body.explorer,
+          });
+        } else {
+          await updateRequestStatus(
+            requestId,
+            isCryptoToFiat ? "crypto_paid" : "paid",
+          );
+        }
         break;
       case "payment.processing":
         switch (subStatus) {
