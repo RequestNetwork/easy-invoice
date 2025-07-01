@@ -21,17 +21,10 @@ export const paymentApiSchema = z.object({
         .refine(
           (date) => {
             const today = new Date();
-            return (
-              date.getFullYear() > today.getFullYear() ||
-              (date.getFullYear() === today.getFullYear() &&
-                (date.getMonth() > today.getMonth() ||
-                  (date.getMonth() === today.getMonth() &&
-                    date.getDate() >= today.getDate())))
-            );
+            today.setHours(0, 0, 0, 0); // Normalize to start of day
+            return date >= today;
           },
-          {
-            message: "Start date cannot be in the past",
-          },
+          { message: "Start date cannot be in the past" },
         ),
       frequency: z
         .enum(RecurrenceFrequency)
