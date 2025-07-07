@@ -56,13 +56,21 @@ import {
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
 import { handleBatchPayment } from "@/lib/invoice/batch-payment";
-import {
-  type BatchPaymentFormValues,
-  batchPaymentFormSchema,
-} from "@/lib/schemas/payment";
+import { payoutSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
+import { z } from "zod";
+import { PaymentSecuredUsingRequest } from "./payment-secured-using-request";
 
 const MAX_PAYMENTS = 10;
+
+const batchPaymentFormSchema = z.object({
+  payouts: z
+    .array(payoutSchema)
+    .min(1, "At least one payment is required")
+    .max(10, "Maximum 10 payments allowed"),
+});
+
+export type BatchPaymentFormValues = z.infer<typeof batchPaymentFormSchema>;
 
 export function BatchPayout() {
   const { mutateAsync: batchPay } = api.payment.batchPay.useMutation();
@@ -558,19 +566,7 @@ export function BatchPayout() {
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* Security notice */}
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 className="font-semibold text-green-800 mb-1 text-sm">
-                      Secure Batch Transaction
-                    </h3>
-                    <p className="text-xs text-green-700">
-                      This batch payment is secured using Request Network. All
-                      transactions will be processed safely and transparently on
-                      the blockchain.
-                    </p>
-                  </div>
-
+                  <PaymentSecuredUsingRequest />
                   <CardFooter className="flex justify-between items-center pt-2 pb-0 px-0">
                     <button
                       type="button"
