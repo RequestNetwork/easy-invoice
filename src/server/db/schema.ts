@@ -276,6 +276,28 @@ export const invoiceMeTable = createTable("invoice_me", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const subscribeToMeTable = createTable("subscribe_to_me", {
+  id: text().primaryKey().notNull(),
+  label: text().notNull(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  paymentCurrency: text().notNull(),
+  chain: text().notNull(),
+  totalNumberOfPayments: integer(),
+  recurrence: json()
+    .$type<{
+      startDate: Date;
+      frequency: RecurrenceFrequencyType;
+    }>()
+    .notNull(),
+  amount: text().notNull(),
+  recipient: text().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relationships
 
 export const userRelations = relations(userTable, ({ many }) => ({
@@ -310,6 +332,16 @@ export const invoiceMeRelations = relations(invoiceMeTable, ({ one }) => ({
   }),
 }));
 
+export const subscribeToMeRelations = relations(
+  subscribeToMeTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [subscribeToMeTable.userId],
+      references: [userTable.id],
+    }),
+  }),
+);
+
 export const paymentDetailsRelations = relations(
   paymentDetailsTable,
   ({ one, many }) => ({
@@ -339,6 +371,7 @@ export type Request = InferSelectModel<typeof requestTable>;
 export type User = InferSelectModel<typeof userTable>;
 export type Session = InferSelectModel<typeof sessionTable>;
 export type InvoiceMe = InferSelectModel<typeof invoiceMeTable>;
+export type SubscribeToMe = InferSelectModel<typeof subscribeToMeTable>;
 export type PaymentDetails = InferSelectModel<typeof paymentDetailsTable>;
 export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable

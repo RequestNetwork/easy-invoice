@@ -82,6 +82,7 @@ export function CreateRecurringPaymentForm() {
     },
   });
 
+  // TODO move this to a separate utility file with onSuccess and onError handlers
   const onSubmit = async (data: RecurringPaymentFormValues) => {
     if (!isConnected || !address) {
       toast.error("Please connect your wallet first");
