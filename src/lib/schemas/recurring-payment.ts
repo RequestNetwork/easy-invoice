@@ -12,7 +12,7 @@ export const createRecurringPaymentSchema = basePaymentSchema
     // Flatten recurrence fields to top level and make them required
     startDate: recurrenceFields.startDate,
     frequency: recurrenceFields.frequency,
-    totalExecutions: recurrenceFields.totalExecutions,
+    totalPayments: recurrenceFields.totalPayments,
     payer: recurrenceFields.payer,
   })
   .extend({

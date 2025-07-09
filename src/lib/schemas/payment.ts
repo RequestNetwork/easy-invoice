@@ -29,7 +29,7 @@ export const paymentApiSchema = z.object({
       frequency: z
         .enum(RecurrenceFrequency)
         .describe("The frequency of the payment"),
-      totalExecutions: z
+      totalPayments: z
         .number()
         .min(2, "Must have at least 2 executions for recurring payments")
         .max(256, "Cannot exceed 256 executions (contract limit)")

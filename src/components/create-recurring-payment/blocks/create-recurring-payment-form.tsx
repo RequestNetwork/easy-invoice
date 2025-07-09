@@ -77,7 +77,7 @@ export function CreateRecurringPaymentForm() {
       startDate: new Date(),
       frequency: "MONTHLY",
       amount: 0,
-      totalExecutions: 12,
+      totalPayments: 12,
       invoiceCurrency: "FAU-sepolia",
     },
   });
@@ -110,7 +110,7 @@ export function CreateRecurringPaymentForm() {
         paymentCurrency: recurringPaymentCurrency,
         recurrence: {
           payer: address,
-          totalExecutions: data.totalExecutions,
+          totalPayments: data.totalPayments,
           startDate: data.startDate,
           frequency: data.frequency,
         },
@@ -126,7 +126,7 @@ export function CreateRecurringPaymentForm() {
         paymentCurrency: recurringPaymentCurrency,
         startDate: data.startDate,
         frequency: data.frequency,
-        totalExecutions: data.totalExecutions,
+        totalPayments: data.totalPayments,
         payer: address,
         chain: "sepolia", // You can make this dynamic based on the connected network
         externalPaymentId: id,
@@ -243,13 +243,13 @@ export function CreateRecurringPaymentForm() {
 
             <FormField
               control={form.control}
-              name="totalExecutions"
+              name="totalPayments"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Total Number of Executions</FormLabel>
+                  <FormLabel>Total Number of Payments</FormLabel>
                   <FormControl>
                     <Input
-                      id="totalExecutions"
+                      id="totalPayments"
                       type="number"
                       placeholder="12"
                       min="2"

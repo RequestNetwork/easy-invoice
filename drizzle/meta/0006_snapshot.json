@@ -1,5 +1,5 @@
 {
-  "id": "cd5c6f34-f87b-4086-902d-69692b527b2a",
+  "id": "107677a1-447e-413e-8148-f9ed6f89e6fc",
   "prevId": "d2b8ba0a-2ee9-479d-94ae-2455fdd6f4c6",
   "version": "7",
   "dialect": "postgresql",
@@ -366,6 +366,12 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true
+        },
+        "externalPaymentId": {
+          "name": "externalPaymentId",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
         "status": {
