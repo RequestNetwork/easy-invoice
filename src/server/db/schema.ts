@@ -230,6 +230,7 @@ export const recurringPaymentTable = createTable("recurring_payment", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
+  subscriptionId: text(),
   recurrence: json()
     .$type<{
       startDate: Date;
@@ -286,13 +287,8 @@ export const subscribeToMeTable = createTable("subscribe_to_me", {
     }),
   paymentCurrency: text().notNull(),
   chain: text().notNull(),
-  totalNumberOfPayments: integer(),
-  recurrence: json()
-    .$type<{
-      startDate: Date;
-      frequency: RecurrenceFrequencyType;
-    }>()
-    .notNull(),
+  totalNumberOfPayments: integer().notNull(),
+  recurrenceFrequency: frequencyEnum("frequency").notNull(),
   amount: text().notNull(),
   recipient: text().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -317,6 +313,20 @@ export const requestRelations = relations(requestTable, ({ one }) => ({
     references: [paymentDetailsTable.id],
   }),
 }));
+
+export const recurringPaymentRelation = relations(
+  recurringPaymentTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [recurringPaymentTable.userId],
+      references: [userTable.id],
+    }),
+    subscription: one(subscribeToMeTable, {
+      fields: [recurringPaymentTable.subscriptionId],
+      references: [subscribeToMeTable.id],
+    }),
+  }),
+);
 
 export const sessionRelations = relations(sessionTable, ({ one }) => ({
   user: one(userTable, {

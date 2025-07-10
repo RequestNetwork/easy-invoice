@@ -16,7 +16,6 @@ export const subscribeToMeApiSchema = z.object({
     .string()
     .min(1, "Chain is required")
     .describe("The blockchain network"),
-  startDate: recurrenceFields.startDate,
   frequency: recurrenceFields.frequency,
   totalPayments: recurrenceFields.totalPayments,
 });

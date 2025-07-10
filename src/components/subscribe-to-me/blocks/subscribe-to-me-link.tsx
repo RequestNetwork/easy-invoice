@@ -52,8 +52,11 @@ export function SubscribeToMeLink({ link }: SubscribeToMeLinkProps) {
           <div className="flex flex-col gap-2 flex-1 min-w-0">
             <h3 className="font-bold text-zinc-900">{link.label}</h3>
             <p className="text-sm text-zinc-600">
-              {link.amount} {displayCurrency} · {link.recurrence.frequency}
+              {link.amount} {displayCurrency} · {link.recurrenceFrequency}
             </p>
+            <code className="text-xs text-zinc-600 bg-zinc-50 px-3 py-1.5 rounded-md truncate flex-1">
+              {linkUrl}
+            </code>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button

@@ -25,11 +25,9 @@ export const subscribeToMeRouter = router({
         userId: user.id,
         chain: input.chain,
         amount: input.amount.toString(),
+        totalNumberOfPayments: input.totalPayments,
         paymentCurrency: input.paymentCurrency,
-        recurrence: {
-          startDate: input.startDate,
-          frequency: input.frequency,
-        },
+        recurrenceFrequency: input.frequency,
         recipient: input.payee,
       });
     }),

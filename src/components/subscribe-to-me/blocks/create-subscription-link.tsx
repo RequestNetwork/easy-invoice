@@ -74,7 +74,6 @@ export function CreateSubscriptionLink({
     resolver: zodResolver(subscriptionFormSchema),
     defaultValues: {
       label: "",
-      startDate: new Date(),
       frequency: "MONTHLY",
       amount: 0,
       totalPayments: 12,
@@ -130,32 +129,6 @@ export function CreateSubscriptionLink({
                       placeholder="e.g. Monthly Update"
                       disabled={isLoading}
                       {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Date</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      value={
-                        field.value
-                          ? field.value instanceof Date
-                            ? field.value.toISOString().split("T")[0]
-                            : field.value
-                          : ""
-                      }
-                      onChange={(e) => field.onChange(new Date(e.target.value))}
-                      min={new Date().toISOString().split("T")[0]}
-                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
