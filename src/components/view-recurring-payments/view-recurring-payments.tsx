@@ -14,12 +14,18 @@ import { CompletedPayments } from "@/components/view-recurring-payments/blocks/c
 import { formatDate } from "@/lib/date-utils";
 import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { AlertCircle, Eye, RefreshCw } from "lucide-react";
+import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
+import { ethers } from "ethers";
+import { AlertCircle, Ban, Eye, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { ShortAddress } from "../short-address";
 import { FrequencyBadge } from "./blocks/frequency-badge";
 import { StatusBadge } from "./blocks/status-badge";
 
+const getCanCancelPayment = (status: string) => {
+  return status === "pending" || status === "active";
+};
 const ITEMS_PER_PAGE = 10;
 
 interface ViewRecurringPaymentsProps {
@@ -29,6 +35,7 @@ interface ViewRecurringPaymentsProps {
 export function ViewRecurringPayments({
   initialRecurringPayments,
 }: ViewRecurringPaymentsProps) {
+  const utils = api.useUtils();
   const {
     data: recurringPayments,
     isLoading,
@@ -38,7 +45,98 @@ export function ViewRecurringPayments({
   } = api.recurringPayment.getRecurringPayments.useQuery(undefined, {
     initialData: initialRecurringPayments,
   });
+
+  const updateRecurringPaymentMutation =
+    api.recurringPayment.updateRecurringPayment.useMutation({
+      onSuccess: () => {
+        toast.success("Recurring payment cancelled successfully");
+        refetch();
+      },
+      onError: (error) => {
+        toast.error(`Failed to cancel recurring payment: ${error.message}`);
+      },
+    });
+  const setRecurringPaymentStatusMutation =
+    api.recurringPayment.setRecurringPaymentStatus.useMutation({});
+
   const [currentPage, setCurrentPage] = useState(1);
+  const [cancellingPaymentId, setCancellingPaymentId] = useState<string | null>(
+    null,
+  );
+
+  const { isConnected } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider("eip155");
+
+  const handleCancelRecurringPayment = async (payment: RecurringPayment) => {
+    if (!getCanCancelPayment(payment.status)) {
+      return;
+    }
+
+    if (!isConnected || !walletProvider) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to cancel this recurring payment?")) {
+      return;
+    }
+
+    setCancellingPaymentId(payment.id);
+
+    try {
+      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
+      const signer = ethersProvider.getSigner();
+
+      toast.info("Cancelling recurring payment...");
+
+      const response = await updateRecurringPaymentMutation.mutateAsync({
+        externalPaymentId: payment.externalPaymentId,
+        action: "cancel",
+      });
+
+      const { transactions } = response;
+
+      if (transactions?.length) {
+        toast.info("Signature required", {
+          description: "Please sign the transactions in your wallet",
+        });
+
+        for (let i = 0; i < transactions.length; i++) {
+          const transaction = transactions[i];
+
+          toast.info(
+            `Processing transaction ${i + 1} of ${transactions.length}`,
+            {
+              description: "Please confirm the transaction in your wallet",
+            },
+          );
+
+          const txResponse = await signer.sendTransaction(transaction);
+          await txResponse.wait();
+
+          toast.success(`Transaction ${i + 1} completed`);
+        }
+
+        toast.success("All transactions completed successfully");
+      }
+
+      await setRecurringPaymentStatusMutation.mutateAsync({
+        id: payment.id,
+        status: "cancelled",
+      });
+
+      await utils.recurringPayment.getRecurringPayments.invalidate();
+      toast.success("Recurring payment cancelled successfully");
+    } catch (error) {
+      console.error("Cancel recurring payment error:", error);
+      toast.error("Failed to cancel recurring payment", {
+        description:
+          "There was an error cancelling your recurring payment. Please try again.",
+      });
+    } finally {
+      setCancellingPaymentId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -144,10 +242,14 @@ export function ViewRecurringPayments({
                 <TableHead>Chain</TableHead>
                 <TableHead>Recipient</TableHead>
                 <TableHead>Payment History</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedPayments.map((payment) => {
+                const canCancel = getCanCancelPayment(payment.status);
+                const isCancelling = cancellingPaymentId === payment.id;
+
                 return (
                   <TableRow key={payment.id}>
                     <TableCell>
@@ -195,6 +297,28 @@ export function ViewRecurringPayments({
                     </TableCell>
                     <TableCell>
                       <CompletedPayments payments={payment.payments || []} />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancelRecurringPayment(payment)}
+                        disabled={
+                          !canCancel ||
+                          isCancelling ||
+                          updateRecurringPaymentMutation.isLoading
+                        }
+                        className="h-8 w-8 p-0"
+                      >
+                        {isCancelling ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Ban className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {isCancelling ? "Cancelling..." : "Cancel Payment"}
+                        </span>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );
