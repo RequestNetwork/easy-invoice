@@ -5,18 +5,18 @@ import { recurringPaymentTable } from "../db/schema";
 import { protectedProcedure, router } from "../trpc";
 
 export const recurringPaymentRouter = router({
-  getRecurringRequests: protectedProcedure.query(async ({ ctx }) => {
+  getRecurringPayments: protectedProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
     // Probably not happening, but let's make TS happy
     if (!user || !user.id) {
       throw new Error("User not authenticated");
     }
-    const recurringRequests = await db.query.recurringPaymentTable.findMany({
+    const recurringPayments = await db.query.recurringPaymentTable.findMany({
       where: and(eq(recurringPaymentTable.userId, user.id)),
       orderBy: desc(recurringPaymentTable.createdAt),
     });
 
-    return recurringRequests;
+    return recurringPayments;
   }),
 
   createRecurringPayment: protectedProcedure
@@ -34,7 +34,7 @@ export const recurringPaymentRouter = router({
           id: ulid(),
           externalPaymentId: input.externalPaymentId,
           status: "pending",
-          totalAmountPerMonth: input.amount.toString(),
+          totalAmount: input.amount.toString(),
           paymentCurrency: input.paymentCurrency,
           chain: input.chain,
           totalNumberOfPayments: input.totalPayments,

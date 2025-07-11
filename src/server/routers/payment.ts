@@ -92,7 +92,7 @@ export const paymentRouter = router({
       }
 
       const response = await apiClient.post(
-        `v2/payouts/recurring/${input.recurringPaymentId}/signature`,
+        `v2/payouts/recurring/${input.recurringPaymentId}`,
         { permitSignature: input.permitSignature },
       );
 

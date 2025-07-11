@@ -1,5 +1,5 @@
 {
-  "id": "107677a1-447e-413e-8148-f9ed6f89e6fc",
+  "id": "b2207c66-d145-4c6e-a24c-e7a7eae6bd6c",
   "prevId": "d2b8ba0a-2ee9-479d-94ae-2455fdd6f4c6",
   "version": "7",
   "dialect": "postgresql",
@@ -382,8 +382,8 @@
           "notNull": true,
           "default": "'pending'"
         },
-        "totalAmountPerMonth": {
-          "name": "totalAmountPerMonth",
+        "totalAmount": {
+          "name": "totalAmount",
           "type": "text",
           "primaryKey": false,
           "notNull": true

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS "easyinvoice_recurring_payment" (
 	"id" text PRIMARY KEY NOT NULL,
 	"externalPaymentId" text NOT NULL,
 	"status" "recurring_payment_status" DEFAULT 'pending' NOT NULL,
-	"totalAmountPerMonth" text NOT NULL,
+	"totalAmount" text NOT NULL,
 	"paymentCurrency" text NOT NULL,
 	"chain" text NOT NULL,
 	"totalNumberOfPayments" integer,

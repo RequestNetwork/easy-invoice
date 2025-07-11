@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { formatDate } from "@/lib/date-utils";
+import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, Eye, RefreshCw } from "lucide-react";
 import { useState } from "react";
@@ -21,14 +22,22 @@ import { StatusBadge } from "./blocks/status-badge";
 
 const ITEMS_PER_PAGE = 10;
 
-export function ViewRecurringPayments() {
+interface ViewRecurringPaymentsProps {
+  initialRecurringPayments?: RecurringPayment[];
+}
+
+export function ViewRecurringPayments({
+  initialRecurringPayments,
+}: ViewRecurringPaymentsProps) {
   const {
     data: recurringPayments,
     isLoading,
     error,
     refetch,
     isRefetching,
-  } = api.recurringPayment.getRecurringRequests.useQuery();
+  } = api.recurringPayment.getRecurringPayments.useQuery(undefined, {
+    initialData: initialRecurringPayments,
+  });
   const [currentPage, setCurrentPage] = useState(1);
 
   if (isLoading) {
@@ -129,12 +138,12 @@ export function ViewRecurringPayments() {
                 <TableHead>Start Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Frequency</TableHead>
+                <TableHead>Total amount</TableHead>
                 <TableHead>Total Payments</TableHead>
                 <TableHead>Current Payments</TableHead>
                 <TableHead>Chain</TableHead>
                 <TableHead>Recipient</TableHead>
                 <TableHead>Payment History</TableHead>
-                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -153,6 +162,11 @@ export function ViewRecurringPayments() {
                       <FrequencyBadge
                         frequency={payment.recurrence.frequency}
                       />
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm font-bold">
+                        {payment.totalAmount}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
@@ -181,11 +195,6 @@ export function ViewRecurringPayments() {
                     </TableCell>
                     <TableCell>
                       <CompletedPayments payments={payment.payments || []} />
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" className="w-full">
-                        Pause
-                      </Button>
                     </TableCell>
                   </TableRow>
                 );

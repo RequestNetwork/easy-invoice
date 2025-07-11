@@ -1,4 +1,3 @@
-"use client";
 import { RecurringPaymentsNavigation } from "@/components/recurring-payments-navigation";
 
 export default function RecurringLayout({

@@ -219,7 +219,7 @@ export const recurringPaymentTable = createTable("recurring_payment", {
   id: text().primaryKey().notNull(),
   externalPaymentId: text().notNull(),
   status: recurringPaymentStatusEnum("status").default("pending").notNull(),
-  totalAmountPerMonth: text().notNull(),
+  totalAmount: text().notNull(),
   paymentCurrency: text().notNull(),
   chain: text().notNull(),
   totalNumberOfPayments: integer(),
