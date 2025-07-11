@@ -11,6 +11,7 @@ type RequiredRecurrence = Required<NonNullable<PaymentAPIValues["recurrence"]>>;
 
 type RecurringPaymentBody = Omit<PaymentAPIValues, "recurrence"> & {
   recurrence: RequiredRecurrence;
+  subscriptionId?: string;
 };
 
 interface UseCreateRecurringPaymentProps {
@@ -67,6 +68,7 @@ export function useCreateRecurringPayment({
         startDate: recurringPaymentBody.recurrence.startDate,
         frequency: recurringPaymentBody.recurrence.frequency,
         totalPayments: recurringPaymentBody.recurrence.totalPayments,
+        subscriptionId: recurringPaymentBody.subscriptionId,
         payer: address,
         chain: "sepolia", // @NOTE we just allow sepolia for now, we can move it to a dynamic value later
         externalPaymentId: id,

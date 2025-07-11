@@ -79,6 +79,7 @@ export function SubscriptionPlanPreview({
       amount: Number(subscriptionPlan.amount),
       invoiceCurrency: subscriptionPlan.paymentCurrency as PayoutCurrency,
       paymentCurrency: subscriptionPlan.paymentCurrency,
+      subscriptionId: subscriptionPlan.id,
       recurrence: {
         payer: address,
         totalPayments: subscriptionPlan.totalNumberOfPayments,
