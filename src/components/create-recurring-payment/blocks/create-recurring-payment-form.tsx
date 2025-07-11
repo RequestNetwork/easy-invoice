@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -271,30 +272,26 @@ export function CreateRecurringPaymentForm() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="amount"
-                      type="number"
-                      placeholder="0.00"
-                      step="any"
-                      min="0"
-                      value={field.value}
-                      onChange={(e) =>
-                        field.onChange(e.target.valueAsNumber || 0)
-                      }
-                      disabled={isProcessing}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            {/*We use this directly since FormField doesn't have this option */}
+            <div>
+              <Label htmlFor="amount">Amount</Label>
+              <Input
+                id="amount"
+                type="number"
+                placeholder="0.00"
+                step="any"
+                min="0"
+                {...form.register("amount", {
+                  valueAsNumber: true,
+                })}
+                disabled={paymentStatus === "processing"}
+              />
+              {form.formState.errors.amount && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.amount.message}
+                </p>
               )}
-            />
+            </div>
             <FormField
               control={form.control}
               name="invoiceCurrency"
