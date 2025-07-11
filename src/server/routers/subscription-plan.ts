@@ -1,14 +1,14 @@
-import { subscribeToMeApiSchema } from "@/lib/schemas/subscribe-to-me";
+import { subscriptionPlanApiSchema } from "@/lib/schemas/subscription-plan";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
-import { subscribeToMeTable } from "../db/schema";
+import { subscriptionPlanTable } from "../db/schema";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 
-export const subscribeToMeRouter = router({
+export const subscriptionPlanRouter = router({
   create: protectedProcedure
-    .input(subscribeToMeApiSchema)
+    .input(subscriptionPlanApiSchema)
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
 
@@ -19,7 +19,7 @@ export const subscribeToMeRouter = router({
         });
       }
 
-      await db.insert(subscribeToMeTable).values({
+      await db.insert(subscriptionPlanTable).values({
         id: ulid(),
         label: input.label,
         userId: user.id,
@@ -41,12 +41,14 @@ export const subscribeToMeRouter = router({
       });
     }
 
-    const subscribeToMeLinks = await db.query.subscribeToMeTable.findMany({
-      where: eq(subscribeToMeTable.userId, user.id),
-      orderBy: desc(subscribeToMeTable.createdAt),
-    });
+    const subscriptionPlanLinks = await db.query.subscriptionPlanTable.findMany(
+      {
+        where: eq(subscriptionPlanTable.userId, user.id),
+        orderBy: desc(subscriptionPlanTable.createdAt),
+      },
+    );
 
-    return subscribeToMeLinks;
+    return subscriptionPlanLinks;
   }),
   delete: protectedProcedure
     .input(z.string())
@@ -61,37 +63,39 @@ export const subscribeToMeRouter = router({
       }
 
       await db
-        .delete(subscribeToMeTable)
+        .delete(subscriptionPlanTable)
         .where(
           and(
-            eq(subscribeToMeTable.id, input),
-            eq(subscribeToMeTable.userId, user.id),
+            eq(subscriptionPlanTable.id, input),
+            eq(subscriptionPlanTable.userId, user.id),
           ),
         );
     }),
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const { db } = ctx;
 
-    const subscribeToMeLink = await db.query.subscribeToMeTable.findFirst({
-      where: eq(subscribeToMeTable.id, input),
-      with: {
-        user: {
-          columns: {
-            name: true,
-            email: true,
-            id: true,
+    const subscriptionPlanLink = await db.query.subscriptionPlanTable.findFirst(
+      {
+        where: eq(subscriptionPlanTable.id, input),
+        with: {
+          user: {
+            columns: {
+              name: true,
+              email: true,
+              id: true,
+            },
           },
         },
       },
-    });
+    );
 
-    if (!subscribeToMeLink) {
+    if (!subscriptionPlanLink) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Subscribe to me link not found",
+        message: "Subscription plan link not found",
       });
     }
 
-    return subscribeToMeLink;
+    return subscriptionPlanLink;
   }),
 });

@@ -277,7 +277,7 @@ export const invoiceMeTable = createTable("invoice_me", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const subscribeToMeTable = createTable("subscribe_to_me", {
+export const subscriptionPlanTable = createTable("subscribe_to_me", {
   id: text().primaryKey().notNull(),
   label: text().notNull(),
   userId: text()
@@ -321,9 +321,9 @@ export const recurringPaymentRelation = relations(
       fields: [recurringPaymentTable.userId],
       references: [userTable.id],
     }),
-    subscription: one(subscribeToMeTable, {
+    subscription: one(subscriptionPlanTable, {
       fields: [recurringPaymentTable.subscriptionId],
-      references: [subscribeToMeTable.id],
+      references: [subscriptionPlanTable.id],
     }),
   }),
 );
@@ -342,11 +342,11 @@ export const invoiceMeRelations = relations(invoiceMeTable, ({ one }) => ({
   }),
 }));
 
-export const subscribeToMeRelations = relations(
-  subscribeToMeTable,
+export const subscriptionPlanRelations = relations(
+  subscriptionPlanTable,
   ({ one }) => ({
     user: one(userTable, {
-      fields: [subscribeToMeTable.userId],
+      fields: [subscriptionPlanTable.userId],
       references: [userTable.id],
     }),
   }),
@@ -381,7 +381,7 @@ export type Request = InferSelectModel<typeof requestTable>;
 export type User = InferSelectModel<typeof userTable>;
 export type Session = InferSelectModel<typeof sessionTable>;
 export type InvoiceMe = InferSelectModel<typeof invoiceMeTable>;
-export type SubscribeToMe = InferSelectModel<typeof subscribeToMeTable>;
+export type SubscriptionPlan = InferSelectModel<typeof subscriptionPlanTable>;
 export type PaymentDetails = InferSelectModel<typeof paymentDetailsTable>;
 export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable

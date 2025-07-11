@@ -1,24 +1,24 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { SubscribeToMeLinks } from "@/components/subscribe-to-me/subscribe-to-me-links";
+import { SubscriptionPlans } from "@/components/subscription-plans/subscription-plans";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 
-export default async function SubscribeToMePage() {
+export default async function SubscriptionPlansPage() {
   const { user } = await getCurrentSession();
 
   if (!user) {
     redirect("/");
   }
 
-  const subscribeToMeLinks = await api.subscribeToMe.getAll.query();
+  const subscriptionPlans = await api.subscriptionPlan.getAll.query();
 
   return (
     <>
       <Header />
       <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-        <SubscribeToMeLinks initialSubscribeToMeLinks={subscribeToMeLinks} />
+        <SubscriptionPlans initialSubscriptionPlans={subscriptionPlans} />
       </main>
       <Footer />
     </>

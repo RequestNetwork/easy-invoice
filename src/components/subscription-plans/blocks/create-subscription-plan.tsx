@@ -28,7 +28,7 @@ import {
   RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
-import { subscribeToMeApiSchema } from "@/lib/schemas/subscribe-to-me";
+import { subscriptionPlanApiSchema } from "@/lib/schemas/subscription-plan";
 import { RecurrenceFrequency } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,40 +38,40 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
-const subscriptionFormSchema = subscribeToMeApiSchema.omit({
+const subscriptionPlanFormSchema = subscriptionPlanApiSchema.omit({
   payee: true,
   chain: true,
 });
 
-type SubscriptionFormValues = z.infer<typeof subscriptionFormSchema>;
+type SubscriptionPlanFormValues = z.infer<typeof subscriptionPlanFormSchema>;
 
-interface CreateSubscriptionLinkProps {
+interface CreateSubscriptionPlanProps {
   onClose: () => void;
 }
 
-export function CreateSubscriptionLink({
+export function CreateSubscriptionPlan({
   onClose,
-}: CreateSubscriptionLinkProps) {
+}: CreateSubscriptionPlanProps) {
   const trpcContext = api.useUtils();
   const { address, isConnected } = useAppKitAccount();
   const { open } = useAppKit();
 
-  const { mutateAsync: createSubscriptionLink, isLoading } =
-    api.subscribeToMe.create.useMutation({
+  const { mutateAsync: createSubscriptionPlan, isLoading } =
+    api.subscriptionPlan.create.useMutation({
       onSuccess: () => {
-        toast.success("Subscription template created successfully!");
-        trpcContext.subscribeToMe.getAll.invalidate();
+        toast.success("Subscription plan created successfully!");
+        trpcContext.subscriptionPlan.getAll.invalidate();
         onClose();
       },
-      onError: (error) => {
-        toast.error("Failed to create subscription template", {
+      onError: (error: any) => {
+        toast.error("Failed to create subscription plan", {
           description: error.message,
         });
       },
     });
 
-  const form = useForm<SubscriptionFormValues>({
-    resolver: zodResolver(subscriptionFormSchema),
+  const form = useForm<SubscriptionPlanFormValues>({
+    resolver: zodResolver(subscriptionPlanFormSchema),
     defaultValues: {
       label: "",
       frequency: "MONTHLY",
@@ -81,13 +81,13 @@ export function CreateSubscriptionLink({
     },
   });
 
-  const onSubmit = async (data: SubscriptionFormValues) => {
+  const onSubmit = async (data: SubscriptionPlanFormValues) => {
     if (!isConnected || !address) {
       toast.error("Please connect your wallet first");
       return;
     }
 
-    await createSubscriptionLink({
+    await createSubscriptionPlan({
       ...data,
       payee: address,
       chain: "sepolia",
@@ -100,20 +100,19 @@ export function CreateSubscriptionLink({
         className="sm:max-w-[600px]"
         onInteractOutside={(e) => {
           const target = e.target as Element;
-          // Check if the click target is part of the AppKit modal (custom element) and prevent closing this dialog
+          // Check if the click target is part of the AppKit modal (custom element)
           if (
             target.closest("w3m-modal") ||
             target.closest('[data-testid*="w3m"]') ||
             target.closest(".w3m-modal") ||
             target.tagName?.toLowerCase().startsWith("w3m-")
           ) {
-            e.stopPropagation();
             e.preventDefault();
           }
         }}
       >
         <DialogHeader>
-          <DialogTitle>Create New Subscription Template</DialogTitle>
+          <DialogTitle>Create New Subscription Plan</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -123,7 +122,7 @@ export function CreateSubscriptionLink({
               name="label"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Template Name</FormLabel>
+                  <FormLabel>Plan Name</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g. Monthly Update"
@@ -263,7 +262,7 @@ export function CreateSubscriptionLink({
                 ) : (
                   <>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create Template
+                    Create Plan
                   </>
                 )}
               </Button>

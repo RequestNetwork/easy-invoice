@@ -10,7 +10,7 @@ import {
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
 import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-payment";
-import type { SubscribeToMe } from "@/server/db/schema";
+import type { SubscriptionPlan } from "@/server/db/schema";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import {
   ArrowLeft,
@@ -25,15 +25,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface SubscribeToPreviewProps {
-  subscribeToMeLink: SubscribeToMe;
+interface SubscriptionPlanPreviewProps {
+  subscriptionPlan: SubscriptionPlan;
   recipientEmail: string;
 }
 
-export function SubscribeToPreview({
-  subscribeToMeLink,
+export function SubscriptionPlanPreview({
+  subscriptionPlan,
   recipientEmail,
-}: SubscribeToPreviewProps) {
+}: SubscriptionPlanPreviewProps) {
   const router = useRouter();
   const [isAppKitReady, setIsAppKitReady] = useState(false);
 
@@ -59,10 +59,8 @@ export function SubscribeToPreview({
   }, []);
 
   const totalAmount =
-    Number(subscribeToMeLink.amount) * subscribeToMeLink.totalNumberOfPayments;
-  const displayCurrency = formatCurrencyLabel(
-    subscribeToMeLink.paymentCurrency,
-  );
+    Number(subscriptionPlan.amount) * subscriptionPlan.totalNumberOfPayments;
+  const displayCurrency = formatCurrencyLabel(subscriptionPlan.paymentCurrency);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -77,15 +75,15 @@ export function SubscribeToPreview({
     const startDate = new Date();
 
     const recurringPaymentBody = {
-      payee: subscribeToMeLink.recipient,
-      amount: Number(subscribeToMeLink.amount),
-      invoiceCurrency: subscribeToMeLink.paymentCurrency as PayoutCurrency,
-      paymentCurrency: subscribeToMeLink.paymentCurrency,
+      payee: subscriptionPlan.recipient,
+      amount: Number(subscriptionPlan.amount),
+      invoiceCurrency: subscriptionPlan.paymentCurrency as PayoutCurrency,
+      paymentCurrency: subscriptionPlan.paymentCurrency,
       recurrence: {
         payer: address,
-        totalPayments: subscribeToMeLink.totalNumberOfPayments,
+        totalPayments: subscriptionPlan.totalNumberOfPayments,
         startDate,
-        frequency: subscribeToMeLink.recurrenceFrequency,
+        frequency: subscriptionPlan.recurrenceFrequency,
       },
     };
 
@@ -104,7 +102,7 @@ export function SubscribeToPreview({
           <ArrowLeft className="h-6 w-6" />
         </Link>
         <h1 className="text-4xl font-bold tracking-tight">
-          Subscribe to {subscribeToMeLink.label}
+          Subscribe to {subscriptionPlan.label}
         </h1>
       </div>
 
@@ -122,7 +120,7 @@ export function SubscribeToPreview({
               <div>
                 <p className="text-sm text-zinc-600 mb-1">Amount Per Payment</p>
                 <p className="text-2xl font-bold">
-                  {displayCurrency} {subscribeToMeLink.amount}
+                  {displayCurrency} {subscriptionPlan.amount}
                 </p>
               </div>
 
@@ -130,13 +128,13 @@ export function SubscribeToPreview({
                 <div>
                   <p className="text-sm text-zinc-600 mb-1">Frequency</p>
                   <p className="font-semibold">
-                    {subscribeToMeLink.recurrenceFrequency}
+                    {subscriptionPlan.recurrenceFrequency}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-zinc-600 mb-1">Total Payments</p>
                   <p className="font-semibold">
-                    {subscribeToMeLink.totalNumberOfPayments}
+                    {subscriptionPlan.totalNumberOfPayments}
                   </p>
                 </div>
               </div>
@@ -177,7 +175,7 @@ export function SubscribeToPreview({
                 <div className="relative">
                   <Input
                     id="recipientAddress"
-                    value={subscribeToMeLink.recipient}
+                    value={subscriptionPlan.recipient}
                     placeholder="0x..."
                     className="font-mono text-sm"
                     disabled
@@ -189,7 +187,7 @@ export function SubscribeToPreview({
                     size="sm"
                     className="absolute right-1 top-1 h-6 w-6 p-0"
                     onClick={() =>
-                      copyToClipboard(subscribeToMeLink.recipient, "Address")
+                      copyToClipboard(subscriptionPlan.recipient, "Address")
                     }
                   >
                     <Copy className="h-3 w-3" />

@@ -4,7 +4,7 @@ import { paymentApiSchema } from "./payment";
 
 const recurrenceFields = paymentApiSchema.shape.recurrence.unwrap().shape;
 
-export const subscribeToMeApiSchema = z.object({
+export const subscriptionPlanApiSchema = z.object({
   label: z.string().min(1, "Label is required"),
   amount: z.number().gt(0, "Amount must be greater than 0"),
   payee: z

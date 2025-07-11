@@ -48,10 +48,10 @@ export function Header({ user }: { user?: User | undefined }) {
                 Invoice Me
               </Link>
               <Link
-                href="/subscribe-to-me"
+                href="/subscription-plans"
                 className="text-zinc-900 hover:text-zinc-600 transition-colors"
               >
-                Subscribe to me
+                Subscription Plans
               </Link>
               <Link
                 href="/crypto-to-fiat"

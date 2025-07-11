@@ -13,50 +13,45 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { SubscribeToMe } from "@/server/db/schema";
+import { formatCurrencyLabel } from "@/lib/constants/currencies";
+import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { Copy, ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-interface SubscribeToMeLinkProps {
-  link: SubscribeToMe;
+interface SubscriptionPlanLinkProps {
+  plan: SubscriptionPlan;
 }
 
-export function SubscribeToMeLink({ link }: SubscribeToMeLinkProps) {
+export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const trpcContext = api.useUtils();
-  const { mutateAsync: deleteSubscribeToMeLink } =
-    api.subscribeToMe.delete.useMutation({
+  const { mutateAsync: deleteSubscriptionPlan } =
+    api.subscriptionPlan.delete.useMutation({
       onSuccess: () => {
-        trpcContext.subscribeToMe.getAll.invalidate();
+        trpcContext.subscriptionPlan.getAll.invalidate();
       },
     });
 
-  const linkUrl = `${origin}/s/${link.id}`;
+  const linkUrl = `${origin}/s/${plan.id}`;
 
   const copyLink = (url: string) => {
     navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard");
   };
 
-  // Format currency (remove -sepolia suffix for display)
-  const displayCurrency = link.paymentCurrency
-    .replace("-sepolia", "")
-    .toUpperCase();
+  const displayCurrency = formatCurrencyLabel(plan.paymentCurrency);
 
   return (
     <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-2 flex-1 min-w-0">
-            <h3 className="font-bold text-zinc-900">{link.label}</h3>
+            <h3 className="font-bold text-zinc-900">{plan.label}</h3>
             <p className="text-sm text-zinc-600">
-              {link.amount} {displayCurrency} · {link.recurrenceFrequency}
+              {plan.amount} {displayCurrency} · {plan.recurrenceFrequency}
             </p>
-            <code className="text-xs text-zinc-600 bg-zinc-50 px-3 py-1.5 rounded-md truncate flex-1">
-              {linkUrl}
-            </code>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button
@@ -85,19 +80,17 @@ export function SubscribeToMeLink({ link }: SubscribeToMeLinkProps) {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-red-50"
-                  title="Delete template"
+                  title="Delete subscription plan"
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Delete Subscription Template
-                  </AlertDialogTitle>
+                  <AlertDialogTitle>Delete Subscription Plan</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this subscription template?
-                    This action cannot be undone.
+                    Are you sure you want to delete this subscription plan? This
+                    action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -105,11 +98,11 @@ export function SubscribeToMeLink({ link }: SubscribeToMeLinkProps) {
                   <AlertDialogAction
                     onClick={async () => {
                       try {
-                        await deleteSubscribeToMeLink(link.id);
-                        toast.success("Subscription template deleted");
+                        await deleteSubscriptionPlan(plan.id);
+                        toast.success("Subscription plan deleted");
                       } catch (error) {
                         console.error(error);
-                        toast.error("Failed to delete subscription template", {
+                        toast.error("Failed to delete subscription plan", {
                           description:
                             "Please try again later or contact support if the problem persists.",
                         });

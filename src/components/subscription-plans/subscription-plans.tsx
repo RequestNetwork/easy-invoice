@@ -1,27 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import type { SubscribeToMe } from "@/server/db/schema";
+import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { CreateSubscriptionLink } from "./blocks/create-subscription-link";
-import { SubscribeToMeLink } from "./blocks/subscribe-to-me-link";
+import { CreateSubscriptionPlan } from "./blocks/create-subscription-plan";
+import { SubscriptionPlanLink } from "./blocks/subscription-plan-link";
 
-interface SubscribeToMeLinksProps {
-  initialSubscribeToMeLinks: SubscribeToMe[];
+interface SubscriptionPlansProps {
+  initialSubscriptionPlans: SubscriptionPlan[];
 }
 
-export function SubscribeToMeLinks({
-  initialSubscribeToMeLinks,
-}: SubscribeToMeLinksProps) {
+export function SubscriptionPlans({
+  initialSubscriptionPlans,
+}: SubscriptionPlansProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { data: subscribeToMeLinks } = api.subscribeToMe.getAll.useQuery(
+  const { data: subscriptionPlans } = api.subscriptionPlan.getAll.useQuery(
     undefined,
     {
-      initialData: initialSubscribeToMeLinks,
+      initialData: initialSubscriptionPlans,
       refetchOnMount: true,
     },
   );
@@ -36,23 +36,25 @@ export function SubscribeToMeLinks({
           >
             <ArrowLeft className="h-6 w-6" />
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">Subscribe to me</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Subscription Plans
+          </h1>
         </div>
         <Button
           onClick={() => setIsCreateModalOpen(true)}
           className="bg-black text-white hover:bg-zinc-800 rounded-md px-4 py-2 text-sm font-medium"
         >
-          + New Template
+          + New Plan
         </Button>
       </div>
 
       <div className="space-y-4">
-        {subscribeToMeLinks.map((link) => (
-          <SubscribeToMeLink key={link.id} link={link} />
+        {subscriptionPlans.map((plan) => (
+          <SubscriptionPlanLink key={plan.id} plan={plan} />
         ))}
       </div>
       {isCreateModalOpen && (
-        <CreateSubscriptionLink onClose={() => setIsCreateModalOpen(false)} />
+        <CreateSubscriptionPlan onClose={() => setIsCreateModalOpen(false)} />
       )}
     </main>
   );
