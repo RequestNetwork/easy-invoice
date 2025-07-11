@@ -24,6 +24,10 @@ export const createRecurringPaymentSchema = basePaymentSchema
       .string()
       .min(1, "External payment ID is required")
       .describe("The external payment system ID"),
+    subscriptionId: z
+      .string()
+      .optional()
+      .describe("Optional subscription ID for linking to a subscription plan"),
   });
 
 export type CreateRecurringPaymentValues = z.infer<

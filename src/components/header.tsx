@@ -48,6 +48,12 @@ export function Header({ user }: { user?: User | undefined }) {
                 Invoice Me
               </Link>
               <Link
+                href="/subscription-plans"
+                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+              >
+                Subscription Plans
+              </Link>
+              <Link
                 href="/crypto-to-fiat"
                 className="text-zinc-900 hover:text-zinc-600 transition-colors"
               >

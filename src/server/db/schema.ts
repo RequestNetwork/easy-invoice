@@ -219,7 +219,7 @@ export const recurringPaymentTable = createTable("recurring_payment", {
   id: text().primaryKey().notNull(),
   externalPaymentId: text().notNull(),
   status: recurringPaymentStatusEnum("status").default("pending").notNull(),
-  totalAmountPerMonth: text().notNull(),
+  totalAmount: text().notNull(),
   paymentCurrency: text().notNull(),
   chain: text().notNull(),
   totalNumberOfPayments: integer(),
@@ -230,6 +230,7 @@ export const recurringPaymentTable = createTable("recurring_payment", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
+  subscriptionId: text(),
   recurrence: json()
     .$type<{
       startDate: Date;
@@ -276,6 +277,23 @@ export const invoiceMeTable = createTable("invoice_me", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const subscriptionPlanTable = createTable("subscribe_to_me", {
+  id: text().primaryKey().notNull(),
+  label: text().notNull(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  paymentCurrency: text().notNull(),
+  chain: text().notNull(),
+  totalNumberOfPayments: integer().notNull(),
+  recurrenceFrequency: frequencyEnum("frequency").notNull(),
+  amount: text().notNull(),
+  recipient: text().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relationships
 
 export const userRelations = relations(userTable, ({ many }) => ({
@@ -296,6 +314,20 @@ export const requestRelations = relations(requestTable, ({ one }) => ({
   }),
 }));
 
+export const recurringPaymentRelation = relations(
+  recurringPaymentTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [recurringPaymentTable.userId],
+      references: [userTable.id],
+    }),
+    subscription: one(subscriptionPlanTable, {
+      fields: [recurringPaymentTable.subscriptionId],
+      references: [subscriptionPlanTable.id],
+    }),
+  }),
+);
+
 export const sessionRelations = relations(sessionTable, ({ one }) => ({
   user: one(userTable, {
     fields: [sessionTable.userId],
@@ -309,6 +341,16 @@ export const invoiceMeRelations = relations(invoiceMeTable, ({ one }) => ({
     references: [userTable.id],
   }),
 }));
+
+export const subscriptionPlanRelations = relations(
+  subscriptionPlanTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [subscriptionPlanTable.userId],
+      references: [userTable.id],
+    }),
+  }),
+);
 
 export const paymentDetailsRelations = relations(
   paymentDetailsTable,
@@ -339,6 +381,7 @@ export type Request = InferSelectModel<typeof requestTable>;
 export type User = InferSelectModel<typeof userTable>;
 export type Session = InferSelectModel<typeof sessionTable>;
 export type InvoiceMe = InferSelectModel<typeof invoiceMeTable>;
+export type SubscriptionPlan = InferSelectModel<typeof subscriptionPlanTable>;
 export type PaymentDetails = InferSelectModel<typeof paymentDetailsTable>;
 export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable

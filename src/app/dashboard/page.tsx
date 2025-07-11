@@ -3,7 +3,6 @@ import { DashboardView } from "@/components/dashboard-view";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { getCurrentSession } from "@/server/auth";
-import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -20,8 +19,6 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
-  const invoices = await api.invoice.getAll.query();
-
   return (
     <BackgroundWrapper
       topGradient={{ from: "orange-100", to: "orange-200" }}
@@ -29,7 +26,7 @@ export default async function DashboardPage() {
     >
       <Header user={user} />
       <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-        <DashboardView invoices={invoices} />
+        <DashboardView />
       </main>
       <Footer />
     </BackgroundWrapper>
