@@ -29,7 +29,7 @@ const getCanCancelPayment = (status: string) => {
 const ITEMS_PER_PAGE = 10;
 
 interface ViewRecurringPaymentsProps {
-  initialRecurringPayments?: RecurringPayment[];
+  initialRecurringPayments: RecurringPayment[];
 }
 
 export function ViewRecurringPayments({
@@ -104,20 +104,14 @@ export function ViewRecurringPayments({
         for (let i = 0; i < transactions.length; i++) {
           const transaction = transactions[i];
 
-          toast.info(
-            `Processing transaction ${i + 1} of ${transactions.length}`,
-            {
-              description: "Please confirm the transaction in your wallet",
-            },
-          );
-
-          const txResponse = await signer.sendTransaction(transaction);
-          await txResponse.wait();
-
-          toast.success(`Transaction ${i + 1} completed`);
+          try {
+            const txResponse = await signer.sendTransaction(transaction);
+            await txResponse.wait();
+          } catch (txError) {
+            // the transaction are just for reducing the spending cap, the payment was still cancelled in the backend
+            console.error("Transaction error:", txError);
+          }
         }
-
-        toast.success("All transactions completed successfully");
       }
 
       await setRecurringPaymentStatusMutation.mutateAsync({
@@ -236,7 +230,7 @@ export function ViewRecurringPayments({
                 <TableHead>Start Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Frequency</TableHead>
-                <TableHead>Total amount</TableHead>
+                <TableHead>Payment amount</TableHead>
                 <TableHead>Total Payments</TableHead>
                 <TableHead>Current Payments</TableHead>
                 <TableHead>Chain</TableHead>
@@ -254,7 +248,11 @@ export function ViewRecurringPayments({
                   <TableRow key={payment.id}>
                     <TableCell>
                       {payment.recurrence?.startDate
-                        ? formatDate(payment.recurrence.startDate.toString())
+                        ? formatDate(
+                            new Date(
+                              payment.recurrence.startDate,
+                            ).toISOString(),
+                          )
                         : "N/A"}
                     </TableCell>
                     <TableCell>

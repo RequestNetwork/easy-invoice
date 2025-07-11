@@ -256,7 +256,7 @@ export function CreateRecurringPaymentForm() {
                       max="256"
                       value={field.value}
                       onChange={(e) =>
-                        field.onChange(Number.parseFloat(e.target.value))
+                        field.onChange(e.target.valueAsNumber || 0)
                       }
                       disabled={isProcessing}
                     />
@@ -285,7 +285,9 @@ export function CreateRecurringPaymentForm() {
                       step="any"
                       min="0"
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) =>
+                        field.onChange(e.target.valueAsNumber || 0)
+                      }
                       disabled={isProcessing}
                     />
                   </FormControl>
