@@ -1,9 +1,9 @@
 // @/src/server/context.ts
-import * as trpc from "@trpc/server";
-import * as trpcNext from "@trpc/server/adapters/next";
+import type * as trpc from "@trpc/server";
+import type * as trpcNext from "@trpc/server/adapters/next";
 
-import { db } from "./db";
 import { getCurrentSession } from "./auth";
+import { db } from "./db";
 
 export async function createContext(ctx: trpcNext.CreateNextContextOptions) {
   const { req, res } = ctx;

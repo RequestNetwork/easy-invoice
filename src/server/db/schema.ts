@@ -4,6 +4,7 @@ import { type InferSelectModel, relations } from "drizzle-orm";
 import {
   boolean,
   customType,
+  integer,
   json,
   pgEnum,
   pgTableCreator,
@@ -54,6 +55,33 @@ export const requestStatusEnum = pgEnum("request_status", [
   "processing",
   "overdue",
 ]);
+
+export const RecurrenceFrequency = [
+  "DAILY",
+  "WEEKLY",
+  "MONTHLY",
+  "YEARLY",
+] as const;
+
+export const frequencyEnum = pgEnum("frequency_enum", RecurrenceFrequency);
+
+export type RecurrenceFrequencyType = (typeof RecurrenceFrequency)[number];
+
+export const RecurringPaymentStatus = [
+  "pending",
+  "active",
+  "paused",
+  "completed",
+  "cancelled",
+] as const;
+
+export const recurringPaymentStatusEnum = pgEnum(
+  "recurring_payment_status",
+  RecurringPaymentStatus,
+);
+
+export type RecurringPaymentStatusType =
+  (typeof RecurringPaymentStatus)[number];
 
 // biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
@@ -187,6 +215,43 @@ export const requestTable = createTable("request", {
   }),
 });
 
+export const recurringPaymentTable = createTable("recurring_payment", {
+  id: text().primaryKey().notNull(),
+  externalPaymentId: text().notNull(),
+  status: recurringPaymentStatusEnum("status").default("pending").notNull(),
+  totalAmount: text().notNull(),
+  paymentCurrency: text().notNull(),
+  chain: text().notNull(),
+  totalNumberOfPayments: integer(),
+  currentNumberOfPayments: integer().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  recurrence: json()
+    .$type<{
+      startDate: Date;
+      frequency: RecurrenceFrequencyType;
+    }>()
+    .notNull(),
+  recipient: json()
+    .$type<{
+      amount: string;
+      address: string;
+    }>()
+    .notNull(),
+  payments:
+    json().$type<
+      Array<{
+        date: string;
+        txHash: string;
+        requestScanUrl?: string;
+      }>
+    >(),
+});
+
 export const sessionTable = createTable("session", {
   id: text().primaryKey().notNull(),
   userId: text()
@@ -278,3 +343,4 @@ export type PaymentDetails = InferSelectModel<typeof paymentDetailsTable>;
 export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable
 >;
+export type RecurringPayment = InferSelectModel<typeof recurringPaymentTable>;

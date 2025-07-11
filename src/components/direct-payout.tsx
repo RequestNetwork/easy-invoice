@@ -44,11 +44,16 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
-import {
-  type PaymentFormValues,
-  paymentFormSchema,
-} from "@/lib/schemas/payment";
+import { paymentApiSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
+import type { z } from "zod";
+import { PaymentSecuredUsingRequest } from "./payment-secured-using-request";
+
+export const directPaymentFormSchema = paymentApiSchema.omit({
+  recurrence: true,
+});
+
+export type DirectPaymentFormValues = z.infer<typeof directPaymentFormSchema>;
 
 export function DirectPayment() {
   const { mutateAsync: pay } = api.payment.pay.useMutation();
@@ -59,8 +64,8 @@ export function DirectPayment() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
 
-  const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentFormSchema),
+  const form = useForm<DirectPaymentFormValues>({
+    resolver: zodResolver(directPaymentFormSchema),
     defaultValues: {
       payee: "",
       amount: 0,
@@ -107,7 +112,7 @@ export function DirectPayment() {
     }
   };
 
-  const onSubmit = async (data: PaymentFormValues) => {
+  const onSubmit = async (data: DirectPaymentFormValues) => {
     if (!isConnected) {
       toast.error("Please connect your wallet first");
       return;
@@ -183,7 +188,7 @@ export function DirectPayment() {
   };
 
   return (
-    <div className="flex justify-center mx-auto w-full max-w-2xl">
+    <div className="flex justify-center mx-auto w-full">
       <Card className="w-full shadow-lg border-zinc-200/80">
         <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
           <CardTitle className="flex items-center gap-2">
@@ -372,19 +377,7 @@ export function DirectPayment() {
                       )}
                     </div>
                   </div>
-
-                  {/* Security notice */}
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-4">
-                    <h3 className="font-semibold text-green-800 mb-1 text-sm">
-                      Secure Transaction
-                    </h3>
-                    <p className="text-xs text-green-700">
-                      This payment is secured using Request Network. Your
-                      transaction will be processed safely and transparently on
-                      the blockchain.
-                    </p>
-                  </div>
-
+                  <PaymentSecuredUsingRequest />
                   <CardFooter className="flex justify-between items-center pt-2 pb-0 px-0">
                     <button
                       type="button"
