@@ -1,6 +1,6 @@
 import { subscriptionPlanApiSchema } from "@/lib/schemas/subscription-plan";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { recurringPaymentTable, subscriptionPlanTable } from "../db/schema";
@@ -140,4 +140,32 @@ export const subscriptionPlanRouter = router({
 
       return subscribers;
     }),
+  getUserActiveSubscriptions: protectedProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+
+    if (!user) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to view your subscriptions",
+      });
+    }
+
+    const userSubscriptions = await db.query.recurringPaymentTable.findMany({
+      where: and(
+        eq(recurringPaymentTable.userId, user.id),
+        isNotNull(recurringPaymentTable.subscriptionId),
+      ),
+      orderBy: desc(recurringPaymentTable.createdAt),
+      with: {
+        subscription: {
+          columns: {
+            id: true,
+            label: true,
+          },
+        },
+      },
+    });
+
+    return userSubscriptions;
+  }),
 });

@@ -15,17 +15,10 @@ import { CreditCard, Loader2, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { InvoiceTable } from "./invoice-table";
+import { InvoiceTabs } from "./invoice-tabs/invoice-tabs";
 import { Button } from "./ui/button";
 
-interface DashboardViewProps {
-  invoices: {
-    issuedByMe: { invoices: Request[]; total: number; outstanding: number };
-    issuedToMe: { invoices: Request[]; total: number; outstanding: number };
-  };
-}
-
-export function DashboardView({ invoices }: DashboardViewProps) {
+export function DashboardView() {
   const { mutateAsync: batchPay } = api.payment.batchPay.useMutation();
 
   const [selectedInvoices, setSelectedInvoices] = useState<Request[]>([]);
@@ -147,8 +140,7 @@ export function DashboardView({ invoices }: DashboardViewProps) {
           </Link>
         </div>
       </div>
-      <InvoiceTable
-        initialInvoices={invoices}
+      <InvoiceTabs
         setSelectedInvoices={setSelectedInvoices}
         selectedInvoices={selectedInvoices}
         lastSelectedNetwork={lastSelectedNetwork}
