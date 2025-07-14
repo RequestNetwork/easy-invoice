@@ -12,13 +12,6 @@ export const subscriptionPlanRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
 
-      if (!user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You must be logged in to create an invoice me link",
-        });
-      }
-
       await db.insert(subscriptionPlanTable).values({
         id: ulid(),
         label: input.label,
@@ -34,13 +27,6 @@ export const subscriptionPlanRouter = router({
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
 
-    if (!user) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to get your subscribe to me links",
-      });
-    }
-
     const subscriptionPlanLinks = await db.query.subscriptionPlanTable.findMany(
       {
         where: eq(subscriptionPlanTable.userId, user.id),
@@ -54,13 +40,6 @@ export const subscriptionPlanRouter = router({
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
-
-      if (!user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You must be logged in to delete an invoice me link",
-        });
-      }
 
       await db
         .delete(subscriptionPlanTable)
@@ -103,13 +82,6 @@ export const subscriptionPlanRouter = router({
     .query(async ({ ctx, input }) => {
       const { db, user } = ctx;
 
-      if (!user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You must be logged in to view subscribers",
-        });
-      }
-
       const subscriptionPlan = await db.query.subscriptionPlanTable.findFirst({
         where: and(
           eq(subscriptionPlanTable.id, input),
@@ -142,13 +114,6 @@ export const subscriptionPlanRouter = router({
     }),
   getUserActiveSubscriptions: protectedProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
-
-    if (!user) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to view your subscriptions",
-      });
-    }
 
     const userSubscriptions = await db.query.recurringPaymentTable.findMany({
       where: and(

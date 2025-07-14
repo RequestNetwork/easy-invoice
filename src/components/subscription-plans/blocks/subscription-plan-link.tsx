@@ -61,8 +61,15 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
   const linkUrl = `${origin}/s/${plan.id}`;
 
   const copyLink = (url: string) => {
-    navigator.clipboard.writeText(url);
-    toast.success("Link copied to clipboard");
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success("Link copied to clipboard");
+      })
+      .catch((err) => {
+        console.error("Failed to copy to clipboard:", err);
+        toast.error("Failed to copy link");
+      });
   };
 
   const displayCurrency = formatCurrencyLabel(plan.paymentCurrency);

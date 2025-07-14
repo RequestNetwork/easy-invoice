@@ -230,7 +230,9 @@ export const recurringPaymentTable = createTable("recurring_payment", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
-  subscriptionId: text(),
+  subscriptionId: text().references(() => subscriptionPlanTable.id, {
+    onDelete: "set null",
+  }),
   recurrence: json()
     .$type<{
       startDate: Date;
@@ -344,11 +346,12 @@ export const invoiceMeRelations = relations(invoiceMeTable, ({ one }) => ({
 
 export const subscriptionPlanRelations = relations(
   subscriptionPlanTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
     user: one(userTable, {
       fields: [subscriptionPlanTable.userId],
       references: [userTable.id],
     }),
+    recurringPayments: many(recurringPaymentTable),
   }),
 );
 

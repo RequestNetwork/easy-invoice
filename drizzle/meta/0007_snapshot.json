@@ -1,5 +1,5 @@
 {
-  "id": "76301cf5-f107-4a68-8dab-a08e4035a660",
+  "id": "337f651b-5cfe-46dd-bb07-6118a3b39e0f",
   "prevId": "107677a1-447e-413e-8148-f9ed6f89e6fc",
   "version": "7",
   "dialect": "postgresql",
@@ -460,6 +460,15 @@
           "columnsFrom": ["userId"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "easyinvoice_recurring_payment_subscriptionId_easyinvoice_subscription_plans_id_fk": {
+          "name": "easyinvoice_recurring_payment_subscriptionId_easyinvoice_subscription_plans_id_fk",
+          "tableFrom": "easyinvoice_recurring_payment",
+          "tableTo": "easyinvoice_subscription_plans",
+          "columnsFrom": ["subscriptionId"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

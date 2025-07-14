@@ -57,7 +57,7 @@ const SubscriptionRow = ({
     useCancelRecurringPayment({
       confirmMessage: "Are you sure you want to cancel this subscription?",
       onSuccess: async () => {
-        await utils.subscriptionPlan.getAll.invalidate;
+        await utils.subscriptionPlan.getAll.invalidate();
       },
     });
 

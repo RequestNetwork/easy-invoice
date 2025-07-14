@@ -17,3 +17,9 @@ DO $$ BEGIN
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "easyinvoice_recurring_payment" ADD CONSTRAINT "easyinvoice_recurring_payment_subscriptionId_easyinvoice_subscription_plans_id_fk" FOREIGN KEY ("subscriptionId") REFERENCES "public"."easyinvoice_subscription_plans"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;

@@ -16,7 +16,7 @@ export default async function SubscriptionPlansPage() {
 
   return (
     <>
-      <Header />
+      <Header user={user} />
       <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
         <SubscriptionPlans initialSubscriptionPlans={subscriptionPlans} />
       </main>

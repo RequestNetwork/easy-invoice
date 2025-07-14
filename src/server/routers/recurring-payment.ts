@@ -23,10 +23,7 @@ type UpdateRecurringPaymentResponse = {
 export const recurringPaymentRouter = router({
   getRecurringPayments: protectedProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
-    // Probably not happening, but let's make TS happy
-    if (!user || !user.id) {
-      throw new Error("User not authenticated");
-    }
+
     const recurringPayments = await db.query.recurringPaymentTable.findMany({
       where: and(eq(recurringPaymentTable.userId, user.id)),
       orderBy: desc(recurringPaymentTable.createdAt),
@@ -39,10 +36,6 @@ export const recurringPaymentRouter = router({
     .input(createRecurringPaymentSchema)
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
-
-      if (!user || !user.id) {
-        throw new Error("User not authenticated");
-      }
 
       const recurringPayment = await db
         .insert(recurringPaymentTable)
@@ -82,13 +75,6 @@ export const recurringPaymentRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
 
-      if (!user || !user.id) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "User not authenticated",
-        });
-      }
-
       const recurringPayment = await db.query.recurringPaymentTable.findFirst({
         where: and(
           eq(recurringPaymentTable.id, input.id),
@@ -119,13 +105,6 @@ export const recurringPaymentRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
-
-      if (!user || !user.id) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "User not authenticated",
-        });
-      }
 
       const recurringPayment = await db.query.recurringPaymentTable.findFirst({
         where: and(
