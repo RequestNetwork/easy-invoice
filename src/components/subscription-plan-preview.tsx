@@ -11,6 +11,7 @@ import {
 } from "@/lib/constants/currencies";
 import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-payment";
 import type { SubscriptionPlan } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import {
   ArrowLeft,
@@ -36,6 +37,11 @@ export function SubscriptionPlanPreview({
 }: SubscriptionPlanPreviewProps) {
   const router = useRouter();
   const [isAppKitReady, setIsAppKitReady] = useState(false);
+  const {
+    data: sessionData,
+    isLoading: isSessionLoading,
+    error: sessionError,
+  } = api.auth.getSessionInfo.useQuery();
 
   const { address, isConnected } = useAppKitAccount();
   const { open } = useAppKit();
@@ -58,6 +64,10 @@ export function SubscriptionPlanPreview({
     return () => clearTimeout(timer);
   }, []);
 
+  const canSubscribeToPlan =
+    !isSessionLoading &&
+    !sessionError &&
+    sessionData.session?.userId !== subscriptionPlan.userId;
   const totalAmount =
     Number(subscriptionPlan.amount) * subscriptionPlan.totalNumberOfPayments;
   const displayCurrency = formatCurrencyLabel(subscriptionPlan.paymentCurrency);
@@ -68,6 +78,11 @@ export function SubscriptionPlanPreview({
   };
 
   const handleStartSubscription = async () => {
+    if (!canSubscribeToPlan) {
+      toast.error("You cannot subscribe to your own plan");
+      return;
+    }
+
     if (!address || !isConnected) {
       toast.error("Please connect your wallet first");
       return;
@@ -217,7 +232,7 @@ export function SubscriptionPlanPreview({
                     </button>
                     <Button
                       onClick={handleStartSubscription}
-                      disabled={isProcessing}
+                      disabled={isProcessing || !canSubscribeToPlan}
                     >
                       {isProcessing ? (
                         <>

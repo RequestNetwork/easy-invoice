@@ -277,7 +277,7 @@ export const invoiceMeTable = createTable("invoice_me", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const subscriptionPlanTable = createTable("subscribe_to_me", {
+export const subscriptionPlanTable = createTable("subscription_plans", {
   id: text().primaryKey().notNull(),
   label: text().notNull(),
   userId: text()
