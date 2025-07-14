@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -23,13 +24,20 @@ import {
   RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
-import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-payment";
+import type { PaymentAPIValues } from "@/lib/schemas/payment";
 import { paymentApiSchema } from "@/lib/schemas/payment";
 import { RecurrenceFrequency } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import {
+  useAppKit,
+  useAppKitAccount,
+  useAppKitProvider,
+} from "@reown/appkit/react";
+import { ethers } from "ethers";
 import { CheckCircle, Loader2, LogOut, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -46,19 +54,22 @@ type RecurringPaymentFormValues = z.infer<typeof recurringPaymentFormSchema>;
 export function CreateRecurringPaymentForm() {
   const router = useRouter();
 
-  const { address } = useAppKitAccount();
-  const { open } = useAppKit();
+  const { mutateAsync: pay } = api.payment.pay.useMutation();
+  const { mutateAsync: submitRecurringSignature } =
+    api.payment.submitRecurringSignature.useMutation();
+  const { mutateAsync: createRecurringPayment } =
+    api.recurringPayment.createRecurringPayment.useMutation();
 
-  const { createRecurringPayment, paymentStatus } = useCreateRecurringPayment({
-    onSuccess: () => {
-      setTimeout(() => {
-        router.push("/payouts/recurring");
-      }, 3000);
-    },
-    onError: (error: unknown) => {
-      console.error("Recurring payment error:", error);
-    },
-  });
+  // Add payment status state
+  const [paymentStatus, setPaymentStatus] = useState<
+    "idle" | "processing" | "success" | "error"
+  >("idle");
+
+  const { address, isConnected } = useAppKitAccount();
+  const { open } = useAppKit();
+  const { walletProvider } = useAppKitProvider("eip155");
+
+  const isProcessing = paymentStatus === "processing";
 
   const form = useForm<RecurringPaymentFormValues>({
     resolver: zodResolver(recurringPaymentFormSchema),
@@ -73,30 +84,102 @@ export function CreateRecurringPaymentForm() {
   });
 
   const onSubmit = async (data: RecurringPaymentFormValues) => {
-    if (!address) {
+    if (!isConnected || !address) {
       toast.error("Please connect your wallet first");
       return;
     }
 
-    const recurringPaymentCurrency = data.invoiceCurrency;
+    if (!walletProvider) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
 
-    const recurringPaymentBody = {
-      payee: data.payee,
-      amount: data.amount,
-      invoiceCurrency: recurringPaymentCurrency,
-      paymentCurrency: recurringPaymentCurrency,
-      recurrence: {
-        payer: address,
-        totalPayments: data.totalPayments,
+    setPaymentStatus("processing");
+
+    try {
+      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
+      const recurringPaymentCurrency = data.invoiceCurrency;
+
+      const signer = ethersProvider.getSigner();
+
+      toast.info("Creating recurring payment...");
+
+      const recurringPaymentBody: PaymentAPIValues = {
+        payee: data.payee,
+        amount: data.amount,
+        invoiceCurrency: recurringPaymentCurrency,
+        paymentCurrency: recurringPaymentCurrency,
+        recurrence: {
+          payer: address,
+          totalPayments: data.totalPayments,
+          startDate: data.startDate,
+          frequency: data.frequency,
+        },
+      };
+
+      const paymentData = await pay(recurringPaymentBody);
+      const { id, transactions, recurringPaymentPermit } = paymentData;
+
+      await createRecurringPayment({
+        payee: data.payee,
+        amount: data.amount,
+        invoiceCurrency: recurringPaymentCurrency,
+        paymentCurrency: recurringPaymentCurrency,
         startDate: data.startDate,
         frequency: data.frequency,
-      },
-    };
+        totalPayments: data.totalPayments,
+        payer: address,
+        chain: "sepolia", // You can make this dynamic based on the connected network
+        externalPaymentId: id,
+      });
 
-    await createRecurringPayment(recurringPaymentBody);
+      if (transactions?.length) {
+        toast.info("Approval required", {
+          description: "Please approve the transaction in your wallet",
+        });
+
+        const approvalTransaction = await signer.sendTransaction(
+          transactions[0],
+        );
+        await approvalTransaction.wait();
+
+        toast.success("Approval completed");
+      }
+
+      toast.info("Signing permit", {
+        description: "Please sign the recurring payment permit in your wallet",
+      });
+
+      const typedData = recurringPaymentPermit;
+      const signature = await signer._signTypedData(
+        typedData.domain,
+        typedData.types,
+        typedData.values,
+      );
+
+      await submitRecurringSignature({
+        recurringPaymentId: id,
+        permitSignature: signature,
+      });
+
+      toast.success("Recurring payment created successfully!", {
+        description:
+          "Your recurring payment is now active and will execute on schedule",
+      });
+
+      setTimeout(() => {
+        setPaymentStatus("success");
+        router.push("/payouts/recurring");
+      }, 3000);
+    } catch (error) {
+      console.error("Recurring payment error:", error);
+      toast.error("Payment failed", {
+        description:
+          "There was an error processing your recurring payment. Please try again.",
+      });
+      setPaymentStatus("error");
+    }
   };
-
-  const isProcessing = paymentStatus === "processing";
 
   return (
     <Form {...form}>
@@ -173,7 +256,9 @@ export function CreateRecurringPaymentForm() {
                       min="2"
                       max="256"
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) =>
+                        field.onChange(e.target.valueAsNumber || 0)
+                      }
                       disabled={isProcessing}
                     />
                   </FormControl>
@@ -187,28 +272,26 @@ export function CreateRecurringPaymentForm() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="amount"
-                      type="number"
-                      placeholder="0.00"
-                      step="any"
-                      min="0"
-                      value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      disabled={isProcessing}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            {/*We use this directly since FormField doesn't have this option */}
+            <div>
+              <Label htmlFor="amount">Amount</Label>
+              <Input
+                id="amount"
+                type="number"
+                placeholder="0.00"
+                step="any"
+                min="0"
+                {...form.register("amount", {
+                  valueAsNumber: true,
+                })}
+                disabled={paymentStatus === "processing"}
+              />
+              {form.formState.errors.amount && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.amount.message}
+                </p>
               )}
-            />
+            </div>
             <FormField
               control={form.control}
               name="invoiceCurrency"

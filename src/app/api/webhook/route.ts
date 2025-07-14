@@ -63,9 +63,18 @@ async function addPaymentToRecurringPayment(
     const currentPayments = recurringPayment.payments || [];
     const updatedPayments = [...currentPayments, payment];
 
+    const isDuplicate = currentPayments.some(
+      (p) => p.txHash === payment.txHash,
+    );
+    if (isDuplicate) {
+      console.warn(`Duplicate payment detected for txHash: ${payment.txHash}`);
+      return;
+    }
+
     await tx
       .update(recurringPaymentTable)
       .set({
+        status: "active",
         payments: updatedPayments,
         currentNumberOfPayments: updatedPayments.length,
       })
@@ -109,9 +118,18 @@ export async function POST(req: Request) {
       case "payment.confirmed":
         // if this is defined, it's a payment that's part of a recurring payment
         if (body.recurringPayment?.id) {
+          if (!body.txHash) {
+            console.error(
+              `Missing txHash for recurring payment ${body.recurringPayment.id}`,
+            );
+            return NextResponse.json(
+              { error: "Missing transaction hash" },
+              { status: 400 },
+            );
+          }
           await addPaymentToRecurringPayment(body.recurringPayment.id, {
             date: body.timestamp,
-            txHash: body.txHash || "",
+            txHash: body.txHash,
             requestScanUrl: body.explorer,
           });
         } else {
