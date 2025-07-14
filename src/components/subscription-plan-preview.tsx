@@ -49,7 +49,7 @@ export function SubscriptionPlanPreview({
   const { createRecurringPayment, paymentStatus } = useCreateRecurringPayment({
     onSuccess: () => {
       setTimeout(() => {
-        router.push("/payouts/recurring");
+        router.push("/dashboard/subscriptions");
       }, 3000);
     },
     onError: (error) => {

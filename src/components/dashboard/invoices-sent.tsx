@@ -44,7 +44,6 @@ export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
 
   const { data: invoices } = api.invoice.getAllIssuedByMe.useQuery(undefined, {
     initialData: initialSentInvoices,
-    refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
     refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,

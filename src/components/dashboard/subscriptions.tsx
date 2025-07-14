@@ -36,7 +36,9 @@ const SubscriptionTableColumns = () => (
   </TableRow>
 );
 
-const SubscriptionRow = ({ subscription }: { subscription: any }) => {
+const SubscriptionRow = ({
+  subscription,
+}: { subscription: SubscriptionWithDetails }) => {
   return (
     <TableRow className="hover:bg-zinc-50/50">
       <TableCell>
@@ -48,21 +50,18 @@ const SubscriptionRow = ({ subscription }: { subscription: any }) => {
         {subscription.subscription?.label || "Unnamed Plan"}
       </TableCell>
       <TableCell>
-        <FrequencyBadge
-          frequency={subscription.subscription?.recurrenceFrequency}
-        />
+        <FrequencyBadge frequency={subscription.recurrence.frequency} />
       </TableCell>
       <TableCell>
-        {formatCurrencyLabel(subscription.subscription?.paymentCurrency || "")}
+        {formatCurrencyLabel(subscription.paymentCurrency || "")}
       </TableCell>
-      <TableCell>{subscription.subscription?.chain || "N/A"}</TableCell>
+      <TableCell>{subscription.chain || "N/A"}</TableCell>
       <TableCell>
         <div className="space-y-1">
-          <ShortAddress address={subscription.subscription?.recipient || ""} />
+          <ShortAddress address={subscription.recipient.address || ""} />
           <div className="text-sm">
-            {subscription.subscription?.amount
-              ? `${Number(subscription.subscription.amount).toLocaleString()} ${subscription.subscription.paymentCurrency}`
-              : "N/A"}
+            {Number(subscription.totalAmount).toLocaleString()} $
+            {subscription.paymentCurrency}
           </div>
         </div>
       </TableCell>
@@ -73,15 +72,14 @@ const SubscriptionRow = ({ subscription }: { subscription: any }) => {
   );
 };
 
+export type SubscriptionWithDetails = RecurringPayment & {
+  subscription: {
+    label: string;
+    id: string;
+  } | null;
+};
 interface SubscriptionProps {
-  initialSubscriptions: Array<
-    RecurringPayment & {
-      subscription: {
-        label: string;
-        id: string;
-      };
-    }
-  >;
+  initialSubscriptions: SubscriptionWithDetails[];
 }
 
 export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {

@@ -56,6 +56,7 @@ export const recurringPaymentRouter = router({
           totalNumberOfPayments: input.totalPayments,
           currentNumberOfPayments: 0,
           userId: user.id,
+          subscriptionId: input.subscriptionId,
           recurrence: {
             startDate: input.startDate,
             frequency: input.frequency,
