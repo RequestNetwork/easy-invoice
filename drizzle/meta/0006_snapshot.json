@@ -382,8 +382,8 @@
           "notNull": true,
           "default": "'pending'"
         },
-        "totalAmountPerMonth": {
-          "name": "totalAmountPerMonth",
+        "totalAmount": {
+          "name": "totalAmount",
           "type": "text",
           "primaryKey": false,
           "notNull": true
