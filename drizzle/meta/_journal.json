@@ -48,7 +48,14 @@
       "idx": 6,
       "version": "7",
       "when": 1752048883095,
-      "tag": "0006_confused_sage",
+      "tag": "0006_open_owl",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1752498078518,
+      "tag": "0007_exotic_snowbird",
       "breakpoints": true
     }
   ]
