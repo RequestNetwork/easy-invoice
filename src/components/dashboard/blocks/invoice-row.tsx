@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import {
@@ -19,20 +18,10 @@ import { toast } from "sonner";
 interface InvoiceRowProps {
   invoice: Request;
   type: "sent" | "received";
-  setSelectedInvoices: (invoices: Request[]) => void;
-  selectedInvoices: Request[];
-  lastSelectedNetwork: string | null;
-  setLastSelectedNetwork: (network: string | null) => void;
+  children?: React.ReactNode;
 }
 
-export const InvoiceRow = ({
-  invoice,
-  type,
-  setSelectedInvoices,
-  selectedInvoices,
-  lastSelectedNetwork,
-  setLastSelectedNetwork,
-}: InvoiceRowProps) => {
+export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
   const utils = api.useUtils();
   const dueDate = new Date(invoice.dueDate);
   const isOverdue = invoice.status === "pending" && isPast(dueDate);
@@ -59,41 +48,9 @@ export const InvoiceRow = ({
     }
   };
 
-  const handleSelectInvoice = (isChecked: boolean) => {
-    if (isChecked) {
-      const invoiceNetwork = invoice.paymentCurrency.split("-")[1];
-      if (lastSelectedNetwork && invoiceNetwork !== lastSelectedNetwork) {
-        toast.error(
-          "You can only select invoices from the same network as the last selected invoice",
-        );
-        return false;
-      }
-
-      if (invoice.status === "paid") {
-        toast.error("You can't select a paid invoice");
-        return false;
-      }
-
-      setSelectedInvoices([...selectedInvoices, invoice]);
-      setLastSelectedNetwork(invoiceNetwork);
-    } else {
-      setSelectedInvoices(selectedInvoices.filter((i) => i.id !== invoice.id));
-      if (selectedInvoices.length === 1) {
-        setLastSelectedNetwork(null);
-      }
-    }
-
-    return true;
-  };
-
   return (
     <TableRow className="hover:bg-zinc-50/50">
-      <TableCell>
-        <Checkbox
-          onCheckedChange={handleSelectInvoice}
-          checked={selectedInvoices.some((i) => i.id === invoice.id)}
-        />
-      </TableCell>
+      {children && <TableCell>{children}</TableCell>}
       <TableCell className="font-medium">
         <div className="flex flex-col">
           <span>{invoice.invoiceNumber}</span>

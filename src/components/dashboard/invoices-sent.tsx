@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -8,31 +9,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { AlertCircle, DollarSign, FileText } from "lucide-react";
+import { AlertCircle, DollarSign, FileText, Plus } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
-import { EmptyState } from "./empty-state";
-import { InvoiceRow } from "./invoice-row";
-import { Pagination } from "./pagination";
-import { StatCard } from "./stat-card";
-import { TableHeadCell } from "./table-head-cell";
+import { EmptyState } from "./blocks/empty-state";
+import { InvoiceRow } from "./blocks/invoice-row";
+import { Pagination } from "./blocks/pagination";
+import { StatCard } from "./blocks/stat-card";
+import { TableHeadCell } from "./blocks/table-head-cell";
 
 const ITEMS_PER_PAGE = 10;
 const RETRIEVE_ALL_INVOICES_POLLING_INTERVAL = 3000;
 
-interface InvoicesReceivedProps {
-  setSelectedInvoices: (invoices: Request[]) => void;
-  selectedInvoices: Request[];
-  lastSelectedNetwork: string | null;
-  setLastSelectedNetwork: (network: string | null) => void;
-}
-
 const TableColumns = () => (
   <TableRow className="hover:bg-transparent border-none">
-    <TableHeadCell className="w-[1%]">Select</TableHeadCell>
     <TableHeadCell>Invoice #</TableHeadCell>
-    <TableHeadCell>From</TableHeadCell>
+    <TableHeadCell>Client</TableHeadCell>
     <TableHeadCell>Amount</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
     <TableHeadCell>Due Date</TableHeadCell>
@@ -41,15 +34,10 @@ const TableColumns = () => (
   </TableRow>
 );
 
-export const InvoicesReceived = ({
-  setSelectedInvoices,
-  selectedInvoices,
-  lastSelectedNetwork,
-  setLastSelectedNetwork,
-}: InvoicesReceivedProps) => {
+export const InvoicesSent = () => {
   const [page, setPage] = useState(1);
 
-  const { data: invoiceData } = api.invoice.getAllIssuedToMe.useQuery(
+  const { data: invoiceData } = api.invoice.getAllIssuedByMe.useQuery(
     undefined,
     {
       refetchOnWindowFocus: true,
@@ -59,9 +47,9 @@ export const InvoicesReceived = ({
     },
   );
 
-  const invoices = invoiceData?.issuedToMe.invoices || [];
-  const total = invoiceData?.issuedToMe.total || 0;
-  const outstanding = invoiceData?.issuedToMe.outstanding || 0;
+  const invoices = invoiceData?.issuedByMe.invoices || [];
+  const total = invoiceData?.issuedByMe.total || 0;
+  const outstanding = invoiceData?.issuedByMe.outstanding || 0;
 
   return (
     <div className="space-y-6">
@@ -78,7 +66,7 @@ export const InvoicesReceived = ({
           icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
-          title="Total Due"
+          title="Total Payments"
           value={`$${total.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
         />
@@ -95,9 +83,17 @@ export const InvoicesReceived = ({
                 <TableRow>
                   <TableCell colSpan={8} className="p-0">
                     <EmptyState
-                      icon={<DollarSign className="h-6 w-6 text-zinc-600" />}
-                      title="No invoices to pay"
-                      subtitle="When someone creates an invoice for you, it will appear here"
+                      icon={<FileText className="h-6 w-6 text-zinc-600" />}
+                      title="No invoices yet"
+                      subtitle="Create your first invoice to get paid"
+                      callToAction={
+                        <Link href="/invoices/create">
+                          <Button className="bg-black hover:bg-zinc-800 text-white">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Invoice
+                          </Button>
+                        </Link>
+                      }
                     />
                   </TableCell>
                 </TableRow>
@@ -108,11 +104,7 @@ export const InvoicesReceived = ({
                     <InvoiceRow
                       key={invoice.id}
                       invoice={invoice}
-                      type="received"
-                      setSelectedInvoices={setSelectedInvoices}
-                      selectedInvoices={selectedInvoices}
-                      lastSelectedNetwork={lastSelectedNetwork}
-                      setLastSelectedNetwork={setLastSelectedNetwork}
+                      type="sent"
                     />
                   ))
               )}

@@ -16,10 +16,10 @@ import { api } from "@/trpc/react";
 import { format } from "date-fns";
 import { AlertCircle, CreditCard, DollarSign } from "lucide-react";
 import { useState } from "react";
-import { EmptyState } from "./empty-state";
-import { Pagination } from "./pagination";
-import { StatCard } from "./stat-card";
-import { TableHeadCell } from "./table-head-cell";
+import { EmptyState } from "./blocks/empty-state";
+import { Pagination } from "./blocks/pagination";
+import { StatCard } from "./blocks/stat-card";
+import { TableHeadCell } from "./blocks/table-head-cell";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -72,7 +72,7 @@ const SubscriptionRow = ({ subscription }: { subscription: any }) => {
   );
 };
 
-export const SubscriptionsTable = () => {
+export const Subscriptions = () => {
   const [page, setPage] = useState(1);
 
   const { data: subscriptions } =
