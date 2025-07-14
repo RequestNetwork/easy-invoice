@@ -50,7 +50,13 @@ const TableColumns = () => (
   </TableRow>
 );
 
-export const InvoicesReceived = () => {
+interface InvoicesReceivedProps {
+  initialReceivedInvoices: Request[];
+}
+
+export const InvoicesReceived = ({
+  initialReceivedInvoices,
+}: InvoicesReceivedProps) => {
   const [page, setPage] = useState(1);
   const [selectedInvoices, setSelectedInvoices] = useState<Request[]>([]);
   const [lastSelectedNetwork, setLastSelectedNetwork] = useState<string | null>(
@@ -64,19 +70,17 @@ export const InvoicesReceived = () => {
   const { walletProvider } = useAppKitProvider("eip155");
   const { chainId, switchNetwork } = useAppKitNetwork();
 
-  const { data: invoiceData } = api.invoice.getAllIssuedToMe.useQuery(
-    undefined,
-    {
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true,
-      refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
-    },
-  );
+  const { data: invoices } = api.invoice.getAllIssuedToMe.useQuery(undefined, {
+    initialData: initialReceivedInvoices,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
+  });
 
-  const invoices = invoiceData?.issuedToMe.invoices || [];
-  const total = invoiceData?.issuedToMe.total || 0;
-  const outstanding = invoiceData?.issuedToMe.outstanding || 0;
+  const total =
+    invoices?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
+  const outstanding =
+    invoices?.filter((inv) => inv.status !== "paid").length || 0;
 
   const handleSelectInvoice = (invoice: Request, isChecked: boolean) => {
     if (isChecked) {
@@ -182,7 +186,6 @@ export const InvoicesReceived = () => {
 
   return (
     <div className="space-y-6">
-      {/* Batch Payment Button */}
       {selectedInvoices.length > 0 && (
         <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
@@ -209,11 +212,10 @@ export const InvoicesReceived = () => {
         </div>
       )}
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Total Invoices"
-          value={invoices.length}
+          value={invoices?.length || 0}
           icon={<FileText className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
@@ -235,7 +237,7 @@ export const InvoicesReceived = () => {
               <TableColumns />
             </TableHeader>
             <TableBody>
-              {invoices.length === 0 ? (
+              {!invoices || invoices.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="p-0">
                     <EmptyState
@@ -267,7 +269,7 @@ export const InvoicesReceived = () => {
               )}
             </TableBody>
           </Table>
-          {invoices.length > 0 && (
+          {invoices && invoices.length > 0 && (
             <Pagination
               page={page}
               setPage={setPage}

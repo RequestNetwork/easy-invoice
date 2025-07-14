@@ -256,13 +256,14 @@ export const invoiceRouter = router({
       orderBy: desc(requestTable.createdAt),
     });
 
-    return {
-      issuedByMe: {
-        invoices: receivables,
-        total: receivables.reduce((acc, inv) => acc + Number(inv.amount), 0),
-        outstanding: receivables.filter((inv) => inv.status !== "paid").length,
-      },
-    };
+    return receivables;
+    // {
+    //   issuedByMe: {
+    //     invoices: receivables,
+    //     total: receivables.reduce((acc, inv) => acc + Number(inv.amount), 0),
+    //     outstanding: receivables.filter((inv) => inv.status !== "paid").length,
+    //   },
+    // };
   }),
   getAllIssuedToMe: protectedProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
@@ -272,13 +273,14 @@ export const invoiceRouter = router({
       orderBy: desc(requestTable.createdAt),
     });
 
-    return {
-      issuedToMe: {
-        invoices: payables,
-        total: payables.reduce((acc, inv) => acc + Number(inv.amount), 0),
-        outstanding: payables.filter((inv) => inv.status !== "paid").length,
-      },
-    };
+    return payables;
+    // {
+    //   issuedToMe: {
+    //     invoices: payables,
+    //     total: payables.reduce((acc, inv) => acc + Number(inv.amount), 0),
+    //     outstanding: payables.filter((inv) => inv.status !== "paid").length,
+    //   },
+    // };
   }),
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const { db } = ctx;

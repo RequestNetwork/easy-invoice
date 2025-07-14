@@ -12,6 +12,7 @@ import {
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
+import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format } from "date-fns";
 import { AlertCircle, CreditCard, DollarSign } from "lucide-react";
@@ -72,11 +73,24 @@ const SubscriptionRow = ({ subscription }: { subscription: any }) => {
   );
 };
 
-export const Subscriptions = () => {
+interface SubscriptionProps {
+  initialSubscriptions: Array<
+    RecurringPayment & {
+      subscription: {
+        label: string;
+        id: string;
+      };
+    }
+  >;
+}
+
+export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
   const [page, setPage] = useState(1);
 
   const { data: subscriptions } =
-    api.subscriptionPlan.getUserActiveSubscriptions.useQuery();
+    api.subscriptionPlan.getUserActiveSubscriptions.useQuery(undefined, {
+      initialData: initialSubscriptions,
+    });
 
   const totalSpent =
     subscriptions?.reduce(
@@ -86,7 +100,6 @@ export const Subscriptions = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Active Subscriptions"
@@ -99,7 +112,7 @@ export const Subscriptions = () => {
           icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
-          title="Total Spend"
+          title="Total Spent"
           value={`$${totalSpent.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
         />

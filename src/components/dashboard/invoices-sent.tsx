@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, DollarSign, FileText, Plus } from "lucide-react";
 import Link from "next/link";
@@ -34,30 +35,32 @@ const TableColumns = () => (
   </TableRow>
 );
 
-export const InvoicesSent = () => {
+interface InvoicesSentProps {
+  initialSentInvoices: Request[];
+}
+
+export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
   const [page, setPage] = useState(1);
 
-  const { data: invoiceData } = api.invoice.getAllIssuedByMe.useQuery(
-    undefined,
-    {
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true,
-      refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
-    },
-  );
+  const { data: invoices } = api.invoice.getAllIssuedByMe.useQuery(undefined, {
+    initialData: initialSentInvoices,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
+  });
 
-  const invoices = invoiceData?.issuedByMe.invoices || [];
-  const total = invoiceData?.issuedByMe.total || 0;
-  const outstanding = invoiceData?.issuedByMe.outstanding || 0;
+  const total =
+    invoices?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
+  const outstanding =
+    invoices?.filter((inv) => inv.status !== "paid").length || 0;
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Total Invoices"
-          value={invoices.length}
+          value={invoices?.length || 0}
           icon={<FileText className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
@@ -79,9 +82,9 @@ export const InvoicesSent = () => {
               <TableColumns />
             </TableHeader>
             <TableBody>
-              {invoices.length === 0 ? (
+              {!invoices || invoices.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="p-0">
+                  <TableCell colSpan={7} className="p-0">
                     <EmptyState
                       icon={<FileText className="h-6 w-6 text-zinc-600" />}
                       title="No invoices yet"
@@ -110,7 +113,7 @@ export const InvoicesSent = () => {
               )}
             </TableBody>
           </Table>
-          {invoices.length > 0 && (
+          {invoices && invoices.length > 0 && (
             <Pagination
               page={page}
               setPage={setPage}
