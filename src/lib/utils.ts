@@ -17,3 +17,7 @@ export function filterDefinedValues<T extends Record<string, unknown>>(
     Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null),
   ) as Partial<T>;
 }
+
+export const getCanCancelPayment = (status: string) => {
+  return status === "pending" || status === "active";
+};

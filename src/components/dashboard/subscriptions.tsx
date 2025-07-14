@@ -12,22 +12,34 @@ import {
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
+import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
+import { getCanCancelPayment } from "@/lib/utils";
 import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format } from "date-fns";
-import { AlertCircle, CreditCard, DollarSign } from "lucide-react";
+import {
+  AlertCircle,
+  Ban,
+  CreditCard,
+  DollarSign,
+  Loader2,
+} from "lucide-react";
 import { useState } from "react";
+import { Button } from "../ui/button";
+import { StatusBadge } from "../view-recurring-payments/blocks/status-badge";
 import { EmptyState } from "./blocks/empty-state";
 import { Pagination } from "./blocks/pagination";
 import { StatCard } from "./blocks/stat-card";
 import { TableHeadCell } from "./blocks/table-head-cell";
 
 const ITEMS_PER_PAGE = 10;
+const ACTIVE_STATUSES = ["pending", "active"];
 
 const SubscriptionTableColumns = () => (
   <TableRow className="hover:bg-transparent border-none">
     <TableHeadCell>Start Date</TableHeadCell>
     <TableHeadCell>Plan Name</TableHeadCell>
+    <TableHeadCell>Status</TableHeadCell>
     <TableHeadCell>Frequency</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
     <TableHeadCell>Chain</TableHeadCell>
@@ -39,6 +51,24 @@ const SubscriptionTableColumns = () => (
 const SubscriptionRow = ({
   subscription,
 }: { subscription: SubscriptionWithDetails }) => {
+  const utils = api.useUtils();
+
+  const { cancelRecurringPayment, isLoading: isCancelling } =
+    useCancelRecurringPayment({
+      confirmMessage: "Are you sure you want to cancel this subscription?",
+      onSuccess: async () => {
+        await utils.subscriptionPlan.getAll.invalidate;
+      },
+    });
+
+  const handleCancelRecurringPayment = async () => {
+    if (isCancelling) return;
+
+    await cancelRecurringPayment(subscription);
+  };
+
+  const canCancel = getCanCancelPayment(subscription.status);
+
   return (
     <TableRow className="hover:bg-zinc-50/50">
       <TableCell>
@@ -48,6 +78,9 @@ const SubscriptionRow = ({
       </TableCell>
       <TableCell className="font-medium">
         {subscription.subscription?.label || "Unnamed Plan"}
+      </TableCell>
+      <TableCell>
+        <StatusBadge status={subscription.status} />
       </TableCell>
       <TableCell>
         <FrequencyBadge frequency={subscription.recurrence.frequency} />
@@ -67,6 +100,24 @@ const SubscriptionRow = ({
       </TableCell>
       <TableCell>
         <CompletedPayments payments={subscription.payments || []} />
+      </TableCell>
+      <TableCell>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCancelRecurringPayment}
+          disabled={!canCancel || isCancelling}
+          className="h-8 w-8 p-0"
+        >
+          {isCancelling ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Ban className="h-4 w-4" />
+          )}
+          <span className="sr-only">
+            {isCancelling ? "Cancelling..." : "Cancel Payment"}
+          </span>
+        </Button>
       </TableCell>
     </TableRow>
   );
@@ -91,17 +142,22 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
     });
 
   const totalSpent =
-    subscriptions?.reduce(
-      (sum, sub) => sum + Number(sub.totalAmount || 0),
-      0,
-    ) || 0;
+    subscriptions?.reduce((sum, sub) => {
+      if (ACTIVE_STATUSES.includes(sub.status)) {
+        return sum + Number(sub.totalAmount || 0);
+      }
+      return sum;
+    }, 0) || 0;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Active Subscriptions"
-          value={subscriptions?.length || 0}
+          value={
+            subscriptions.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
+              .length || 0
+          }
           icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
