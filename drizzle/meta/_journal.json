@@ -43,6 +43,13 @@
       "when": 1747822734112,
       "tag": "0005_fine_joystick",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1752234809915,
+      "tag": "0006_open_owl",
+      "breakpoints": true
     }
   ]
 }
