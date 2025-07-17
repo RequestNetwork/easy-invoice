@@ -33,7 +33,7 @@ import { RecurrenceFrequency } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
-import { LogOut, Plus } from "lucide-react";
+import { LogOut, Plus, Wallet } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -244,28 +244,42 @@ export function CreateSubscriptionPlan({
             <PaymentSecuredUsingRequest />
 
             <div className="flex justify-between items-center pt-4">
-              <button
-                type="button"
-                onClick={() => open()}
-                className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
-                disabled={isLoading}
-              >
-                <span className="font-mono mr-2">
-                  {address?.substring(0, 6)}...
-                  {address?.substring(address?.length - 4)}
-                </span>
-                <LogOut className="h-3 w-3" />
-              </button>
-              <Button type="submit" disabled={isLoading || !isConnected}>
-                {isLoading ? (
-                  "Creating..."
-                ) : (
-                  <>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Plan
-                  </>
-                )}
-              </Button>
+              {!isConnected ? (
+                <Button
+                  type="button"
+                  onClick={() => open()}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  <Wallet className="mr-2 h-4 w-4" />
+                  Connect Wallet
+                </Button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => open()}
+                    className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+                    disabled={isLoading}
+                  >
+                    <span className="font-mono mr-2">
+                      {address?.substring(0, 6)}...
+                      {address?.substring(address?.length - 4)}
+                    </span>
+                    <LogOut className="h-3 w-3" />
+                  </button>
+                  <Button type="submit" disabled={isLoading || !isConnected}>
+                    {isLoading ? (
+                      "Creating..."
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Plan
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           </form>
         </Form>
