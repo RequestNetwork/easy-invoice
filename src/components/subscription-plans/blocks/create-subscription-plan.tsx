@@ -75,6 +75,7 @@ export function CreateSubscriptionPlan({
     defaultValues: {
       label: "",
       frequency: "MONTHLY",
+      trialDays: 0,
       amount: 0,
       totalPayments: 12,
       paymentCurrency: "FAU-sepolia",
@@ -135,36 +136,35 @@ export function CreateSubscriptionPlan({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="frequency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Recurrence Frequency</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RecurrenceFrequency.map((freq) => (
+                          <SelectItem key={freq} value={freq}>
+                            {freq}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="frequency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Recurrence Frequency</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={isLoading}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select frequency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {RecurrenceFrequency.map((freq) => (
-                            <SelectItem key={freq} value={freq}>
-                              {freq}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="totalPayments"
@@ -177,6 +177,26 @@ export function CreateSubscriptionPlan({
                         placeholder="12"
                         min="2"
                         max="256"
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="trialDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trial Days</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        min="0"
                         value={field.value}
                         onChange={(e) => field.onChange(Number(e.target.value))}
                         disabled={isLoading}

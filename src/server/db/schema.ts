@@ -287,6 +287,7 @@ export const subscriptionPlanTable = createTable("subscription_plans", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
+  trialDays: integer().default(0).notNull(),
   paymentCurrency: text().notNull(),
   chain: text().notNull(),
   totalNumberOfPayments: integer().notNull(),

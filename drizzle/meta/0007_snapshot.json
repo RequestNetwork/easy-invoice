@@ -1,5 +1,5 @@
 {
-  "id": "337f651b-5cfe-46dd-bb07-6118a3b39e0f",
+  "id": "08bffac7-21f6-431f-86b2-5669186d769b",
   "prevId": "107677a1-447e-413e-8148-f9ed6f89e6fc",
   "version": "7",
   "dialect": "postgresql",
@@ -738,6 +738,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "trialDays": {
+          "name": "trialDays",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "paymentCurrency": {
           "name": "paymentCurrency",

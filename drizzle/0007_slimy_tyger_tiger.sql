@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS "easyinvoice_subscription_plans" (
 	"id" text PRIMARY KEY NOT NULL,
 	"label" text NOT NULL,
 	"userId" text NOT NULL,
+	"trialDays" integer DEFAULT 0 NOT NULL,
 	"paymentCurrency" text NOT NULL,
 	"chain" text NOT NULL,
 	"totalNumberOfPayments" integer NOT NULL,

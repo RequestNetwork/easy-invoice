@@ -16,6 +16,7 @@ export const subscriptionPlanRouter = router({
         id: ulid(),
         label: input.label,
         userId: user.id,
+        trialDays: input.trialDays ?? 0,
         chain: input.chain,
         amount: input.amount.toString(),
         totalNumberOfPayments: input.totalPayments,
@@ -126,6 +127,7 @@ export const subscriptionPlanRouter = router({
           columns: {
             id: true,
             label: true,
+            trialDays: true,
           },
         },
       },

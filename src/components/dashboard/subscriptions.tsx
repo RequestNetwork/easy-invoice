@@ -16,7 +16,7 @@ import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-paym
 import { getCanCancelPayment } from "@/lib/utils";
 import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import {
   AlertCircle,
   Ban,
@@ -40,6 +40,7 @@ const SubscriptionTableColumns = () => (
     <TableHeadCell>Start Date</TableHeadCell>
     <TableHeadCell>Plan Name</TableHeadCell>
     <TableHeadCell>Status</TableHeadCell>
+    <TableHeadCell>Trial Info</TableHeadCell>
     <TableHeadCell>Frequency</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
     <TableHeadCell>Chain</TableHeadCell>
@@ -67,6 +68,17 @@ const SubscriptionRow = ({
     await cancelRecurringPayment(subscription);
   };
 
+  const getTrialEndDate = () => {
+    if (!subscription.subscription?.trialDays) return "No trial";
+
+    if (!subscription.createdAt) return "No trial";
+    const trialEndDate = addDays(
+      new Date(subscription.createdAt),
+      subscription.subscription.trialDays,
+    );
+    return format(trialEndDate, "do MMM yyyy");
+  };
+
   const canCancel = getCanCancelPayment(subscription.status);
 
   return (
@@ -81,6 +93,11 @@ const SubscriptionRow = ({
       </TableCell>
       <TableCell>
         <StatusBadge status={subscription.status} />
+      </TableCell>
+      <TableCell>
+        {subscription.subscription?.trialDays
+          ? `${subscription.subscription.trialDays} days (ends ${getTrialEndDate()})`
+          : "No trial"}
       </TableCell>
       <TableCell>
         <FrequencyBadge frequency={subscription.recurrence.frequency} />
@@ -127,6 +144,7 @@ export type SubscriptionWithDetails = RecurringPayment & {
   subscription: {
     label: string;
     id: string;
+    trialDays: number;
   } | null;
 };
 interface SubscriptionProps {

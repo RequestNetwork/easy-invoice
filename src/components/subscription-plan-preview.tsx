@@ -13,6 +13,7 @@ import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-paym
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { addDays } from "date-fns";
 import {
   ArrowLeft,
   CheckCircle,
@@ -87,7 +88,10 @@ export function SubscriptionPlanPreview({
       toast.error("Please connect your wallet first");
       return;
     }
-    const startDate = new Date();
+    const startDate =
+      subscriptionPlan.trialDays > 0
+        ? addDays(new Date(), subscriptionPlan.trialDays)
+        : new Date();
 
     const recurringPaymentBody = {
       payee: subscriptionPlan.recipient,
@@ -160,6 +164,18 @@ export function SubscriptionPlanPreview({
                 <p className="font-semibold">
                   {displayCurrency} {totalAmount.toFixed(2)}
                 </p>
+              </div>
+              <div>
+                {subscriptionPlan.trialDays > 0 ? (
+                  <>
+                    <p className="text-sm text-zinc-600 mb-1">Trial Period</p>
+                    <p className="font-semibold">
+                      {`${subscriptionPlan.trialDays} day${subscriptionPlan.trialDays > 1 ? "s" : ""}`}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-zinc-600 mb-1">No Trial Period</p>
+                )}
               </div>
             </div>
 

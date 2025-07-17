@@ -7,6 +7,7 @@ const recurrenceFields = paymentApiSchema.shape.recurrence.unwrap().shape;
 export const subscriptionPlanApiSchema = z.object({
   label: z.string().min(1, "Label is required"),
   amount: z.number().gt(0, "Amount must be greater than 0"),
+  trialDays: z.number().min(0, "Trial days must be 0 or more").optional(),
   payee: z
     .string()
     .min(1, "Recipient address is required")
