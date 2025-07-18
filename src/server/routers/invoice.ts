@@ -22,24 +22,7 @@ const createInvoiceHelper = async (
     0,
   );
 
-  // FIXME: This logic can be removed after we implement it inside the Request Network API.
-  // We set the payee address to an address controlled by the Request Network Foundation,
-  // even in the case of crypto-to-fiat, because it's required by the protocol.
-  // This ensures that funds can be recovered if the payer chooses to bypass the Request Network API
-  // and use the Request Network SDK directly (which doesn't handle Crypto-to-fiat correctly).
-  const payee = input.isCryptoToFiatAvailable
-    ? process.env.CRYPTO_TO_FIAT_PAYEE_ADDRESS ||
-      (() => {
-        console.error(
-          "CRYPTO_TO_FIAT_PAYEE_ADDRESS environment variable is not set",
-        );
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            "Server configuration error: Crypto to fiat payments are not properly configured",
-        });
-      })()
-    : input.walletAddress;
+  const payee = input.isCryptoToFiatAvailable ? undefined : input.walletAddress;
 
   const response = await apiClient.post("/v2/request", {
     amount: totalAmount.toString(),
@@ -72,7 +55,7 @@ const createInvoiceHelper = async (
       paymentCurrency: input.paymentCurrency,
       type: "invoice",
       status: "pending",
-      payee,
+      payee: input.walletAddress, // @NOTE for crypto-to-fiat, this doesn't matter, but I guess we still want to know which wallet initiated the request
       dueDate: new Date(input.dueDate).toISOString(),
       requestId: response.data.requestId as string,
       paymentReference: response.data.paymentReference as string,
