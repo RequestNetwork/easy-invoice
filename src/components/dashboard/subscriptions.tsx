@@ -199,7 +199,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
             <TableBody>
               {!subscriptions || subscriptions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="p-0">
+                  <TableCell colSpan={9} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No active subscriptions"
