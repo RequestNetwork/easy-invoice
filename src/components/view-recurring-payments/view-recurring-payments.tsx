@@ -12,20 +12,16 @@ import {
 } from "@/components/ui/table";
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { formatDate } from "@/lib/date-utils";
+import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
+import { getCanCancelPayment } from "@/lib/utils";
 import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
-import { ethers } from "ethers";
 import { AlertCircle, Ban, Eye, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { ShortAddress } from "../short-address";
 import { FrequencyBadge } from "./blocks/frequency-badge";
 import { StatusBadge } from "./blocks/status-badge";
 
-const getCanCancelPayment = (status: string) => {
-  return status === "pending" || status === "active";
-};
 const ITEMS_PER_PAGE = 10;
 
 interface ViewRecurringPaymentsProps {
@@ -35,7 +31,6 @@ interface ViewRecurringPaymentsProps {
 export function ViewRecurringPayments({
   initialRecurringPayments,
 }: ViewRecurringPaymentsProps) {
-  const utils = api.useUtils();
   const {
     data: recurringPayments,
     isLoading,
@@ -46,90 +41,23 @@ export function ViewRecurringPayments({
     initialData: initialRecurringPayments,
   });
 
-  const updateRecurringPaymentMutation =
-    api.recurringPayment.updateRecurringPayment.useMutation({
-      onSuccess: () => {
-        toast.success("Recurring payment cancelled successfully");
-        refetch();
-      },
-      onError: (error) => {
-        toast.error(`Failed to cancel recurring payment: ${error.message}`);
-      },
-    });
-  const setRecurringPaymentStatusMutation =
-    api.recurringPayment.setRecurringPaymentStatus.useMutation({});
-
   const [currentPage, setCurrentPage] = useState(1);
   const [cancellingPaymentId, setCancellingPaymentId] = useState<string | null>(
     null,
   );
 
-  const { isConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider("eip155");
+  const { cancelRecurringPayment } = useCancelRecurringPayment({
+    confirmMessage: "Are you sure you want to cancel this recurring payment?",
+    onSuccess: async () => {
+      refetch();
+      setCancellingPaymentId(null);
+    },
+  });
 
   const handleCancelRecurringPayment = async (payment: RecurringPayment) => {
-    if (!getCanCancelPayment(payment.status)) {
-      return;
-    }
-
-    if (!isConnected || !walletProvider) {
-      toast.error("Please connect your wallet first");
-      return;
-    }
-
-    if (!confirm("Are you sure you want to cancel this recurring payment?")) {
-      return;
-    }
-
     setCancellingPaymentId(payment.id);
-
-    try {
-      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
-      const signer = ethersProvider.getSigner();
-
-      toast.info("Cancelling recurring payment...");
-
-      const response = await updateRecurringPaymentMutation.mutateAsync({
-        externalPaymentId: payment.externalPaymentId,
-        action: "cancel",
-      });
-
-      const { transactions } = response;
-
-      if (transactions?.length) {
-        toast.info("Signature required", {
-          description: "Please sign the transactions in your wallet",
-        });
-
-        for (let i = 0; i < transactions.length; i++) {
-          const transaction = transactions[i];
-
-          try {
-            const txResponse = await signer.sendTransaction(transaction);
-            await txResponse.wait();
-          } catch (txError) {
-            // the transaction are just for reducing the spending cap, the payment was still cancelled in the backend
-            console.error("Transaction error:", txError);
-          }
-        }
-      }
-
-      await setRecurringPaymentStatusMutation.mutateAsync({
-        id: payment.id,
-        status: "cancelled",
-      });
-
-      await utils.recurringPayment.getRecurringPayments.invalidate();
-      toast.success("Recurring payment cancelled successfully");
-    } catch (error) {
-      console.error("Cancel recurring payment error:", error);
-      toast.error("Failed to cancel recurring payment", {
-        description:
-          "There was an error cancelling your recurring payment. Please try again.",
-      });
-    } finally {
-      setCancellingPaymentId(null);
-    }
+    await cancelRecurringPayment(payment);
+    setCancellingPaymentId(null);
   };
 
   if (isLoading) {
@@ -242,7 +170,8 @@ export function ViewRecurringPayments({
             <TableBody>
               {paginatedPayments.map((payment) => {
                 const canCancel = getCanCancelPayment(payment.status);
-                const isCancelling = cancellingPaymentId === payment.id;
+                const isCurrentPaymentCancelling =
+                  cancellingPaymentId === payment.id;
 
                 return (
                   <TableRow key={payment.id}>
@@ -301,20 +230,18 @@ export function ViewRecurringPayments({
                         variant="outline"
                         size="sm"
                         onClick={() => handleCancelRecurringPayment(payment)}
-                        disabled={
-                          !canCancel ||
-                          isCancelling ||
-                          updateRecurringPaymentMutation.isLoading
-                        }
+                        disabled={!canCancel || isCurrentPaymentCancelling}
                         className="h-8 w-8 p-0"
                       >
-                        {isCancelling ? (
+                        {isCurrentPaymentCancelling ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Ban className="h-4 w-4" />
                         )}
                         <span className="sr-only">
-                          {isCancelling ? "Cancelling..." : "Cancel Payment"}
+                          {isCurrentPaymentCancelling
+                            ? "Cancelling..."
+                            : "Cancel Payment"}
                         </span>
                       </Button>
                     </TableCell>

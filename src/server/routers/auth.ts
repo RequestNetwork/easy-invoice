@@ -1,8 +1,14 @@
+import { deleteSessionTokenCookie, invalidateSession } from "@/server/auth";
 import { TRPCError } from "@trpc/server";
-import { deleteSessionTokenCookie, invalidateSession } from "../auth";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const authRouter = router({
+  getSessionInfo: publicProcedure.query(async ({ ctx }) => {
+    return {
+      session: ctx.session,
+      user: ctx.user,
+    };
+  }),
   logout: protectedProcedure.mutation(async ({ ctx }) => {
     const { session } = ctx;
 
