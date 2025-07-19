@@ -1,6 +1,6 @@
 {
-  "id": "107677a1-447e-413e-8148-f9ed6f89e6fc",
-  "prevId": "d2b8ba0a-2ee9-479d-94ae-2455fdd6f4c6",
+  "id": "08bffac7-21f6-431f-86b2-5669186d769b",
+  "prevId": "107677a1-447e-413e-8148-f9ed6f89e6fc",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -426,6 +426,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "subscriptionId": {
+          "name": "subscriptionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "recurrence": {
           "name": "recurrence",
           "type": "json",
@@ -454,6 +460,15 @@
           "columnsFrom": ["userId"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "easyinvoice_recurring_payment_subscriptionId_easyinvoice_subscription_plans_id_fk": {
+          "name": "easyinvoice_recurring_payment_subscriptionId_easyinvoice_subscription_plans_id_fk",
+          "tableFrom": "easyinvoice_recurring_payment",
+          "tableTo": "easyinvoice_subscription_plans",
+          "columnsFrom": ["subscriptionId"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -689,6 +704,98 @@
         "easyinvoice_session_userId_easyinvoice_user_id_fk": {
           "name": "easyinvoice_session_userId_easyinvoice_user_id_fk",
           "tableFrom": "easyinvoice_session",
+          "tableTo": "easyinvoice_user",
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.easyinvoice_subscription_plans": {
+      "name": "easyinvoice_subscription_plans",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trialDays": {
+          "name": "trialDays",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "paymentCurrency": {
+          "name": "paymentCurrency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chain": {
+          "name": "chain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "totalNumberOfPayments": {
+          "name": "totalNumberOfPayments",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "frequency": {
+          "name": "frequency",
+          "type": "frequency_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient": {
+          "name": "recipient",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "easyinvoice_subscription_plans_userId_easyinvoice_user_id_fk": {
+          "name": "easyinvoice_subscription_plans_userId_easyinvoice_user_id_fk",
+          "tableFrom": "easyinvoice_subscription_plans",
           "tableTo": "easyinvoice_user",
           "columnsFrom": ["userId"],
           "columnsTo": ["id"],

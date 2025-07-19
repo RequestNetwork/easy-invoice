@@ -15,7 +15,7 @@ const enforceUserIsAuthenticated = t.middleware(({ ctx, next }) => {
   if (!ctx.user || !ctx.session) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-  return next({ ctx });
+  return next({ ctx: { ...ctx, user: ctx.user, session: ctx.session } });
 });
 
 export const createTRPCContext = async (opts: { headers: Headers }) => {
