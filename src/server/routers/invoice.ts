@@ -22,6 +22,14 @@ const createInvoiceHelper = async (
     0,
   );
 
+  // Throw error if totalAmount is less than or equal to 0
+  if (totalAmount <= 0) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Total amount must be greater than 0",
+    });
+  }
+
   // FIXME: This logic can be removed after we implement it inside the Request Network API.
   // We set the payee address to an address controlled by the Request Network Foundation,
   // even in the case of crypto-to-fiat, because it's required by the protocol.
@@ -150,7 +158,8 @@ export const invoiceRouter = router({
         });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create invoice",
+          message:
+            error instanceof Error ? error.message : "Failed to create invoice",
         });
       }
     }),
@@ -203,7 +212,8 @@ export const invoiceRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create invoice",
+          message:
+            error instanceof Error ? error.message : "Failed to create invoice",
         });
       }
     }),

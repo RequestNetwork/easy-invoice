@@ -9,13 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { truncateEmail } from "@/lib/utils";
 import type { User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { LogOut } from "lucide-react";
+import { CopyIcon, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface UserMenuProps {
-  user: Pick<User, "name" | "id">;
+  user: Pick<User, "name" | "id" | "email">;
 }
 
 export function UserMenu({ user }: UserMenuProps) {
@@ -46,6 +47,23 @@ export function UserMenu({ user }: UserMenuProps) {
             <p className="text-sm font-medium text-neutral-900">
               {user.name ?? "User"}
             </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-row items-center justify-between gap-2">
+            <p className="text-sm font-medium text-neutral-900">
+              {truncateEmail(user.email ?? "")}
+            </p>
+            <Button
+              variant="ghost"
+              className="size-8"
+              aria-label="Copy email"
+              onClick={async () => {
+                await navigator.clipboard.writeText(user.email ?? "");
+              }}
+            >
+              <CopyIcon className="size-4" />
+            </Button>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

@@ -48,7 +48,7 @@ export default async function PaymentPage({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Payment Section */}
-          <PaymentSection invoice={invoice} />
+          <PaymentSection serverInvoice={invoice} />
 
           {/* Invoice Preview */}
           <Card className="w-full bg-white shadow-sm border-0">
