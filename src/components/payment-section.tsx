@@ -17,6 +17,7 @@ import {
   useAppKitAccount,
   useAppKitNetwork,
   useAppKitProvider,
+  useDisconnect,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
@@ -40,7 +41,7 @@ type InvoiceStatus =
   | "overdue";
 
 interface PaymentSectionProps {
-  invoice: NonNullable<Request>;
+  serverInvoice: NonNullable<Request>;
 }
 
 const getCurrencyChain = (currency: string) => {
@@ -101,8 +102,9 @@ const getRouteType = (route: PaymentRouteType, invoiceChain: string | null) => {
   };
 };
 
-export function PaymentSection({ invoice }: PaymentSectionProps) {
+export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const { open } = useAppKit();
+  const { disconnect } = useDisconnect();
   const { isConnected, address } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
   const { chainId, switchNetwork } = useAppKitNetwork();
@@ -111,9 +113,29 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
     null,
   );
 
+  const [invoice, setInvoice] = useState(serverInvoice);
+
   const [paymentStatus, setPaymentStatus] = useState<InvoiceStatus>(
-    invoice.status as InvoiceStatus,
+    serverInvoice.status as InvoiceStatus,
   );
+
+  // Only Poll when Invoice is not paid
+  const [polling, setPolling] = useState(paymentStatus !== "paid");
+
+  // Poll the invoice status every 3 seconds until it's paid
+  api.invoice.getById.useQuery(serverInvoice.id, {
+    refetchInterval: polling ? 3000 : false,
+    onSuccess: (data) => {
+      setInvoice(data);
+      if (data.status !== "pending") {
+        setPaymentStatus(data.status);
+      }
+      if (data.status === "paid") {
+        setPolling(false);
+      }
+    },
+  });
+
   const [paymentProgress, setPaymentProgress] = useState("idle");
   const [currentStep, setCurrentStep] = useState(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
@@ -194,6 +216,12 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
   const handleConnectWallet = () => {
     if (isAppKitReady) {
       open();
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (isAppKitReady) {
+      disconnect();
     }
   };
 
@@ -515,10 +543,10 @@ export function PaymentSection({ invoice }: PaymentSectionProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleConnectWallet}
-                        disabled={!isAppKitReady}
+                        onClick={handleDisconnect}
+                        disabled={!isAppKitReady || paymentProgress !== "idle"}
                       >
-                        Switch Wallet
+                        Disconnect
                       </Button>
                     </div>
                     <div className="font-mono bg-zinc-100 p-2 rounded">
