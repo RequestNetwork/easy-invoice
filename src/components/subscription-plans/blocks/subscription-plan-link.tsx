@@ -73,7 +73,6 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
   };
 
   const displayCurrency = formatCurrencyLabel(plan.paymentCurrency);
-  const frequencyText = plan.recurrenceFrequency.toLowerCase();
 
   return (
     <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
@@ -92,8 +91,8 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-4 w-4" />
                   <span>
-                    {stats?.totalAmount?.toFixed(2) ?? "0.00"} {displayCurrency}
-                    /{frequencyText}
+                    {stats?.totalAmount?.toFixed(2) ?? "0.00"} {displayCurrency}{" "}
+                    total
                   </span>
                 </div>
               </div>

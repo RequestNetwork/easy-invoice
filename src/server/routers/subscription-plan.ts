@@ -1,6 +1,6 @@
 import { subscriptionPlanApiSchema } from "@/lib/schemas/subscription-plan";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, not } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { recurringPaymentTable, subscriptionPlanTable } from "../db/schema";
@@ -78,6 +78,35 @@ export const subscriptionPlanRouter = router({
 
     return subscriptionPlanLink;
   }),
+  getAllSubscribers: protectedProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+
+    const subscriptionPlans = await db.query.subscriptionPlanTable.findMany({
+      where: eq(subscriptionPlanTable.userId, user.id),
+      orderBy: desc(subscriptionPlanTable.createdAt),
+    });
+
+    const allPlanIds = subscriptionPlans.map((plan) => plan.id);
+
+    const subscribers = await db.query.recurringPaymentTable.findMany({
+      where: and(
+        inArray(recurringPaymentTable.subscriptionId, allPlanIds),
+        not(eq(recurringPaymentTable.status, "cancelled")),
+      ),
+      orderBy: desc(recurringPaymentTable.createdAt),
+      with: {
+        subscription: {
+          columns: {
+            id: true,
+            label: true,
+            trialDays: true,
+          },
+        },
+      },
+    });
+
+    return subscribers;
+  }),
   getSubscribersForPlan: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
@@ -98,7 +127,10 @@ export const subscriptionPlanRouter = router({
       }
 
       const subscribers = await db.query.recurringPaymentTable.findMany({
-        where: eq(recurringPaymentTable.subscriptionId, input),
+        where: and(
+          eq(recurringPaymentTable.subscriptionId, input),
+          not(eq(recurringPaymentTable.status, "cancelled")),
+        ),
         orderBy: desc(recurringPaymentTable.createdAt),
         with: {
           user: {

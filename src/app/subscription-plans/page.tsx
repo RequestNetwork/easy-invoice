@@ -1,8 +1,12 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { SubscriptionPlans } from "@/components/subscription-plans/subscription-plans";
+import { SubscribersTable } from "@/components/subscription-plans/blocks/subscribers-table";
+import { SubscriptionPlansList } from "@/components/subscription-plans/blocks/subscription-plans-list";
+import { SubscriptionPlanTabs } from "@/components/subscription-plans/subscription-plan-tabs";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function SubscriptionPlansPage() {
@@ -13,12 +17,38 @@ export default async function SubscriptionPlansPage() {
   }
 
   const subscriptionPlans = await api.subscriptionPlan.getAll.query();
+  const allSubscribers = await api.subscriptionPlan.getAllSubscribers.query();
+
+  const plansTab = (
+    <SubscriptionPlansList initialSubscriptionPlans={subscriptionPlans} />
+  );
+  const subscribersTab = (
+    <SubscribersTable
+      initialSubscribers={allSubscribers}
+      subscriptionPlans={subscriptionPlans}
+    />
+  );
 
   return (
     <>
       <Header user={user} />
       <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-        <SubscriptionPlans initialSubscriptionPlans={subscriptionPlans} />
+        <div className="flex items-center mb-8">
+          <Link
+            href="/dashboard"
+            className="text-zinc-600 hover:text-black transition-colors mr-4"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Link>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Subscription Plans
+          </h1>
+        </div>
+
+        <SubscriptionPlanTabs
+          plansTab={plansTab}
+          subscribersTab={subscribersTab}
+        />
       </main>
       <Footer />
     </>

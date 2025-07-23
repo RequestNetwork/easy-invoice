@@ -3,6 +3,13 @@
 import { ShortAddress } from "@/components/short-address";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -12,74 +19,48 @@ import {
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
-import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import type { SubscriptionWithDetails } from "@/lib/types";
-import { getCanCancelPayment } from "@/lib/utils";
+import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
-import {
-  AlertCircle,
-  Ban,
-  CreditCard,
-  DollarSign,
-  Loader2,
-} from "lucide-react";
+import { AlertCircle, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../ui/button";
-import { StatusBadge } from "../view-recurring-payments/blocks/status-badge";
-import { EmptyState } from "./blocks/empty-state";
-import { Pagination } from "./blocks/pagination";
-import { StatCard } from "./blocks/stat-card";
-import { TableHeadCell } from "./blocks/table-head-cell";
+import { EmptyState } from "../../dashboard/blocks/empty-state";
+import { StatCard } from "../../dashboard/blocks/stat-card";
+import { TableHeadCell } from "../../dashboard/blocks/table-head-cell";
 
-const ITEMS_PER_PAGE = 10;
+interface SubscribersTableProps {
+  initialSubscribers: SubscriptionWithDetails[];
+  subscriptionPlans: SubscriptionPlan[];
+}
+
 const ACTIVE_STATUSES = ["pending", "active"];
 
-const SubscriptionTableColumns = () => (
+const SubscriberTableColumns = () => (
   <TableRow className="hover:bg-transparent border-none">
     <TableHeadCell>Start Date</TableHeadCell>
     <TableHeadCell>Plan Name</TableHeadCell>
-    <TableHeadCell>Status</TableHeadCell>
     <TableHeadCell>Trial Info</TableHeadCell>
     <TableHeadCell>Frequency</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
-    <TableHeadCell>Chain</TableHeadCell>
-    <TableHeadCell>Recipient</TableHeadCell>
+    <TableHeadCell>Subscriber</TableHeadCell>
     <TableHeadCell>Payment History</TableHeadCell>
   </TableRow>
 );
 
-const SubscriptionRow = ({
+const SubscriberRow = ({
   subscription,
 }: { subscription: SubscriptionWithDetails }) => {
-  const utils = api.useUtils();
-
-  const { cancelRecurringPayment, isLoading: isCancelling } =
-    useCancelRecurringPayment({
-      confirmMessage: "Are you sure you want to cancel this subscription?",
-      onSuccess: async () => {
-        await utils.subscriptionPlan.getAll.invalidate();
-      },
-    });
-
-  const handleCancelRecurringPayment = async () => {
-    if (isCancelling) return;
-
-    await cancelRecurringPayment(subscription);
-  };
-
   const getTrialEndDate = () => {
     if (!subscription.subscription?.trialDays) return "No trial";
-
     if (!subscription.createdAt) return "No trial";
+
     const trialEndDate = addDays(
       new Date(subscription.createdAt),
       subscription.subscription.trialDays,
     );
     return format(trialEndDate, "do MMM yyyy");
   };
-
-  const canCancel = getCanCancelPayment(subscription.status);
 
   return (
     <TableRow className="hover:bg-zinc-50/50">
@@ -92,9 +73,6 @@ const SubscriptionRow = ({
         {subscription.subscription?.label || "Unnamed Plan"}
       </TableCell>
       <TableCell>
-        <StatusBadge status={subscription.status} />
-      </TableCell>
-      <TableCell>
         {subscription.subscription?.trialDays
           ? `${subscription.subscription.trialDays} days (ends ${getTrialEndDate()})`
           : "No trial"}
@@ -105,7 +83,6 @@ const SubscriptionRow = ({
       <TableCell>
         {formatCurrencyLabel(subscription.paymentCurrency || "")}
       </TableCell>
-      <TableCell>{subscription.chain || "N/A"}</TableCell>
       <TableCell>
         <div className="space-y-1">
           <ShortAddress address={subscription.recipient.address || ""} />
@@ -118,110 +95,120 @@ const SubscriptionRow = ({
       <TableCell>
         <CompletedPayments payments={subscription.payments || []} />
       </TableCell>
-      <TableCell>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCancelRecurringPayment}
-          disabled={!canCancel || isCancelling}
-          className="h-8 w-8 p-0"
-        >
-          {isCancelling ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Ban className="h-4 w-4" />
-          )}
-          <span className="sr-only">
-            {isCancelling ? "Cancelling..." : "Cancel Payment"}
-          </span>
-        </Button>
-      </TableCell>
     </TableRow>
   );
 };
 
-interface SubscriptionProps {
-  initialSubscriptions: SubscriptionWithDetails[];
-}
+export function SubscribersTable({
+  initialSubscribers,
+  subscriptionPlans,
+}: SubscribersTableProps) {
+  const [activePlan, setActivePlan] = useState<string | null>(null);
 
-export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
-  const [page, setPage] = useState(1);
-
-  const { data: subscriptions } =
-    api.subscriptionPlan.getUserActiveSubscriptions.useQuery(undefined, {
-      initialData: initialSubscriptions,
+  const { data: allSubscribers } =
+    api.subscriptionPlan.getAllSubscribers.useQuery(undefined, {
+      initialData: initialSubscribers,
+      refetchOnMount: true,
     });
 
-  const totalSpent =
-    subscriptions?.reduce((sum, sub) => {
-      if (ACTIVE_STATUSES.includes(sub.status)) {
-        return sum + Number(sub.totalAmount || 0);
-      }
-      return sum;
-    }, 0) || 0;
+  // Filter subscribers based on active plan
+  const filteredSubscribers = activePlan
+    ? allSubscribers.filter(
+        (subscriber) => subscriber.subscription?.id === activePlan,
+      )
+    : allSubscribers;
+
+  const activeSubscribers = filteredSubscribers.filter((sub) =>
+    ACTIVE_STATUSES.includes(sub.status),
+  ).length;
+
+  const totalRevenue = filteredSubscribers.reduce((sum, sub) => {
+    if (ACTIVE_STATUSES.includes(sub.status)) {
+      return sum + Number(sub.totalAmount || 0);
+    }
+    return sum;
+  }, 0);
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Active Subscriptions"
-          value={
-            subscriptions.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
-              .length || 0
-          }
+          value={activeSubscribers}
           icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
           title="Total Plans"
-          value={subscriptions?.length || 0}
+          value={filteredSubscribers.length}
           icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
-          title="Total Spent"
-          value={`$${totalSpent.toLocaleString()}`}
+          title="Total Revenue"
+          value={`$${totalRevenue.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
         />
+      </div>
+
+      <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-zinc-600" />
+          <span className="text-sm font-medium text-zinc-700">
+            Filter by plan:
+          </span>
+        </div>
+        <Select
+          value={activePlan || "all"}
+          onValueChange={(value) =>
+            setActivePlan(value === "all" ? null : value)
+          }
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="All Plans" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Plans</SelectItem>
+            {subscriptionPlans.map((plan) => (
+              <SelectItem key={plan.id} value={plan.id}>
+                {plan.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <Card className="border border-zinc-100">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <SubscriptionTableColumns />
+              <SubscriberTableColumns />
             </TableHeader>
             <TableBody>
-              {!subscriptions || subscriptions.length === 0 ? (
+              {!filteredSubscribers || filteredSubscribers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="p-0">
+                  <TableCell colSpan={7} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
-                      title="No active subscriptions"
-                      subtitle="You haven't subscribed to any plans yet"
+                      title="No subscribers"
+                      subtitle={
+                        activePlan
+                          ? "No subscribers found for the selected plan"
+                          : "No subscribers found across all plans"
+                      }
                     />
                   </TableCell>
                 </TableRow>
               ) : (
-                subscriptions
-                  .slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-                  .map((subscription) => (
-                    <SubscriptionRow
-                      key={subscription.id}
-                      subscription={subscription}
-                    />
-                  ))
+                filteredSubscribers.map((subscription) => (
+                  <SubscriberRow
+                    key={subscription.id}
+                    subscription={subscription}
+                  />
+                ))
               )}
             </TableBody>
           </Table>
-          {subscriptions && subscriptions.length > 0 && (
-            <Pagination
-              page={page}
-              setPage={setPage}
-              totalItems={subscriptions.length}
-              itemsPerPage={ITEMS_PER_PAGE}
-            />
-          )}
         </CardContent>
       </Card>
     </div>
   );
-};
+}
