@@ -1,0 +1,1 @@
+ALTER TABLE "easyinvoice_recurring_payment" ADD COLUMN "payer" text NOT NULL;

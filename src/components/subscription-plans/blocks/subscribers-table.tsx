@@ -85,7 +85,7 @@ const SubscriberRow = ({
       </TableCell>
       <TableCell>
         <div className="space-y-1">
-          <ShortAddress address={subscription.recipient.address || ""} />
+          <ShortAddress address={subscription.payer} />
           <div className="text-sm">
             {Number(subscription.totalAmount).toLocaleString()} $
             {subscription.paymentCurrency}

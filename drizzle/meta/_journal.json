@@ -57,6 +57,13 @@
       "when": 1752764223067,
       "tag": "0007_slimy_tyger_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1753273601595,
+      "tag": "0008_rare_tattoo",
+      "breakpoints": true
     }
   ]
 }

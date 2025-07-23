@@ -233,6 +233,7 @@ export const recurringPaymentTable = createTable("recurring_payment", {
   subscriptionId: text().references(() => subscriptionPlanTable.id, {
     onDelete: "set null",
   }),
+  payer: text().notNull(),
   recurrence: json()
     .$type<{
       startDate: Date;
