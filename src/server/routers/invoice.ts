@@ -23,6 +23,13 @@ const createInvoiceHelper = async (
   );
 
   const payee = input.isCryptoToFiatAvailable ? undefined : input.walletAddress;
+  // Throw error if totalAmount is less than or equal to 0
+  if (totalAmount <= 0) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Total amount must be greater than 0",
+    });
+  }
 
   const response = await apiClient.post("/v2/request", {
     amount: totalAmount.toString(),
@@ -133,7 +140,8 @@ export const invoiceRouter = router({
         });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create invoice",
+          message:
+            error instanceof Error ? error.message : "Failed to create invoice",
         });
       }
     }),
@@ -186,7 +194,8 @@ export const invoiceRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create invoice",
+          message:
+            error instanceof Error ? error.message : "Failed to create invoice",
         });
       }
     }),
