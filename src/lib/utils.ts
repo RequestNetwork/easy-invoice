@@ -18,7 +18,6 @@ export function filterDefinedValues<T extends Record<string, unknown>>(
   ) as Partial<T>;
 }
 
-
 export function truncateEmail(email: string, maxLength = 20): string {
   if (email.length <= maxLength) return email;
   const [user, domain] = email.split("@");
