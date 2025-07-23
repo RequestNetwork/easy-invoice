@@ -14,51 +14,60 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
+import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { Copy, DollarSign, ExternalLink, Trash2, Users } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface SubscriptionPlanStats {
-  totalNumberOfSubscribers: number;
-  totalAmount: number;
-}
 
 interface SubscriptionPlanLinkProps {
   plan: SubscriptionPlan;
 }
 
 export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const [mounted, setMounted] = useState(false);
   const trpcContext = api.useUtils();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletingPlan, setIsDeletingPlan] = useState(false);
+
+  // need to do this because of hydration issues with Next.js
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { mutateAsync: deleteSubscriptionPlan } =
     api.subscriptionPlan.delete.useMutation({
       onSuccess: () => {
         trpcContext.subscriptionPlan.getAll.invalidate();
+        trpcContext.subscriptionPlan.getAllSubscribers.invalidate();
       },
     });
 
-  const { data: stats } = api.subscriptionPlan.getSubscribersForPlan.useQuery(
-    plan.id,
-    {
-      select: (recurringPayments): SubscriptionPlanStats => {
-        const totalNumberOfSubscribers = recurringPayments.length;
-        const totalAmount = recurringPayments.reduce(
-          (sum, recurringPayment) => sum + Number(recurringPayment.totalAmount),
-          0,
+  const { data: recurringPayments } =
+    api.subscriptionPlan.getSubscribersForPlan.useQuery(plan.id);
+
+  const { cancelRecurringPayment, isLoading: isCancellingPayment } =
+    useCancelRecurringPayment({
+      onSuccess: async () => {
+        await trpcContext.subscriptionPlan.getSubscribersForPlan.invalidate(
+          plan.id,
         );
-
-        return {
-          totalNumberOfSubscribers,
-          totalAmount,
-        };
+        await trpcContext.subscriptionPlan.getAllSubscribers.invalidate();
       },
-    },
-  );
+    });
 
-  const linkUrl = `${origin}/s/${plan.id}`;
+  const totalNumberOfSubscribers = recurringPayments?.length || 0;
+  const totalAmount =
+    recurringPayments?.reduce(
+      (sum, recurringPayment) => sum + Number(recurringPayment.totalAmount),
+      0,
+    ) || 0;
+
+  const linkUrl = mounted
+    ? `${window.location.origin}/s/${plan.id}`
+    : `/s/${plan.id}`;
 
   const copyLink = (url: string) => {
     navigator.clipboard
@@ -72,7 +81,41 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
       });
   };
 
+  const handleDeletePlan = async () => {
+    setIsDeletingPlan(true);
+    try {
+      if (recurringPayments && recurringPayments.length > 0) {
+        toast.info(
+          `Cancelling ${recurringPayments.length} active subscription(s)...`,
+        );
+
+        for (const payment of recurringPayments) {
+          try {
+            await cancelRecurringPayment(payment);
+          } catch (error) {
+            console.error(`Failed to cancel payment ${payment.id}:`, error);
+          }
+        }
+      }
+
+      await deleteSubscriptionPlan(plan.id);
+      toast.success(
+        "Subscription plan and all active subscriptions deleted successfully",
+      );
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete subscription plan", {
+        description:
+          "Please try again later or contact support if the problem persists.",
+      });
+    } finally {
+      setIsDeletingPlan(false);
+    }
+  };
+
   const displayCurrency = formatCurrencyLabel(plan.paymentCurrency);
+  const isProcessing = isDeletingPlan || isCancellingPayment;
 
   return (
     <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
@@ -84,15 +127,12 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
               <div className="flex items-center gap-3 text-sm text-zinc-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  <span>
-                    {stats?.totalNumberOfSubscribers ?? 0} subscriber(s)
-                  </span>
+                  <span>{totalNumberOfSubscribers} subscriber(s)</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-4 w-4" />
                   <span>
-                    {stats?.totalAmount?.toFixed(2) ?? "0.00"} {displayCurrency}{" "}
-                    total
+                    {totalAmount.toFixed(2)} {displayCurrency} total
                   </span>
                 </div>
               </div>
@@ -112,6 +152,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
               onClick={() => copyLink(linkUrl)}
               className="h-8 w-8 p-0 hover:bg-zinc-100"
               title="Copy link"
+              disabled={isProcessing}
             >
               <Copy className="h-4 w-4 text-zinc-600" />
             </Button>
@@ -126,13 +167,17 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 <ExternalLink className="h-4 w-4 text-zinc-600" />
               </Link>
             </Button>
-            <AlertDialog>
+            <AlertDialog
+              open={isDeleteDialogOpen}
+              onOpenChange={setIsDeleteDialogOpen}
+            >
               <AlertDialogTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-red-50"
                   title="Delete subscription plan"
+                  disabled={isProcessing}
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </Button>
@@ -140,29 +185,30 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Subscription Plan</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this subscription plan? This
-                    action cannot be undone.
+                  <AlertDialogDescription className="space-y-2">
+                    <p>
+                      Are you sure you want to delete this subscription plan?
+                      This action cannot be undone.
+                    </p>
+                    {totalNumberOfSubscribers > 0 && (
+                      <p className="font-medium text-amber-600">
+                        ⚠️ This will cancel all {totalNumberOfSubscribers} active
+                        subscription(s) and stop all upcoming payments for this
+                        plan.
+                      </p>
+                    )}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel disabled={isProcessing}>
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={async () => {
-                      try {
-                        await deleteSubscriptionPlan(plan.id);
-                        toast.success("Subscription plan deleted");
-                      } catch (error) {
-                        console.error(error);
-                        toast.error("Failed to delete subscription plan", {
-                          description:
-                            "Please try again later or contact support if the problem persists.",
-                        });
-                      }
-                    }}
+                    onClick={handleDeletePlan}
+                    disabled={isProcessing}
                     className="bg-red-600 hover:bg-red-700"
                   >
-                    Delete
+                    {isProcessing ? "Deleting..." : "Delete Plan"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

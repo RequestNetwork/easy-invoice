@@ -23,7 +23,7 @@ import type { SubscriptionWithDetails } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
-import { AlertCircle, CreditCard, DollarSign, Filter } from "lucide-react";
+import { CreditCard, DollarSign, Filter } from "lucide-react";
 import { useState } from "react";
 import { EmptyState } from "../../dashboard/blocks/empty-state";
 import { StatCard } from "../../dashboard/blocks/stat-card";
@@ -131,16 +131,11 @@ export function SubscribersTable({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatCard
           title="Active Subscriptions"
           value={activeSubscribers}
           icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
-        />
-        <StatCard
-          title="Total Plans"
-          value={filteredSubscribers.length}
-          icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
           title="Total Revenue"

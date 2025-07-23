@@ -9,11 +9,9 @@ import { toast } from "sonner";
 
 interface UseCancelRecurringPaymentProps {
   onSuccess?: () => Promise<void>;
-  confirmMessage: string;
 }
 
 export function useCancelRecurringPayment({
-  confirmMessage,
   onSuccess,
 }: UseCancelRecurringPaymentProps) {
   const utils = api.useUtils();
@@ -34,10 +32,6 @@ export function useCancelRecurringPayment({
 
     if (!isConnected || !walletProvider) {
       toast.error("Please connect your wallet first");
-      return;
-    }
-
-    if (!confirm(confirmMessage)) {
       return;
     }
 
