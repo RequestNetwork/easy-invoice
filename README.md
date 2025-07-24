@@ -14,6 +14,14 @@ Easy Invoice is a modern, user-friendly web application that demonstrates the po
 ### Prerequisites
 
 - Node.js 18+
+
+  - It is recommended to use `nvm` (Node Version Manager) to install and manage your Node.js versions. You can install `nvm` from [here](https://github.com/nvm-sh/nvm) and then run the following commands:
+
+  ```bash
+  $ nvm install 18
+  $ nvm use 18
+  ```
+
 - PostgreSQL database
 - Google OAuth credentials (for authentication)
 - Request Network API key
