@@ -111,7 +111,6 @@ export function SubscribersTable({
       refetchOnMount: true,
     });
 
-  // Filter subscribers based on active plan
   const filteredSubscribers = activePlan
     ? allSubscribers.filter(
         (subscriber) => subscriber.subscription?.id === activePlan,

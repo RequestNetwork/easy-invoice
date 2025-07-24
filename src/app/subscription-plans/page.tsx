@@ -1,5 +1,6 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { PaymentsTable } from "@/components/subscription-plans/blocks/payments-table";
 import { SubscribersTable } from "@/components/subscription-plans/blocks/subscribers-table";
 import { SubscriptionPlansList } from "@/components/subscription-plans/blocks/subscription-plans-list";
 import { SubscriptionPlanTabs } from "@/components/subscription-plans/subscription-plan-tabs";
@@ -18,6 +19,7 @@ export default async function SubscriptionPlansPage() {
 
   const subscriptionPlans = await api.subscriptionPlan.getAll.query();
   const allSubscribers = await api.subscriptionPlan.getAllSubscribers.query();
+  const allPayments = await api.subscriptionPlan.getAllPayments.query();
 
   const plansTab = (
     <SubscriptionPlansList initialSubscriptionPlans={subscriptionPlans} />
@@ -25,6 +27,12 @@ export default async function SubscriptionPlansPage() {
   const subscribersTab = (
     <SubscribersTable
       initialSubscribers={allSubscribers}
+      subscriptionPlans={subscriptionPlans}
+    />
+  );
+  const paymentsTab = (
+    <PaymentsTable
+      initialPayments={allPayments}
       subscriptionPlans={subscriptionPlans}
     />
   );
@@ -48,6 +56,7 @@ export default async function SubscriptionPlansPage() {
         <SubscriptionPlanTabs
           plansTab={plansTab}
           subscribersTab={subscribersTab}
+          paymentsTab={paymentsTab}
         />
       </main>
       <Footer />

@@ -18,3 +18,15 @@ export type SubscriptionWithDetails = RecurringPayment & {
     trialDays: number;
   } | null;
 };
+
+export type SubscriptionPayment = {
+  id: string;
+  amount: string;
+  currency: string;
+  planName: string;
+  txHash: string;
+  createdAt: Date;
+  requestScanUrl?: string;
+  chain: string;
+  subscriber: string;
+};

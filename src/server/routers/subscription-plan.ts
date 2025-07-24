@@ -1,4 +1,5 @@
 import { subscriptionPlanApiSchema } from "@/lib/schemas/subscription-plan";
+import type { SubscriptionPayment } from "@/lib/types";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, inArray, isNotNull, not } from "drizzle-orm";
 import { ulid } from "ulid";
@@ -107,6 +108,54 @@ export const subscriptionPlanRouter = router({
 
     return subscribers;
   }),
+  getAllPayments: protectedProcedure.query(
+    async ({ ctx }): Promise<SubscriptionPayment[]> => {
+      const { db, user } = ctx;
+
+      const subscriptionPlans = await db.query.subscriptionPlanTable.findMany({
+        where: eq(subscriptionPlanTable.userId, user.id),
+        orderBy: desc(subscriptionPlanTable.createdAt),
+      });
+
+      const allPlanIds = subscriptionPlans.map((plan) => plan.id);
+
+      const subscribers = await db.query.recurringPaymentTable.findMany({
+        where: and(
+          inArray(recurringPaymentTable.subscriptionId, allPlanIds),
+          not(eq(recurringPaymentTable.status, "cancelled")),
+        ),
+        orderBy: desc(recurringPaymentTable.createdAt),
+        with: {
+          subscription: {
+            columns: {
+              id: true,
+              label: true,
+              trialDays: true,
+            },
+          },
+        },
+      });
+
+      return subscribers.reduce<SubscriptionPayment[]>((acc, subscriber) => {
+        if (subscriber.payments && subscriber.payments.length > 0) {
+          for (const payment of subscriber.payments) {
+            acc.push({
+              id: `${subscriber.id}-${payment.txHash}`,
+              amount: subscriber.totalAmount,
+              currency: subscriber.paymentCurrency,
+              planName: subscriber.subscription?.label || "Unnamed Plan",
+              txHash: payment.txHash,
+              createdAt: new Date(payment.date),
+              requestScanUrl: payment.requestScanUrl,
+              chain: subscriber.chain,
+              subscriber: subscriber.payer,
+            });
+          }
+        }
+        return acc;
+      }, []);
+    },
+  ),
   getSubscribersForPlan: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
