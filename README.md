@@ -45,7 +45,7 @@ cp .env.example .env
 
 ### Installation
 
-1. Install dependencies:
+#### 1. Install Dependencies
 
 ```bash
 npm install
@@ -53,7 +53,23 @@ npm install
 yarn install
 ```
 
-2. Set up the database:
+#### 2. Start the Development Server
+
+This command runs the Easy Invoice Next.js app (frontend and backend) and starts the PostgreSQL database container.
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+> **Note:** If the PostgreSQL database container does not exist, it will be created automatically when you start the development server.
+
+The application will be available at [http://localhost:3000](http://localhost:3000).
+
+#### 3. Set Up the Database
+
+> **Note:** Ensure the database container is running before interacting with the database. The container starts automatically when you run `npm run dev` or `yarn dev`.
 
 ```bash
 # For development:
@@ -69,15 +85,36 @@ yarn db:generate
 yarn db:migrate
 ```
 
-3. Start the development server:
+### Development
+
+#### Access the Database with Drizzle Studio
+
+You can use Drizzle Studio to inspect and manage your PostgreSQL database:
 
 ```bash
-npm run dev
+npm run db:studio
 # or
-yarn dev
+yarn db:studio
 ```
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+Drizzle Studio runs on port `4983` by default. If you see an error like `Error: listen EADDRINUSE: address already in use 127.0.0.1:4983`, it means the port is already in use (possibly by another Drizzle Studio instance). You can specify a different port:
+
+```bash
+npm run db:studio -- --port=4984
+# or
+yarn db:studio --port=4984
+```
+
+#### Resetting the Database for Development
+
+The PostgreSQL database container stores its data in the `/dev/postgres-data` directory (mounted as a volume).
+
+To fully reset the database:
+
+1. **Delete the PostgreSQL container.**
+2. **Delete the `/dev/postgres-data` directory.**
+
+This will remove all persisted data and ensure a fresh database instance is created on the next startup.
 
 ## 🏗️ Tech Stack
 
