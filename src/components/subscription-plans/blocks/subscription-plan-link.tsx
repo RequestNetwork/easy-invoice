@@ -42,6 +42,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
       onSuccess: () => {
         trpcContext.subscriptionPlan.getAll.invalidate();
         trpcContext.subscriptionPlan.getAllSubscribers.invalidate();
+        trpcContext.subscriptionPlan.getAllPayments.invalidate();
       },
     });
 
@@ -90,22 +91,18 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
         );
 
         for (const payment of recurringPayments) {
-          try {
-            await cancelRecurringPayment(payment);
-          } catch (error) {
-            console.error(`Failed to cancel payment ${payment.id}:`, error);
-          }
+          await cancelRecurringPayment(payment, plan.id);
         }
       }
 
       await deleteSubscriptionPlan(plan.id);
       toast.success(
-        "Subscription plan and all active subscriptions deleted successfully",
+        "Subscription plan deactivated and all active subscriptions cancelled successfully",
       );
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to delete subscription plan", {
+      toast.error("Failed to deactivate subscription plan", {
         description:
           "Please try again later or contact support if the problem persists.",
       });
@@ -176,7 +173,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-red-50"
-                  title="Delete subscription plan"
+                  title="Deactivate subscription plan"
                   disabled={isProcessing}
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />
@@ -184,11 +181,14 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Subscription Plan</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    Deactivate Subscription Plan
+                  </AlertDialogTitle>
                   <AlertDialogDescription className="space-y-2">
                     <p>
-                      Are you sure you want to delete this subscription plan?
-                      This action cannot be undone.
+                      Are you sure you want to deactivate this subscription
+                      plan? This will make the plan unavailable for new
+                      subscriptions.
                     </p>
                     {totalNumberOfSubscribers > 0 && (
                       <p className="font-medium text-amber-600">
@@ -208,7 +208,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                     disabled={isProcessing}
                     className="bg-red-600 hover:bg-red-700"
                   >
-                    {isProcessing ? "Deleting..." : "Delete Plan"}
+                    {isProcessing ? "Deactivating..." : "Deactivate Plan"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

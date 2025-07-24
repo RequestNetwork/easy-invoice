@@ -24,7 +24,16 @@ export function useCancelRecurringPayment({
   const setRecurringPaymentStatusMutation =
     api.recurringPayment.setRecurringPaymentStatus.useMutation();
 
-  const cancelRecurringPayment = async (payment: RecurringPayment) => {
+  const updateRecurringPaymentForSubscriptionMutation =
+    api.recurringPayment.updateRecurringPaymentForSubscription.useMutation();
+
+  const setRecurringPaymentStatusForSubscriptionMutation =
+    api.recurringPayment.setRecurringPaymentStatusForSubscription.useMutation();
+
+  const cancelRecurringPayment = async (
+    payment: RecurringPayment,
+    subscriptionId?: string,
+  ) => {
     if (!getCanCancelPayment(payment.status)) {
       toast.error("This payment cannot be cancelled");
       return;
@@ -41,10 +50,16 @@ export function useCancelRecurringPayment({
 
       toast.info("Cancelling recurring payment...");
 
-      const response = await updateRecurringPaymentMutation.mutateAsync({
-        externalPaymentId: payment.externalPaymentId,
-        action: "cancel",
-      });
+      const response = subscriptionId
+        ? await updateRecurringPaymentForSubscriptionMutation.mutateAsync({
+            externalPaymentId: payment.externalPaymentId,
+            subscriptionId,
+            action: "cancel",
+          })
+        : await updateRecurringPaymentMutation.mutateAsync({
+            externalPaymentId: payment.externalPaymentId,
+            action: "cancel",
+          });
 
       const { transactions } = response;
 
@@ -66,10 +81,18 @@ export function useCancelRecurringPayment({
         }
       }
 
-      await setRecurringPaymentStatusMutation.mutateAsync({
-        id: payment.id,
-        status: "cancelled",
-      });
+      if (subscriptionId) {
+        await setRecurringPaymentStatusForSubscriptionMutation.mutateAsync({
+          id: payment.id,
+          subscriptionId,
+          status: "cancelled",
+        });
+      } else {
+        await setRecurringPaymentStatusMutation.mutateAsync({
+          id: payment.id,
+          status: "cancelled",
+        });
+      }
 
       await utils.recurringPayment.getRecurringPayments.invalidate();
       toast.success("Recurring payment cancelled successfully");
@@ -87,6 +110,8 @@ export function useCancelRecurringPayment({
     cancelRecurringPayment,
     isLoading:
       updateRecurringPaymentMutation.isLoading ||
-      setRecurringPaymentStatusMutation.isLoading,
+      setRecurringPaymentStatusMutation.isLoading ||
+      updateRecurringPaymentForSubscriptionMutation.isLoading ||
+      setRecurringPaymentStatusForSubscriptionMutation.isLoading,
   };
 }

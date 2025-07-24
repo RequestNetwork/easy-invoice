@@ -295,6 +295,7 @@ export const subscriptionPlanTable = createTable("subscription_plans", {
   recurrenceFrequency: frequencyEnum("frequency").notNull(),
   amount: text().notNull(),
   recipient: text().notNull(),
+  active: boolean().default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

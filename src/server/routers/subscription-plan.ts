@@ -31,7 +31,10 @@ export const subscriptionPlanRouter = router({
 
     const subscriptionPlanLinks = await db.query.subscriptionPlanTable.findMany(
       {
-        where: eq(subscriptionPlanTable.userId, user.id),
+        where: and(
+          eq(subscriptionPlanTable.userId, user.id),
+          eq(subscriptionPlanTable.active, true),
+        ),
         orderBy: desc(subscriptionPlanTable.createdAt),
       },
     );
@@ -43,8 +46,10 @@ export const subscriptionPlanRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
 
+      // Set the plan to inactive instead of deleting it
       await db
-        .delete(subscriptionPlanTable)
+        .update(subscriptionPlanTable)
+        .set({ active: false })
         .where(
           and(
             eq(subscriptionPlanTable.id, input),
@@ -57,7 +62,10 @@ export const subscriptionPlanRouter = router({
 
     const subscriptionPlanLink = await db.query.subscriptionPlanTable.findFirst(
       {
-        where: eq(subscriptionPlanTable.id, input),
+        where: and(
+          eq(subscriptionPlanTable.id, input),
+          eq(subscriptionPlanTable.active, true),
+        ),
         with: {
           user: {
             columns: {
@@ -83,11 +91,18 @@ export const subscriptionPlanRouter = router({
     const { db, user } = ctx;
 
     const subscriptionPlans = await db.query.subscriptionPlanTable.findMany({
-      where: eq(subscriptionPlanTable.userId, user.id),
+      where: and(
+        eq(subscriptionPlanTable.userId, user.id),
+        eq(subscriptionPlanTable.active, true),
+      ),
       orderBy: desc(subscriptionPlanTable.createdAt),
     });
 
     const allPlanIds = subscriptionPlans.map((plan) => plan.id);
+
+    if (allPlanIds.length === 0) {
+      return [];
+    }
 
     const subscribers = await db.query.recurringPaymentTable.findMany({
       where: and(
@@ -113,11 +128,18 @@ export const subscriptionPlanRouter = router({
       const { db, user } = ctx;
 
       const subscriptionPlans = await db.query.subscriptionPlanTable.findMany({
-        where: eq(subscriptionPlanTable.userId, user.id),
+        where: and(
+          eq(subscriptionPlanTable.userId, user.id),
+          eq(subscriptionPlanTable.active, true),
+        ),
         orderBy: desc(subscriptionPlanTable.createdAt),
       });
 
       const allPlanIds = subscriptionPlans.map((plan) => plan.id);
+
+      if (allPlanIds.length === 0) {
+        return [];
+      }
 
       const subscribers = await db.query.recurringPaymentTable.findMany({
         where: and(
@@ -165,6 +187,7 @@ export const subscriptionPlanRouter = router({
         where: and(
           eq(subscriptionPlanTable.id, input),
           eq(subscriptionPlanTable.userId, user.id),
+          eq(subscriptionPlanTable.active, true),
         ),
       });
 
