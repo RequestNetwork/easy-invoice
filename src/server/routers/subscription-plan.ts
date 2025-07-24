@@ -165,6 +165,7 @@ export const subscriptionPlanRouter = router({
               id: `${subscriber.id}-${payment.txHash}`,
               amount: subscriber.totalAmount,
               currency: subscriber.paymentCurrency,
+              planId: subscriber.subscriptionId || "no-plan",
               planName: subscriber.subscription?.label || "Unnamed Plan",
               txHash: payment.txHash,
               createdAt: new Date(payment.date),

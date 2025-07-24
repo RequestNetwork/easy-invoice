@@ -23,6 +23,7 @@ export type SubscriptionPayment = {
   id: string;
   amount: string;
   currency: string;
+  planId: string;
   planName: string;
   txHash: string;
   createdAt: Date;

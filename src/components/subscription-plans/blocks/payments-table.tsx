@@ -103,11 +103,7 @@ export function PaymentsTable({
   );
 
   const filteredPayments = activePlan
-    ? payments.filter(
-        (payment) =>
-          payment.planName ===
-          subscriptionPlans.find((plan) => plan.id === activePlan)?.label,
-      )
+    ? payments.filter((payment) => payment.planId === activePlan)
     : payments;
 
   const totalRevenue = filteredPayments.reduce((sum, payment) => {
