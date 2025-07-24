@@ -13,8 +13,8 @@ import { CompletedPayments } from "@/components/view-recurring-payments/blocks/c
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
+import type { SubscriptionWithDetails } from "@/lib/types";
 import { getCanCancelPayment } from "@/lib/utils";
-import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
 import {
@@ -56,7 +56,6 @@ const SubscriptionRow = ({
 
   const { cancelRecurringPayment, isLoading: isCancelling } =
     useCancelRecurringPayment({
-      confirmMessage: "Are you sure you want to cancel this subscription?",
       onSuccess: async () => {
         await utils.subscriptionPlan.getAll.invalidate();
       },
@@ -64,6 +63,9 @@ const SubscriptionRow = ({
 
   const handleCancelRecurringPayment = async () => {
     if (isCancelling) return;
+    if (!confirm("Are you sure you want to cancel this subscription?")) {
+      return;
+    }
 
     await cancelRecurringPayment(subscription);
   };
@@ -140,13 +142,6 @@ const SubscriptionRow = ({
   );
 };
 
-export type SubscriptionWithDetails = RecurringPayment & {
-  subscription: {
-    label: string;
-    id: string;
-    trialDays: number;
-  } | null;
-};
 interface SubscriptionProps {
   initialSubscriptions: SubscriptionWithDetails[];
 }

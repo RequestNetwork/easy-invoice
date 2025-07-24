@@ -47,7 +47,6 @@ export function ViewRecurringPayments({
   );
 
   const { cancelRecurringPayment } = useCancelRecurringPayment({
-    confirmMessage: "Are you sure you want to cancel this recurring payment?",
     onSuccess: async () => {
       refetch();
       setCancellingPaymentId(null);
@@ -55,6 +54,10 @@ export function ViewRecurringPayments({
   });
 
   const handleCancelRecurringPayment = async (payment: RecurringPayment) => {
+    if (!confirm("Are you sure you want to cancel this recurring payment?")) {
+      return;
+    }
+
     setCancellingPaymentId(payment.id);
     await cancelRecurringPayment(payment);
     setCancellingPaymentId(null);

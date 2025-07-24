@@ -1,6 +1,7 @@
 import { subscriptionPlanApiSchema } from "@/lib/schemas/subscription-plan";
+import type { SubscriptionPayment } from "@/lib/types";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, not } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { recurringPaymentTable, subscriptionPlanTable } from "../db/schema";
@@ -30,7 +31,10 @@ export const subscriptionPlanRouter = router({
 
     const subscriptionPlanLinks = await db.query.subscriptionPlanTable.findMany(
       {
-        where: eq(subscriptionPlanTable.userId, user.id),
+        where: and(
+          eq(subscriptionPlanTable.userId, user.id),
+          eq(subscriptionPlanTable.active, true),
+        ),
         orderBy: desc(subscriptionPlanTable.createdAt),
       },
     );
@@ -42,8 +46,10 @@ export const subscriptionPlanRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { db, user } = ctx;
 
+      // Set the plan to inactive instead of deleting it
       await db
-        .delete(subscriptionPlanTable)
+        .update(subscriptionPlanTable)
+        .set({ active: false })
         .where(
           and(
             eq(subscriptionPlanTable.id, input),
@@ -56,7 +62,10 @@ export const subscriptionPlanRouter = router({
 
     const subscriptionPlanLink = await db.query.subscriptionPlanTable.findFirst(
       {
-        where: eq(subscriptionPlanTable.id, input),
+        where: and(
+          eq(subscriptionPlanTable.id, input),
+          eq(subscriptionPlanTable.active, true),
+        ),
         with: {
           user: {
             columns: {
@@ -78,6 +87,98 @@ export const subscriptionPlanRouter = router({
 
     return subscriptionPlanLink;
   }),
+  getAllSubscribers: protectedProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+
+    const subscriptionPlans = await db.query.subscriptionPlanTable.findMany({
+      where: and(
+        eq(subscriptionPlanTable.userId, user.id),
+        eq(subscriptionPlanTable.active, true),
+      ),
+      orderBy: desc(subscriptionPlanTable.createdAt),
+    });
+
+    const allPlanIds = subscriptionPlans.map((plan) => plan.id);
+
+    if (allPlanIds.length === 0) {
+      return [];
+    }
+
+    const subscribers = await db.query.recurringPaymentTable.findMany({
+      where: and(
+        inArray(recurringPaymentTable.subscriptionId, allPlanIds),
+        not(eq(recurringPaymentTable.status, "cancelled")),
+      ),
+      orderBy: desc(recurringPaymentTable.createdAt),
+      with: {
+        subscription: {
+          columns: {
+            id: true,
+            label: true,
+            trialDays: true,
+          },
+        },
+      },
+    });
+
+    return subscribers;
+  }),
+  getAllPayments: protectedProcedure.query(
+    async ({ ctx }): Promise<SubscriptionPayment[]> => {
+      const { db, user } = ctx;
+
+      const subscriptionPlans = await db.query.subscriptionPlanTable.findMany({
+        where: and(
+          eq(subscriptionPlanTable.userId, user.id),
+          eq(subscriptionPlanTable.active, true),
+        ),
+        orderBy: desc(subscriptionPlanTable.createdAt),
+      });
+
+      const allPlanIds = subscriptionPlans.map((plan) => plan.id);
+
+      if (allPlanIds.length === 0) {
+        return [];
+      }
+
+      const subscribers = await db.query.recurringPaymentTable.findMany({
+        where: and(
+          inArray(recurringPaymentTable.subscriptionId, allPlanIds),
+          not(eq(recurringPaymentTable.status, "cancelled")),
+        ),
+        orderBy: desc(recurringPaymentTable.createdAt),
+        with: {
+          subscription: {
+            columns: {
+              id: true,
+              label: true,
+              trialDays: true,
+            },
+          },
+        },
+      });
+
+      return subscribers.reduce<SubscriptionPayment[]>((acc, subscriber) => {
+        if (subscriber.payments && subscriber.payments.length > 0) {
+          for (const payment of subscriber.payments) {
+            acc.push({
+              id: `${subscriber.id}-${payment.txHash}`,
+              amount: subscriber.totalAmount,
+              currency: subscriber.paymentCurrency,
+              planId: subscriber.subscriptionId || "no-plan",
+              planName: subscriber.subscription?.label || "Unnamed Plan",
+              txHash: payment.txHash,
+              createdAt: new Date(payment.date),
+              requestScanUrl: payment.requestScanUrl,
+              chain: subscriber.chain,
+              subscriber: subscriber.payer,
+            });
+          }
+        }
+        return acc;
+      }, []);
+    },
+  ),
   getSubscribersForPlan: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
@@ -87,6 +188,7 @@ export const subscriptionPlanRouter = router({
         where: and(
           eq(subscriptionPlanTable.id, input),
           eq(subscriptionPlanTable.userId, user.id),
+          eq(subscriptionPlanTable.active, true),
         ),
       });
 
@@ -98,7 +200,10 @@ export const subscriptionPlanRouter = router({
       }
 
       const subscribers = await db.query.recurringPaymentTable.findMany({
-        where: eq(recurringPaymentTable.subscriptionId, input),
+        where: and(
+          eq(recurringPaymentTable.subscriptionId, input),
+          not(eq(recurringPaymentTable.status, "cancelled")),
+        ),
         orderBy: desc(recurringPaymentTable.createdAt),
         with: {
           user: {
