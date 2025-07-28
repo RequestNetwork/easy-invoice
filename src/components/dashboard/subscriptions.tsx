@@ -52,6 +52,7 @@ const SubscriptionRow = ({
     useCancelRecurringPayment({
       onSuccess: async () => {
         await utils.subscriptionPlan.getAll.invalidate();
+        await utils.subscriptionPlan.getUserActiveSubscriptions.invalidate();
       },
     });
 
@@ -61,7 +62,12 @@ const SubscriptionRow = ({
       return;
     }
 
-    await cancelRecurringPayment(subscription);
+    try {
+      await cancelRecurringPayment(subscription);
+    } catch (error) {
+      // Error is already handled by the hook, but we need to catch it here
+      console.error("Failed to cancel subscription:", error);
+    }
   };
 
   const getTrialEndDate = () => {

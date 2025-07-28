@@ -59,8 +59,14 @@ export function ViewRecurringPayments({
     }
 
     setCancellingPaymentId(payment.id);
-    await cancelRecurringPayment(payment);
-    setCancellingPaymentId(null);
+    try {
+      await cancelRecurringPayment(payment);
+    } catch (error) {
+      // Error is already handled by the hook, but we need to catch it here
+      console.error("Failed to cancel recurring payment:", error);
+    } finally {
+      setCancellingPaymentId(null);
+    }
   };
 
   if (isLoading) {

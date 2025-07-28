@@ -35,13 +35,15 @@ export function useCancelRecurringPayment({
     subscriptionId?: string,
   ) => {
     if (!getCanCancelPayment(payment.status)) {
-      toast.error("This payment cannot be cancelled");
-      return;
+      const error = new Error("This payment cannot be cancelled");
+      toast.error(error.message);
+      throw error;
     }
 
     if (!isConnected || !walletProvider) {
-      toast.error("Please connect your wallet first");
-      return;
+      const error = new Error("Please connect your wallet first");
+      toast.error(error.message);
+      throw error;
     }
 
     try {
@@ -103,6 +105,7 @@ export function useCancelRecurringPayment({
         description:
           "There was an error cancelling your recurring payment. Please try again.",
       });
+      throw error; // Rethrow the error so calling components can handle it
     }
   };
 
