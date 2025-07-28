@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table/table";
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { formatDate } from "@/lib/date-utils";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";

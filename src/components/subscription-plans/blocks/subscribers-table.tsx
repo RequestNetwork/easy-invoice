@@ -9,13 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ErrorState } from "@/components/ui/table/error-state";
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table/table";
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
@@ -25,9 +26,9 @@ import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
 import { CreditCard, DollarSign, Filter } from "lucide-react";
 import { useState } from "react";
-import { EmptyState } from "../../dashboard/blocks/empty-state";
-import { StatCard } from "../../dashboard/blocks/stat-card";
-import { TableHeadCell } from "../../dashboard/blocks/table-head-cell";
+import { StatCard } from "../../stat-card";
+import { EmptyState } from "../../ui/table/empty-state";
+import { TableHeadCell } from "../../ui/table/table-head-cell";
 
 interface SubscribersTableProps {
   initialSubscribers: SubscriptionWithDetails[];
@@ -43,6 +44,7 @@ const SubscriberTableColumns = () => (
     <TableHeadCell>Trial Info</TableHeadCell>
     <TableHeadCell>Frequency</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
+    <TableHeadCell>Amount</TableHeadCell>
     <TableHeadCell>Subscriber</TableHeadCell>
     <TableHeadCell>Payment History</TableHeadCell>
   </TableRow>
@@ -55,11 +57,19 @@ const SubscriberRow = ({
     if (!subscription.subscription?.trialDays) return "No trial";
     if (!subscription.createdAt) return "No trial";
 
-    const trialEndDate = addDays(
-      new Date(subscription.createdAt),
-      subscription.subscription.trialDays,
-    );
-    return format(trialEndDate, "do MMM yyyy");
+    try {
+      const trialEndDate = addDays(
+        new Date(subscription.createdAt),
+        subscription.subscription.trialDays,
+      );
+      return `${subscription.subscription.trialDays} days (ends ${format(
+        trialEndDate,
+        "do MMM yyyy",
+      )})`;
+    } catch (error) {
+      console.error("Error formatting trial end date:", error);
+      return "No trial";
+    }
   };
 
   return (
@@ -72,11 +82,7 @@ const SubscriberRow = ({
       <TableCell className="font-medium">
         {subscription.subscription?.label || "Unnamed Plan"}
       </TableCell>
-      <TableCell>
-        {subscription.subscription?.trialDays
-          ? `${subscription.subscription.trialDays} days (ends ${getTrialEndDate()})`
-          : "No trial"}
-      </TableCell>
+      <TableCell>{getTrialEndDate()}</TableCell>
       <TableCell>
         <FrequencyBadge frequency={subscription.recurrence.frequency} />
       </TableCell>
@@ -84,13 +90,13 @@ const SubscriberRow = ({
         {formatCurrencyLabel(subscription.paymentCurrency || "")}
       </TableCell>
       <TableCell>
-        <div className="space-y-1">
-          <ShortAddress address={subscription.payer} />
-          <div className="text-sm">
-            {Number(subscription.totalAmount).toLocaleString()} $
-            {subscription.paymentCurrency}
-          </div>
-        </div>
+        <span className="font-semibold">
+          {Number(subscription.totalAmount).toLocaleString()}{" "}
+          {subscription.paymentCurrency}
+        </span>
+      </TableCell>
+      <TableCell>
+        <ShortAddress address={subscription.payer} />
       </TableCell>
       <TableCell>
         <CompletedPayments payments={subscription.payments || []} />
@@ -105,11 +111,40 @@ export function SubscribersTable({
 }: SubscribersTableProps) {
   const [activePlan, setActivePlan] = useState<string | null>(null);
 
-  const { data: allSubscribers } =
-    api.subscriptionPlan.getAllSubscribers.useQuery(undefined, {
-      initialData: initialSubscribers,
-      refetchOnMount: true,
-    });
+  const {
+    data: allSubscribers,
+    error,
+    refetch,
+    isRefetching,
+  } = api.subscriptionPlan.getAllSubscribers.useQuery(undefined, {
+    initialData: initialSubscribers,
+    refetchOnMount: true,
+    refetchInterval: 3000,
+  });
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <StatCard
+            title="Active Subscriptions"
+            value="--"
+            icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
+          />
+          <StatCard
+            title="Total Revenue"
+            value="--"
+            icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          />
+        </div>
+        <ErrorState
+          onRetry={refetch}
+          isRetrying={isRefetching}
+          explanation="We couldn't load the subscriber data. Please try again."
+        />
+      </div>
+    );
+  }
 
   const filteredSubscribers = activePlan
     ? allSubscribers.filter(
@@ -122,8 +157,8 @@ export function SubscribersTable({
   ).length;
 
   const totalRevenue = filteredSubscribers.reduce((sum, sub) => {
-    if (ACTIVE_STATUSES.includes(sub.status)) {
-      return sum + Number(sub.totalAmount || 0);
+    if (ACTIVE_STATUSES.includes(sub.status) && sub.payments) {
+      return sum + sub.payments.length * Number(sub.totalAmount);
     }
     return sum;
   }, 0);
@@ -138,7 +173,7 @@ export function SubscribersTable({
         />
         <StatCard
           title="Total Revenue"
-          value={`$${totalRevenue.toLocaleString()}`}
+          value={`${totalRevenue.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
         />
       </div>
@@ -177,9 +212,9 @@ export function SubscribersTable({
               <SubscriberTableColumns />
             </TableHeader>
             <TableBody>
-              {!filteredSubscribers || filteredSubscribers.length === 0 ? (
+              {filteredSubscribers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="p-0">
+                  <TableCell colSpan={8} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No subscribers"

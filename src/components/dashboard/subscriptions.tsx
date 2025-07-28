@@ -8,7 +8,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table/table";
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
@@ -17,20 +17,14 @@ import type { SubscriptionWithDetails } from "@/lib/types";
 import { getCanCancelPayment } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
-import {
-  AlertCircle,
-  Ban,
-  CreditCard,
-  DollarSign,
-  Loader2,
-} from "lucide-react";
+import { Ban, CreditCard, DollarSign, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { StatCard } from "../stat-card";
 import { Button } from "../ui/button";
+import { EmptyState } from "../ui/table/empty-state";
+import { Pagination } from "../ui/table/pagination";
+import { TableHeadCell } from "../ui/table/table-head-cell";
 import { StatusBadge } from "../view-recurring-payments/blocks/status-badge";
-import { EmptyState } from "./blocks/empty-state";
-import { Pagination } from "./blocks/pagination";
-import { StatCard } from "./blocks/stat-card";
-import { TableHeadCell } from "./blocks/table-head-cell";
 
 const ITEMS_PER_PAGE = 10;
 const ACTIVE_STATUSES = ["pending", "active"];
@@ -164,7 +158,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatCard
           title="Active Subscriptions"
           value={
@@ -172,11 +166,6 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
               .length || 0
           }
           icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
-        />
-        <StatCard
-          title="Total Plans"
-          value={subscriptions?.length || 0}
-          icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
         />
         <StatCard
           title="Total Spent"

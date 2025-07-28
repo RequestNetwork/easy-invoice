@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table/table";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import {
   getInvoiceTableStatusClass,

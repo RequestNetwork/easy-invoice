@@ -9,13 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ErrorState } from "@/components/ui/table/error-state";
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table/table";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import type { SubscriptionPayment } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
@@ -29,10 +30,10 @@ import {
   Receipt,
 } from "lucide-react";
 import { useState } from "react";
-import { EmptyState } from "../../dashboard/blocks/empty-state";
-import { Pagination } from "../../dashboard/blocks/pagination";
-import { StatCard } from "../../dashboard/blocks/stat-card";
-import { TableHeadCell } from "../../dashboard/blocks/table-head-cell";
+import { StatCard } from "../../stat-card";
+import { EmptyState } from "../../ui/table/empty-state";
+import { Pagination } from "../../ui/table/pagination";
+import { TableHeadCell } from "../../ui/table/table-head-cell";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -62,7 +63,7 @@ const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
       <TableCell>{formatCurrencyLabel(payment.currency)}</TableCell>
       <TableCell>
         <span className="font-semibold">
-          {Number(payment.amount).toLocaleString()} ${payment.currency}
+          {Number(payment.amount).toLocaleString()} {payment.currency}
         </span>
       </TableCell>
       <TableCell>
@@ -94,13 +95,40 @@ export function PaymentsTable({
   const [page, setPage] = useState(1);
   const [activePlan, setActivePlan] = useState<string | null>(null);
 
-  const { data: payments } = api.subscriptionPlan.getAllPayments.useQuery(
-    undefined,
-    {
-      initialData: initialPayments,
-      refetchOnMount: true,
-    },
-  );
+  const {
+    data: payments,
+    error,
+    refetch,
+    isRefetching,
+  } = api.subscriptionPlan.getAllPayments.useQuery(undefined, {
+    initialData: initialPayments,
+    refetchOnMount: true,
+    refetchInterval: 3000,
+  });
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <StatCard
+            title="Total Payments"
+            value="--"
+            icon={<Receipt className="h-4 w-4 text-zinc-600" />}
+          />
+          <StatCard
+            title="Total Revenue"
+            value="--"
+            icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          />
+        </div>
+        <ErrorState
+          onRetry={refetch}
+          isRetrying={isRefetching}
+          explanation="We couldn't load the payment data. Please try again."
+        />
+      </div>
+    );
+  }
 
   const filteredPayments = activePlan
     ? payments.filter((payment) => payment.planId === activePlan)
@@ -130,7 +158,7 @@ export function PaymentsTable({
         />
         <StatCard
           title="Total Revenue"
-          value={`$${totalRevenue.toLocaleString()}`}
+          value={`${totalRevenue.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
         />
       </div>
@@ -164,7 +192,7 @@ export function PaymentsTable({
               <PaymentTableColumns />
             </TableHeader>
             <TableBody>
-              {!filteredPayments || filteredPayments.length === 0 ? (
+              {filteredPayments.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
                     <EmptyState
@@ -185,7 +213,7 @@ export function PaymentsTable({
               )}
             </TableBody>
           </Table>
-          {filteredPayments && filteredPayments.length > ITEMS_PER_PAGE && (
+          {filteredPayments.length > ITEMS_PER_PAGE && (
             <Pagination
               page={page}
               setPage={setPage}

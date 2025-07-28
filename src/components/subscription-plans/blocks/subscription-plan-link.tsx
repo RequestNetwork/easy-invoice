@@ -17,6 +17,7 @@ import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
+import { BigNumber } from "ethers";
 import { Copy, DollarSign, ExternalLink, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -61,10 +62,15 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
 
   const totalNumberOfSubscribers = recurringPayments?.length || 0;
   const totalAmount =
-    recurringPayments?.reduce(
-      (sum, recurringPayment) => sum + Number(recurringPayment.totalAmount),
-      0,
-    ) || 0;
+    recurringPayments?.reduce((sum, recurringPayment) => {
+      try {
+        const amount = BigNumber.from(recurringPayment.totalAmount || "0");
+        return sum.add(amount);
+      } catch (error) {
+        console.error("Error parsing totalAmount:", error);
+        return sum;
+      }
+    }, BigNumber.from("0")) || BigNumber.from("0");
 
   const linkUrl = mounted
     ? `${window.location.origin}/s/${plan.id}`
@@ -129,7 +135,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-4 w-4" />
                   <span>
-                    {totalAmount.toFixed(2)} {displayCurrency} total
+                    {totalAmount.toString()} {displayCurrency} total
                   </span>
                 </div>
               </div>
