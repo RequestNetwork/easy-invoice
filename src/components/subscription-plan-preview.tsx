@@ -14,6 +14,7 @@ import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { addDays } from "date-fns";
+import { BigNumber } from "ethers";
 import {
   ArrowLeft,
   CheckCircle,
@@ -69,8 +70,12 @@ export function SubscriptionPlanPreview({
     !isSessionLoading &&
     !sessionError &&
     sessionData.session?.userId !== subscriptionPlan.userId;
-  const totalAmount =
-    Number(subscriptionPlan.amount) * subscriptionPlan.totalNumberOfPayments;
+
+  const amount = BigNumber.from(subscriptionPlan.amount || "0");
+  const totalPayments = BigNumber.from(
+    subscriptionPlan.totalNumberOfPayments.toString(),
+  );
+  const totalAmount = amount.mul(totalPayments);
   const displayCurrency = formatCurrencyLabel(subscriptionPlan.paymentCurrency);
 
   const copyToClipboard = (text: string, label: string) => {
@@ -140,7 +145,7 @@ export function SubscriptionPlanPreview({
               <div>
                 <p className="text-sm text-zinc-600 mb-1">Amount Per Payment</p>
                 <p className="text-2xl font-bold">
-                  {displayCurrency} {subscriptionPlan.amount}
+                  {displayCurrency} {amount.toString()}
                 </p>
               </div>
 
@@ -162,7 +167,7 @@ export function SubscriptionPlanPreview({
               <div>
                 <p className="text-sm text-zinc-600 mb-1">Total Amount</p>
                 <p className="font-semibold">
-                  {displayCurrency} {totalAmount.toFixed(2)}
+                  {displayCurrency} {totalAmount.toString()}
                 </p>
               </div>
               <div>
@@ -170,7 +175,9 @@ export function SubscriptionPlanPreview({
                   <>
                     <p className="text-sm text-zinc-600 mb-1">Trial Period</p>
                     <p className="font-semibold">
-                      {`${subscriptionPlan.trialDays} day${subscriptionPlan.trialDays > 1 ? "s" : ""}`}
+                      {`${subscriptionPlan.trialDays} day${
+                        subscriptionPlan.trialDays > 1 ? "s" : ""
+                      }`}
                     </p>
                   </>
                 ) : (

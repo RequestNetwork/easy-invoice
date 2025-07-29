@@ -17,6 +17,7 @@ import type { SubscriptionWithDetails } from "@/lib/types";
 import { getCanCancelPayment } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
+import { BigNumber } from "ethers";
 import { Ban, CreditCard, DollarSign, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
@@ -113,8 +114,7 @@ const SubscriptionRow = ({
         <div className="space-y-1">
           <ShortAddress address={subscription.recipient.address || ""} />
           <div className="text-sm">
-            {Number(subscription.totalAmount).toLocaleString()}{" "}
-            {subscription.paymentCurrency}
+            {subscription.totalAmount} {subscription.paymentCurrency}
           </div>
         </div>
       </TableCell>
@@ -160,13 +160,27 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
       (acc, sub) => {
         if (ACTIVE_STATUSES.includes(sub.status) && sub.paymentCurrency) {
           const currency = sub.paymentCurrency;
-          const amount = Number(sub.totalAmount || 0);
-          acc[currency] = (acc[currency] || 0) + amount;
+          try {
+            const amount = BigNumber.from(sub.totalAmount || "0");
+            if (!acc[currency]) {
+              acc[currency] = BigNumber.from("0");
+            }
+            acc[currency] = acc[currency].add(amount);
+          } catch (error) {
+            console.error("Error calculating spent amount:", error);
+          }
         }
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, BigNumber>,
     ) || {};
+
+  const spentValues = Object.entries(spentByCurrency).map(
+    ([currency, amount]) => ({
+      amount: amount.toString(),
+      currency,
+    }),
+  );
 
   return (
     <div className="space-y-6">
@@ -182,7 +196,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
         <MultiCurrencyStatCard
           title="Total Spent"
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
-          revenues={spentByCurrency}
+          values={spentValues}
         />
       </div>
 

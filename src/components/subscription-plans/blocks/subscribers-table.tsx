@@ -25,6 +25,7 @@ import type { SubscriptionWithDetails } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
+import { BigNumber } from "ethers";
 import { CreditCard, DollarSign, Filter } from "lucide-react";
 import { useState } from "react";
 import { StatCard } from "../../stat-card";
@@ -73,6 +74,8 @@ const SubscriberRow = ({
     }
   };
 
+  const totalAmount = BigNumber.from(subscription.totalAmount || "0");
+
   return (
     <TableRow className="hover:bg-zinc-50/50">
       <TableCell>
@@ -92,8 +95,7 @@ const SubscriberRow = ({
       </TableCell>
       <TableCell>
         <span className="font-semibold">
-          {Number(subscription.totalAmount).toLocaleString()}{" "}
-          {subscription.paymentCurrency}
+          {totalAmount.toString()} {subscription.paymentCurrency}
         </span>
       </TableCell>
       <TableCell>
@@ -135,7 +137,7 @@ export function SubscribersTable({
           <MultiCurrencyStatCard
             title="Total Revenue"
             icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
-            revenues={{}}
+            values={[]}
           />
         </div>
         <ErrorState
@@ -165,12 +167,29 @@ export function SubscribersTable({
         sub.paymentCurrency
       ) {
         const currency = sub.paymentCurrency;
-        const revenue = sub.payments.length * Number(sub.totalAmount);
-        acc[currency] = (acc[currency] || 0) + revenue;
+        try {
+          const totalAmount = BigNumber.from(sub.totalAmount || "0");
+          const paymentsCount = BigNumber.from(sub.payments.length.toString());
+          const revenue = totalAmount.mul(paymentsCount);
+
+          if (!acc[currency]) {
+            acc[currency] = BigNumber.from("0");
+          }
+          acc[currency] = acc[currency].add(revenue);
+        } catch (error) {
+          console.error("Error calculating revenue:", error);
+        }
       }
       return acc;
     },
-    {} as Record<string, number>,
+    {} as Record<string, BigNumber>,
+  );
+
+  const revenueValues = Object.entries(revenuesByCurrency).map(
+    ([currency, amount]) => ({
+      amount: amount.toString(),
+      currency,
+    }),
   );
 
   return (
@@ -184,7 +203,7 @@ export function SubscribersTable({
         <MultiCurrencyStatCard
           title="Total Revenue"
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
-          revenues={revenuesByCurrency}
+          values={revenueValues}
         />
       </div>
 

@@ -23,6 +23,7 @@ import type { SubscriptionPayment } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format } from "date-fns";
+import { BigNumber } from "ethers";
 import {
   CreditCard,
   DollarSign,
@@ -64,7 +65,7 @@ const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
       <TableCell>{formatCurrencyLabel(payment.currency)}</TableCell>
       <TableCell>
         <span className="font-semibold">
-          {Number(payment.amount).toLocaleString()} {payment.currency}
+          {payment.amount} {payment.currency}
         </span>
       </TableCell>
       <TableCell>
@@ -119,7 +120,7 @@ export function PaymentsTable({
           <MultiCurrencyStatCard
             title="Total Revenue"
             icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
-            revenues={{}}
+            values={[]}
           />
         </div>
         <ErrorState
@@ -138,11 +139,25 @@ export function PaymentsTable({
   const revenuesByCurrency = filteredPayments.reduce(
     (acc, payment) => {
       const currency = payment.currency;
-      const amount = Number(payment.amount);
-      acc[currency] = (acc[currency] || 0) + amount;
+      try {
+        const amount = BigNumber.from(payment.amount || "0");
+        if (!acc[currency]) {
+          acc[currency] = BigNumber.from("0");
+        }
+        acc[currency] = acc[currency].add(amount);
+      } catch (error) {
+        console.error("Error calculating payment revenue:", error);
+      }
       return acc;
     },
-    {} as Record<string, number>,
+    {} as Record<string, BigNumber>,
+  );
+
+  const revenueValues = Object.entries(revenuesByCurrency).map(
+    ([currency, amount]) => ({
+      amount: amount.toString(),
+      currency,
+    }),
   );
 
   const paginatedPayments = filteredPayments.slice(
@@ -166,7 +181,7 @@ export function PaymentsTable({
         <MultiCurrencyStatCard
           title="Total Revenue"
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
-          revenues={revenuesByCurrency}
+          values={revenueValues}
         />
       </div>
 
