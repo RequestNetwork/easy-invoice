@@ -1,5 +1,6 @@
 "use client";
 
+import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
 import { ShortAddress } from "@/components/short-address";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -131,10 +132,10 @@ export function SubscribersTable({
             value="--"
             icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
           />
-          <StatCard
+          <MultiCurrencyStatCard
             title="Total Revenue"
-            value="--"
             icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+            revenues={{}}
           />
         </div>
         <ErrorState
@@ -156,12 +157,21 @@ export function SubscribersTable({
     ACTIVE_STATUSES.includes(sub.status),
   ).length;
 
-  const totalRevenue = filteredSubscribers.reduce((sum, sub) => {
-    if (ACTIVE_STATUSES.includes(sub.status) && sub.payments) {
-      return sum + sub.payments.length * Number(sub.totalAmount);
-    }
-    return sum;
-  }, 0);
+  const revenuesByCurrency = filteredSubscribers.reduce(
+    (acc, sub) => {
+      if (
+        ACTIVE_STATUSES.includes(sub.status) &&
+        sub.payments &&
+        sub.paymentCurrency
+      ) {
+        const currency = sub.paymentCurrency;
+        const revenue = sub.payments.length * Number(sub.totalAmount);
+        acc[currency] = (acc[currency] || 0) + revenue;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   return (
     <div className="space-y-6">
@@ -171,10 +181,10 @@ export function SubscribersTable({
           value={activeSubscribers}
           icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
         />
-        <StatCard
+        <MultiCurrencyStatCard
           title="Total Revenue"
-          value={`${totalRevenue.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          revenues={revenuesByCurrency}
         />
       </div>
 

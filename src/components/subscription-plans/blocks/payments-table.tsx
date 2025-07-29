@@ -1,5 +1,6 @@
 "use client";
 
+import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
 import { ShortAddress } from "@/components/short-address";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -115,10 +116,10 @@ export function PaymentsTable({
             value="--"
             icon={<Receipt className="h-4 w-4 text-zinc-600" />}
           />
-          <StatCard
+          <MultiCurrencyStatCard
             title="Total Revenue"
-            value="--"
             icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+            revenues={{}}
           />
         </div>
         <ErrorState
@@ -134,9 +135,15 @@ export function PaymentsTable({
     ? payments.filter((payment) => payment.planId === activePlan)
     : payments;
 
-  const totalRevenue = filteredPayments.reduce((sum, payment) => {
-    return sum + Number(payment.amount);
-  }, 0);
+  const revenuesByCurrency = filteredPayments.reduce(
+    (acc, payment) => {
+      const currency = payment.currency;
+      const amount = Number(payment.amount);
+      acc[currency] = (acc[currency] || 0) + amount;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const paginatedPayments = filteredPayments.slice(
     (page - 1) * ITEMS_PER_PAGE,
@@ -156,10 +163,10 @@ export function PaymentsTable({
           value={filteredPayments.length}
           icon={<Receipt className="h-4 w-4 text-zinc-600" />}
         />
-        <StatCard
+        <MultiCurrencyStatCard
           title="Total Revenue"
-          value={`${totalRevenue.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          revenues={revenuesByCurrency}
         />
       </div>
 

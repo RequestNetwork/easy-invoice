@@ -19,6 +19,7 @@ import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
 import { Ban, CreditCard, DollarSign, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
 import { StatCard } from "../stat-card";
 import { Button } from "../ui/button";
 import { EmptyState } from "../ui/table/empty-state";
@@ -112,7 +113,7 @@ const SubscriptionRow = ({
         <div className="space-y-1">
           <ShortAddress address={subscription.recipient.address || ""} />
           <div className="text-sm">
-            {Number(subscription.totalAmount).toLocaleString()} $
+            {Number(subscription.totalAmount).toLocaleString()}{" "}
             {subscription.paymentCurrency}
           </div>
         </div>
@@ -154,13 +155,18 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
       initialData: initialSubscriptions,
     });
 
-  const totalSpent =
-    subscriptions?.reduce((sum, sub) => {
-      if (ACTIVE_STATUSES.includes(sub.status)) {
-        return sum + Number(sub.totalAmount || 0);
-      }
-      return sum;
-    }, 0) || 0;
+  const spentByCurrency =
+    subscriptions?.reduce(
+      (acc, sub) => {
+        if (ACTIVE_STATUSES.includes(sub.status) && sub.paymentCurrency) {
+          const currency = sub.paymentCurrency;
+          const amount = Number(sub.totalAmount || 0);
+          acc[currency] = (acc[currency] || 0) + amount;
+        }
+        return acc;
+      },
+      {} as Record<string, number>,
+    ) || {};
 
   return (
     <div className="space-y-6">
@@ -168,15 +174,15 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
         <StatCard
           title="Active Subscriptions"
           value={
-            subscriptions.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
+            subscriptions?.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
               .length || 0
           }
           icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
         />
-        <StatCard
+        <MultiCurrencyStatCard
           title="Total Spent"
-          value={`$${totalSpent.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          revenues={spentByCurrency}
         />
       </div>
 
@@ -189,7 +195,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
             <TableBody>
               {!subscriptions || subscriptions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="p-0">
+                  <TableCell colSpan={10} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No active subscriptions"
