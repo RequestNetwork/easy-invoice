@@ -185,12 +185,12 @@ export function SubscribersTable({
     {} as Record<string, BigNumber>,
   );
 
-  const revenueValues = Object.entries(revenuesByCurrency).map(
-    ([currency, amount]) => ({
+  const revenueValues = Object.entries(revenuesByCurrency)
+    .map(([currency, amount]) => ({
       amount: amount.toString(),
       currency,
-    }),
-  );
+    }))
+    .filter((value) => BigNumber.from(value.amount).gt(0));
 
   return (
     <div className="space-y-6">
