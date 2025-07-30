@@ -72,6 +72,22 @@ export function PaymentCurrencySelector({
 
   const conversionRoutes = conversionData?.conversionRoutes || [];
 
+  if (conversionRoutes.length === 0) {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor="paymentCurrency">Payment Currency</Label>
+        <Select disabled>
+          <SelectTrigger>
+            <SelectValue placeholder="No payment currencies available" />
+          </SelectTrigger>
+        </Select>
+        <p className="text-sm text-amber-600">
+          No payment currencies are available for {targetCurrency} on {network}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <Label htmlFor="paymentCurrency">Payment Currency</Label>
