@@ -1,3 +1,5 @@
+"use client";
+import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 
 interface BackgroundWrapperProps {
@@ -23,6 +25,8 @@ export function BackgroundWrapper({
     to: "zinc-200",
   },
 }: BackgroundWrapperProps) {
+  const { theme } = useTheme();
+
   // Convert Tailwind color names to CSS variables or hex values
   const getTailwindColor = (colorName: string): string => {
     const colors: Record<string, string> = {
@@ -42,38 +46,53 @@ export function BackgroundWrapper({
       "zinc-100": "#f4f4f5",
       "zinc-200": "#e4e4e7",
 
+      // Dark mode colors
+      "zinc-800": "#27272a",
+      "zinc-900": "#18181b",
+      "slate-800": "#1e293b",
+      "slate-900": "#0f172a",
+
       // Add any other colors you need here
     };
 
     return colors[colorName] || "#f4f4f5"; // Default to zinc-100 if color not found
   };
 
+  const isDark = theme === "dark";
+
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#FAFAFA]">
-      {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/2">
-        <div
-          className="w-full h-full rounded-full opacity-30 blur-3xl"
-          style={{
-            background: `linear-gradient(to bottom right, ${getTailwindColor(topGradient.from)}, ${getTailwindColor(topGradient.to)})`,
-          }}
-        />
-      </div>
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] translate-y-1/2 -translate-x-1/2">
-        <div
-          className="w-full h-full rounded-full opacity-30 blur-3xl"
-          style={{
-            background: `linear-gradient(to top right, ${getTailwindColor(bottomGradient.from)}, ${getTailwindColor(bottomGradient.to)})`,
-          }}
-        />
-      </div>
+    <div
+      className={`min-h-screen relative overflow-hidden ${isDark ? "bg-[#0A0A0A]" : "bg-[#FAFAFA]"}`}
+    >
+      {/* Decorative elements - only show in light mode */}
+      {!isDark && (
+        <>
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/2">
+            <div
+              className="w-full h-full rounded-full opacity-30 blur-3xl"
+              style={{
+                background: `linear-gradient(to bottom right, ${getTailwindColor(topGradient.from)}, ${getTailwindColor(topGradient.to)})`,
+              }}
+            />
+          </div>
+          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] translate-y-1/2 -translate-x-1/2">
+            <div
+              className="w-full h-full rounded-full opacity-30 blur-3xl"
+              style={{
+                background: `linear-gradient(to top right, ${getTailwindColor(bottomGradient.from)}, ${getTailwindColor(bottomGradient.to)})`,
+              }}
+            />
+          </div>
+        </>
+      )}
 
       {/* Dot pattern background */}
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, #e5e5e5 1px, transparent 0)",
+          backgroundImage: isDark
+            ? "radial-gradient(circle at 1px 1px, #1f1f1f 1px, transparent 0)"
+            : "radial-gradient(circle at 1px 1px, #e5e5e5 1px, transparent 0)",
           backgroundSize: "40px 40px",
         }}
       />
