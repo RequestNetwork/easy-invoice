@@ -63,10 +63,12 @@ export function ViewRecurringPayments({
   if (isLoading) {
     return (
       <div className="flex justify-center mx-auto w-full max-w-6xl">
-        <Card className="w-full shadow-lg border-zinc-200/80">
+        <Card className="w-full shadow-lg border border-border bg-card text-card-foreground">
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <p className="text-zinc-500">Loading recurring payments...</p>
+              <p className="text-muted-foreground">
+                Loading recurring payments...
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -77,9 +79,9 @@ export function ViewRecurringPayments({
   if (error) {
     return (
       <div className="flex justify-center mx-auto w-full max-w-6xl">
-        <Card className="w-full shadow-lg border-red-200/80">
-          <CardHeader className="bg-red-50 rounded-t-lg border-b border-red-200/80">
-            <CardTitle className="flex items-center gap-2 text-red-800">
+        <Card className="w-full shadow-lg border border-destructive/30 bg-card text-card-foreground">
+          <CardHeader className="bg-destructive/10 rounded-t-lg border-b border-destructive/30">
+            <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertCircle className="h-5 w-5" />
               Error Loading Recurring Payments
             </CardTitle>
@@ -87,7 +89,7 @@ export function ViewRecurringPayments({
 
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <p className="text-red-600">
+              <p className="text-destructive-foreground">
                 {error.message || "Failed to load recurring payments"}
               </p>
               <Button
@@ -111,8 +113,8 @@ export function ViewRecurringPayments({
   if (!recurringPayments || recurringPayments.length === 0) {
     return (
       <div className="flex justify-center mx-auto w-full max-w-6xl">
-        <Card className="w-full shadow-lg border-zinc-200/80">
-          <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
+        <Card className="w-full shadow-lg border border-border bg-card text-card-foreground">
+          <CardHeader className="bg-muted rounded-t-lg border-b border-border">
             <CardTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5" />
               View Recurring Payments
@@ -121,8 +123,10 @@ export function ViewRecurringPayments({
 
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <p className="text-zinc-500">No recurring payments found</p>
-              <p className="text-zinc-400 text-sm">
+              <p className="text-muted-foreground">
+                No recurring payments found
+              </p>
+              <p className="text-muted-foreground text-sm">
                 Your recurring payments will appear here
               </p>
             </div>
@@ -143,8 +147,8 @@ export function ViewRecurringPayments({
 
   return (
     <div className="flex justify-center mx-auto w-full">
-      <Card className="w-full shadow-lg border-zinc-200/80">
-        <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
+      <Card className="w-full shadow-lg border border-border bg-card text-card-foreground">
+        <CardHeader className="bg-muted rounded-t-lg border-b border-border">
           <CardTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
             View Recurring Payments ({recurringPayments.length})
@@ -202,7 +206,9 @@ export function ViewRecurringPayments({
                         <span className="text-sm font-bold">
                           {payment.totalNumberOfPayments}
                         </span>
-                        <span className="text-xs text-zinc-500">scheduled</span>
+                        <span className="text-xs text-muted-foreground">
+                          scheduled
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -210,7 +216,9 @@ export function ViewRecurringPayments({
                         <span className="text-sm font-bold">
                           {payment.currentNumberOfPayments}
                         </span>
-                        <span className="text-xs text-zinc-500">completed</span>
+                        <span className="text-xs text-muted-foreground">
+                          completed
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>{payment.chain}</TableCell>
@@ -252,7 +260,7 @@ export function ViewRecurringPayments({
           </Table>
 
           {recurringPayments.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between px-4 py-4 border-t border-zinc-100">
+            <div className="flex items-center justify-between px-4 py-4 border-t border-border">
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -261,7 +269,7 @@ export function ViewRecurringPayments({
               >
                 Previous
               </Button>
-              <span className="text-sm text-zinc-600">
+              <span className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages}
               </span>
               <Button

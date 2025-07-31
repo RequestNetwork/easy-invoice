@@ -7,7 +7,7 @@ interface TableHeadCellProps {
 }
 
 export const TableHeadCell = ({ children, className }: TableHeadCellProps) => (
-  <TableHead className={cn("text-zinc-500 font-medium", className)}>
+  <TableHead className={cn("text-muted-foreground font-medium", className)}>
     {children}
   </TableHead>
 );

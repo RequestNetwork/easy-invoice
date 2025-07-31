@@ -32,7 +32,7 @@ export function SubscriptionPlans({
         <div className="flex items-center ">
           <Link
             href="/dashboard"
-            className="text-zinc-600 hover:text-black transition-colors mr-4"
+            className="text-muted-foreground hover:text-foreground transition-colors mr-4"
           >
             <ArrowLeft className="h-6 w-6" />
           </Link>
@@ -42,7 +42,7 @@ export function SubscriptionPlans({
         </div>
         <Button
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-black text-white hover:bg-zinc-800 rounded-md px-4 py-2 text-sm font-medium"
+          className="bg-primary text-primary-foreground hover:bg-primary/80 rounded-md px-4 py-2 text-sm font-medium"
         >
           + New Plan
         </Button>

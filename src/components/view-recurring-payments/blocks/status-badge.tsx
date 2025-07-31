@@ -4,11 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import type { RecurringPaymentStatusType } from "@/server/db/schema";
 
 const BADGE_STATUS_COLOR: Record<RecurringPaymentStatusType, string> = {
-  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  active: "bg-green-100 text-green-800 border-green-200",
-  paused: "bg-orange-100 text-orange-800 border-orange-200",
-  completed: "bg-blue-100 text-blue-800 border-blue-200",
-  cancelled: "bg-red-100 text-red-800 border-red-200",
+  pending: "bg-warning/10 text-warning-foreground border-warning",
+  active: "bg-success/10 text-success-foreground border-success",
+  paused: "bg-muted text-muted-foreground border-border",
+  completed: "bg-primary/10 text-primary-foreground border-primary",
+  cancelled: "bg-destructive/10 text-destructive-foreground border-destructive",
 };
 
 interface StatusBadgeProps {

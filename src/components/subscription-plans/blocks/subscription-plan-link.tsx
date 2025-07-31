@@ -76,13 +76,13 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
   const frequencyText = plan.recurrenceFrequency.toLowerCase();
 
   return (
-    <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden bg-card border border-border text-card-foreground hover:shadow-md transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-4">
-              <h3 className="font-bold text-zinc-900">{plan.label}</h3>
-              <div className="flex items-center gap-3 text-sm text-zinc-600">
+              <h3 className="font-bold text-foreground">{plan.label}</h3>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
                   <span>
@@ -98,11 +98,11 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 </div>
               </div>
             </div>
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-muted-foreground">
               {plan.amount} {displayCurrency} · {plan.recurrenceFrequency} ·{" "}
               {plan.trialDays} day trial
             </p>
-            <code className="text-xs text-zinc-600 bg-zinc-50 px-3 py-1.5 rounded-md truncate flex-1">
+            <code className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-md truncate flex-1">
               {linkUrl}
             </code>
           </div>
@@ -111,20 +111,20 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
               variant="ghost"
               size="sm"
               onClick={() => copyLink(linkUrl)}
-              className="h-8 w-8 p-0 hover:bg-zinc-100"
+              className="h-8 w-8 p-0 hover:bg-muted"
               title="Copy link"
             >
-              <Copy className="h-4 w-4 text-zinc-600" />
+              <Copy className="h-4 w-4 text-muted-foreground" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="h-8 w-8 p-0 hover:bg-zinc-100"
+              className="h-8 w-8 p-0 hover:bg-muted"
               title="Open link"
             >
               <Link href={linkUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 text-zinc-600" />
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </Link>
             </Button>
             <AlertDialog>
