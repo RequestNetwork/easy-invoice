@@ -17,9 +17,11 @@ export default async function SubscriptionPlansPage() {
     redirect("/");
   }
 
-  const subscriptionPlans = await api.subscriptionPlan.getAll.query();
-  const allSubscribers = await api.subscriptionPlan.getAllSubscribers.query();
-  const allPayments = await api.subscriptionPlan.getAllPayments.query();
+  const [subscriptionPlans, allSubscribers, allPayments] = await Promise.all([
+    api.subscriptionPlan.getAll.query(),
+    api.subscriptionPlan.getAllSubscribers.query(),
+    api.subscriptionPlan.getAllPayments.query(),
+  ]);
 
   const plansTab = (
     <SubscriptionPlansList initialSubscriptionPlans={subscriptionPlans} />

@@ -170,6 +170,10 @@ export function SubscribersTable({
         try {
           const totalAmount = BigNumber.from(sub.totalAmount || "0");
           const paymentsCount = BigNumber.from(sub.payments.length.toString());
+          // ASSUMPTION: This calculation assumes each payment equals the full totalAmount.
+          // This is correct for our current system which does not support partial recurring payments.
+          // If partial payments are implemented in the future, this logic must be updated to sum
+          // actual payment amounts from the payments array instead of multiplying by count.
           const revenue = totalAmount.mul(paymentsCount);
 
           if (!acc[currency]) {

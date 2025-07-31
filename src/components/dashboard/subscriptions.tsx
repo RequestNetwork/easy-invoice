@@ -1,6 +1,16 @@
 "use client";
 
 import { ShortAddress } from "@/components/short-address";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -48,6 +58,7 @@ const SubscriptionTableColumns = () => (
 const SubscriptionRow = ({
   subscription,
 }: { subscription: SubscriptionWithDetails }) => {
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const utils = api.useUtils();
 
   const { cancelRecurringPayment, isLoading: isCancelling } =
@@ -55,15 +66,11 @@ const SubscriptionRow = ({
       onSuccess: async () => {
         await utils.subscriptionPlan.getAll.invalidate();
         await utils.subscriptionPlan.getUserActiveSubscriptions.invalidate();
+        setIsCancelDialogOpen(false);
       },
     });
 
   const handleCancelRecurringPayment = async () => {
-    if (isCancelling) return;
-    if (!confirm("Are you sure you want to cancel this subscription?")) {
-      return;
-    }
-
     try {
       await cancelRecurringPayment(subscription);
     } catch (error) {
@@ -122,22 +129,48 @@ const SubscriptionRow = ({
         <CompletedPayments payments={subscription.payments || []} />
       </TableCell>
       <TableCell>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCancelRecurringPayment}
-          disabled={!canCancel || isCancelling}
-          className="h-8 w-8 p-0"
+        <AlertDialog
+          open={isCancelDialogOpen}
+          onOpenChange={setIsCancelDialogOpen}
         >
-          {isCancelling ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Ban className="h-4 w-4" />
-          )}
-          <span className="sr-only">
-            {isCancelling ? "Cancelling..." : "Cancel Payment"}
-          </span>
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCancelDialogOpen(true)}
+            disabled={!canCancel || isCancelling}
+            className="h-8 w-8 p-0"
+          >
+            {isCancelling ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Ban className="h-4 w-4" />
+            )}
+            <span className="sr-only">
+              {isCancelling ? "Cancelling..." : "Cancel Payment"}
+            </span>
+          </Button>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to cancel this subscription? This action
+                cannot be undone and will stop all future payments.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isCancelling}>
+                Keep Subscription
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleCancelRecurringPayment}
+                disabled={isCancelling}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isCancelling ? "Cancelling..." : "Cancel Subscription"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </TableCell>
     </TableRow>
   );

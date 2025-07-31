@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -45,19 +55,19 @@ export function ViewRecurringPayments({
   const [cancellingPaymentId, setCancellingPaymentId] = useState<string | null>(
     null,
   );
+  const [cancelDialogOpenFor, setCancelDialogOpenFor] = useState<string | null>(
+    null,
+  );
 
   const { cancelRecurringPayment } = useCancelRecurringPayment({
     onSuccess: async () => {
       refetch();
       setCancellingPaymentId(null);
+      setCancelDialogOpenFor(null);
     },
   });
 
   const handleCancelRecurringPayment = async (payment: RecurringPayment) => {
-    if (!confirm("Are you sure you want to cancel this recurring payment?")) {
-      return;
-    }
-
     setCancellingPaymentId(payment.id);
     try {
       await cancelRecurringPayment(payment);
@@ -235,24 +245,61 @@ export function ViewRecurringPayments({
                       <CompletedPayments payments={payment.payments || []} />
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCancelRecurringPayment(payment)}
-                        disabled={!canCancel || isCurrentPaymentCancelling}
-                        className="h-8 w-8 p-0"
+                      <AlertDialog
+                        open={cancelDialogOpenFor === payment.id}
+                        onOpenChange={(open) =>
+                          setCancelDialogOpenFor(open ? payment.id : null)
+                        }
                       >
-                        {isCurrentPaymentCancelling ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Ban className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">
-                          {isCurrentPaymentCancelling
-                            ? "Cancelling..."
-                            : "Cancel Payment"}
-                        </span>
-                      </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCancelDialogOpenFor(payment.id)}
+                          disabled={!canCancel || isCurrentPaymentCancelling}
+                          className="h-8 w-8 p-0"
+                        >
+                          {isCurrentPaymentCancelling ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Ban className="h-4 w-4" />
+                          )}
+                          <span className="sr-only">
+                            {isCurrentPaymentCancelling
+                              ? "Cancelling..."
+                              : "Cancel Payment"}
+                          </span>
+                        </Button>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Cancel Recurring Payment
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to cancel this recurring
+                              payment? This action cannot be undone and will
+                              stop all future payments.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel
+                              disabled={isCurrentPaymentCancelling}
+                            >
+                              Keep Payment
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() =>
+                                handleCancelRecurringPayment(payment)
+                              }
+                              disabled={isCurrentPaymentCancelling}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              {isCurrentPaymentCancelling
+                                ? "Cancelling..."
+                                : "Cancel Payment"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 );
