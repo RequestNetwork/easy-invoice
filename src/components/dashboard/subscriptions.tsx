@@ -188,19 +188,20 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
       initialData: initialSubscriptions,
     });
 
-  const spentByCurrency =
+  const commitmentsByCurrency =
     subscriptions?.reduce(
       (acc, sub) => {
         if (ACTIVE_STATUSES.includes(sub.status) && sub.paymentCurrency) {
           const currency = sub.paymentCurrency;
           try {
-            const amount = BigNumber.from(sub.totalAmount || "0");
+            // Only count the next payment amount for active subscriptions
+            const nextPaymentAmount = BigNumber.from(sub.totalAmount || "0");
             if (!acc[currency]) {
               acc[currency] = BigNumber.from("0");
             }
-            acc[currency] = acc[currency].add(amount);
+            acc[currency] = acc[currency].add(nextPaymentAmount);
           } catch (error) {
-            console.error("Error calculating spent amount:", error);
+            console.error("Error calculating commitment amount:", error);
           }
         }
         return acc;
@@ -208,7 +209,39 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
       {} as Record<string, BigNumber>,
     ) || {};
 
-  const spentValues = Object.entries(spentByCurrency).map(
+  const totalSpentByCurrency =
+    subscriptions?.reduce(
+      (acc, sub) => {
+        if (sub.payments && sub.payments.length > 0 && sub.paymentCurrency) {
+          const currency = sub.paymentCurrency;
+          try {
+            const paymentAmount = BigNumber.from(sub.totalAmount || "0");
+            const completedPayments = BigNumber.from(
+              sub.payments.length.toString(),
+            );
+            const totalSpent = paymentAmount.mul(completedPayments);
+
+            if (!acc[currency]) {
+              acc[currency] = BigNumber.from("0");
+            }
+            acc[currency] = acc[currency].add(totalSpent);
+          } catch (error) {
+            console.error("Error calculating total spent:", error);
+          }
+        }
+        return acc;
+      },
+      {} as Record<string, BigNumber>,
+    ) || {};
+
+  const commitmentValues = Object.entries(commitmentsByCurrency).map(
+    ([currency, amount]) => ({
+      amount: amount.toString(),
+      currency,
+    }),
+  );
+
+  const spentValues = Object.entries(totalSpentByCurrency).map(
     ([currency, amount]) => ({
       amount: amount.toString(),
       currency,
@@ -217,7 +250,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Active Subscriptions"
           value={
@@ -225,6 +258,11 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
               .length || 0
           }
           icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
+        />
+        <MultiCurrencyStatCard
+          title="Subscription Commitments"
+          icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          values={commitmentValues}
         />
         <MultiCurrencyStatCard
           title="Total Spent"
