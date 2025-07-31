@@ -36,7 +36,7 @@ const ITEMS_PER_PAGE = 10;
 const ACTIVE_STATUSES = ["pending", "active"];
 
 const SubscriptionTableColumns = () => (
-  <TableRow className="hover:bg-transparent border-none">
+  <TableRow className="hover:bg-muted/50 border-none">
     <TableHeadCell>Start Date</TableHeadCell>
     <TableHeadCell>Plan Name</TableHeadCell>
     <TableHeadCell>Status</TableHeadCell>
@@ -82,7 +82,7 @@ const SubscriptionRow = ({
   const canCancel = getCanCancelPayment(subscription.status);
 
   return (
-    <TableRow className="hover:bg-zinc-50/50">
+    <TableRow className="hover:bg-muted/50">
       <TableCell>
         {subscription.createdAt
           ? format(new Date(subscription.createdAt), "do MMM yyyy")
@@ -176,21 +176,21 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
             subscriptions.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
               .length || 0
           }
-          icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
+          icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Total Plans"
           value={subscriptions?.length || 0}
-          icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
+          icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Total Spent"
           value={`$${totalSpent.toLocaleString()}`}
-          icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
 
-      <Card className="border border-zinc-100">
+      <Card className="border border-border">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -201,7 +201,9 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
                 <TableRow>
                   <TableCell colSpan={9} className="p-0">
                     <EmptyState
-                      icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
+                      icon={
+                        <CreditCard className="h-6 w-6 text-muted-foreground" />
+                      }
                       title="No active subscriptions"
                       subtitle="You haven't subscribed to any plans yet"
                     />

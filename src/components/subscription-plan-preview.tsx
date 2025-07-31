@@ -117,7 +117,7 @@ export function SubscriptionPlanPreview({
       <div className="flex items-center mb-8">
         <Link
           href="/"
-          className="text-zinc-600 hover:text-black transition-colors mr-4"
+          className="text-muted-foreground hover:text-foreground transition-colors mr-4"
         >
           <ArrowLeft className="h-6 w-6" />
         </Link>
@@ -138,7 +138,9 @@ export function SubscriptionPlanPreview({
           <CardContent className="space-y-6">
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-zinc-600 mb-1">Amount Per Payment</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Amount Per Payment
+                </p>
                 <p className="text-2xl font-bold">
                   {displayCurrency} {subscriptionPlan.amount}
                 </p>
@@ -146,13 +148,17 @@ export function SubscriptionPlanPreview({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-zinc-600 mb-1">Frequency</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Frequency
+                  </p>
                   <p className="font-semibold">
                     {subscriptionPlan.recurrenceFrequency}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-zinc-600 mb-1">Total Payments</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Total Payments
+                  </p>
                   <p className="font-semibold">
                     {subscriptionPlan.totalNumberOfPayments}
                   </p>
@@ -160,7 +166,9 @@ export function SubscriptionPlanPreview({
               </div>
 
               <div>
-                <p className="text-sm text-zinc-600 mb-1">Total Amount</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Total Amount
+                </p>
                 <p className="font-semibold">
                   {displayCurrency} {totalAmount.toFixed(2)}
                 </p>
@@ -168,13 +176,17 @@ export function SubscriptionPlanPreview({
               <div>
                 {subscriptionPlan.trialDays > 0 ? (
                   <>
-                    <p className="text-sm text-zinc-600 mb-1">Trial Period</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Trial Period
+                    </p>
                     <p className="font-semibold">
                       {`${subscriptionPlan.trialDays} day${subscriptionPlan.trialDays > 1 ? "s" : ""}`}
                     </p>
                   </>
                 ) : (
-                  <p className="text-sm text-zinc-600 mb-1">No Trial Period</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    No Trial Period
+                  </p>
                 )}
               </div>
             </div>
@@ -237,7 +249,7 @@ export function SubscriptionPlanPreview({
                     <button
                       type="button"
                       onClick={() => open()}
-                      className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+                      className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
                       disabled={isProcessing}
                     >
                       <span className="font-mono mr-2">
@@ -268,7 +280,7 @@ export function SubscriptionPlanPreview({
                 </>
               ) : (
                 <div className="flex flex-col items-center py-6 space-y-4">
-                  <p className="text-zinc-600 text-center">
+                  <p className="text-muted-foreground text-center">
                     Connect your wallet to subscribe
                   </p>
                   <Button onClick={() => open()} size="lg" className="w-full">
@@ -279,8 +291,10 @@ export function SubscriptionPlanPreview({
               )
             ) : (
               <div className="flex flex-col items-center justify-center py-6 space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-                <p className="text-zinc-500">Initializing payment system...</p>
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  Initializing payment system...
+                </p>
               </div>
             )}
           </CardContent>

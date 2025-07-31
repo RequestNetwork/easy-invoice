@@ -29,25 +29,27 @@ export function InvoicePreview({
     );
 
   return (
-    <Card className="w-full bg-white shadow-sm border-0">
+    <Card className="w-full bg-card text-card-foreground shadow-sm border border-border">
       <CardContent className="p-8 min-h-[842px]">
         {/* Header Section */}
         <div className="mb-12">
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-4">
-              <div className="text-xs text-neutral-500 mb-1">INVOICE NO</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                INVOICE NO
+              </div>
               <div className="text-sm font-medium">
                 {data.invoiceNumber || "INV-001"}
               </div>
             </div>
             <div className="col-span-4">
-              <div className="text-xs text-neutral-500 mb-1">ISSUED</div>
+              <div className="text-xs text-muted-foreground mb-1">ISSUED</div>
               <div className="text-sm">
                 {formatDate(new Date().toISOString())}
               </div>
             </div>
             <div className="col-span-4">
-              <div className="text-xs text-neutral-500 mb-1">DUE DATE</div>
+              <div className="text-xs text-muted-foreground mb-1">DUE DATE</div>
               <div className="text-sm">
                 {data.dueDate ? formatDate(data.dueDate) : "MM/DD/YY"}
               </div>
@@ -55,7 +57,9 @@ export function InvoicePreview({
           </div>
           {data.isRecurring && data.frequency && (
             <div className="mt-4">
-              <div className="text-xs text-neutral-500 mb-1">RECURRING</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                RECURRING
+              </div>
               <div className="text-sm flex items-center gap-1">
                 <span>↻ {data.frequency.toLowerCase()}</span>
                 {data.startDate && (
@@ -70,30 +74,32 @@ export function InvoicePreview({
         <div className="grid grid-cols-2 gap-16 mb-12">
           <div className="space-y-6">
             <div>
-              <div className="text-xs text-neutral-500 mb-3">FROM</div>
+              <div className="text-xs text-muted-foreground mb-3">FROM</div>
               <div className="space-y-1">
                 <div className="text-sm font-medium">
                   {data.creatorName || "Your name"}
                 </div>
-                <div className="text-sm text-neutral-600">
+                <div className="text-sm text-muted-foreground">
                   {data.creatorEmail || "your@email.com"}
                 </div>
               </div>
             </div>
             <div>
-              <div className="text-xs text-neutral-500 mb-1">PAYABLE TO</div>
-              <div className="text-sm text-neutral-600 font-mono break-all">
+              <div className="text-xs text-muted-foreground mb-1">
+                PAYABLE TO
+              </div>
+              <div className="text-sm text-muted-foreground font-mono break-all">
                 {data.walletAddress || "Payee address"}
               </div>
             </div>
           </div>
           <div>
-            <div className="text-xs text-neutral-500 mb-3">TO</div>
+            <div className="text-xs text-muted-foreground mb-3">TO</div>
             <div className="space-y-1">
               <div className="text-sm font-medium">
                 {data.clientName || "Client name"}
               </div>
-              <div className="text-sm text-neutral-600">
+              <div className="text-sm text-muted-foreground">
                 {data.clientEmail || "client@email.com"}
               </div>
             </div>
@@ -105,21 +111,21 @@ export function InvoicePreview({
           <table className="w-full">
             <thead>
               <tr>
-                <th className="text-xs text-neutral-500 text-left pb-3">
+                <th className="text-xs text-muted-foreground text-left pb-3">
                   DESCRIPTION
                 </th>
-                <th className="text-xs text-neutral-500 text-right pb-3">
+                <th className="text-xs text-muted-foreground text-right pb-3">
                   QTY
                 </th>
-                <th className="text-xs text-neutral-500 text-right pb-3">
+                <th className="text-xs text-muted-foreground text-right pb-3">
                   PRICE
                 </th>
-                <th className="text-xs text-neutral-500 text-right pb-3">
+                <th className="text-xs text-muted-foreground text-right pb-3">
                   AMOUNT
                 </th>
               </tr>
             </thead>
-            <tbody className="border-y border-neutral-200">
+            <tbody className="border-y border-border">
               {(
                 data.items || [
                   { description: "Description", quantity: 1, price: 0 },
@@ -145,16 +151,16 @@ export function InvoicePreview({
           <div className="flex justify-end mt-6">
             <div className="w-48">
               <div className="flex justify-between py-2">
-                <span className="text-sm text-neutral-600">Subtotal</span>
+                <span className="text-sm text-muted-foreground">Subtotal</span>
                 <span className="text-sm">{calculateTotal().toString()}</span>
               </div>
-              <div className="flex justify-between py-2 border-t border-neutral-200">
+              <div className="flex justify-between py-2 border-t border-border">
                 <span className="text-sm font-medium">Total</span>
                 <div>
                   <div className="text-sm text-right font-medium">
                     {calculateTotal().toString()}
                   </div>
-                  <div className="text-xs text-neutral-500">
+                  <div className="text-xs text-muted-foreground">
                     {formatCurrencyLabel(data.invoiceCurrency || "USD")}
                   </div>
                 </div>
@@ -167,7 +173,9 @@ export function InvoicePreview({
         <div className="grid grid-cols-2 gap-16">
           <div className="space-y-6">
             <div>
-              <div className="text-xs text-neutral-500 mb-1">PAYABLE IN</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                PAYABLE IN
+              </div>
               <div className="text-sm">
                 {!data.paymentCurrency
                   ? "Choose payment currency"
@@ -182,7 +190,7 @@ export function InvoicePreview({
             {/* Bank Account Details */}
             {selectedPaymentDetails && (
               <div>
-                <div className="text-xs text-neutral-500 mb-1">
+                <div className="text-xs text-muted-foreground mb-1">
                   BANK ACCOUNT DETAILS
                 </div>
                 <div className="space-y-1 text-sm">
@@ -230,8 +238,8 @@ export function InvoicePreview({
           </div>
           {data.notes && (
             <div>
-              <div className="text-xs text-neutral-500 mb-1">NOTES</div>
-              <div className="text-sm text-neutral-600 whitespace-pre-wrap break-words max-w-[300px]">
+              <div className="text-xs text-muted-foreground mb-1">NOTES</div>
+              <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words max-w-[300px]">
                 {data.notes}
               </div>
             </div>

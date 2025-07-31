@@ -278,7 +278,7 @@ export function CreateSubscriptionPlan({
                   <button
                     type="button"
                     onClick={() => open()}
-                    className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+                    className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
                     disabled={isLoading}
                   >
                     <span className="font-mono mr-2">

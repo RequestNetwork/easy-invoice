@@ -3,7 +3,7 @@ import Link from "next/link";
 export function Footer() {
   return (
     <footer className="w-full p-6" aria-label="Site footer">
-      <div className="max-w-7xl mx-auto flex justify-center items-center text-sm text-zinc-600">
+      <div className="max-w-7xl mx-auto flex justify-center items-center text-sm text-muted-foreground">
         <div>
           © {new Date().getFullYear()} EasyInvoice. All rights reserved. Built
           by{" "}

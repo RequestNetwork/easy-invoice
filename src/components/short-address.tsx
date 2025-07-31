@@ -25,7 +25,7 @@ export function ShortAddress({ address, className = "" }: ShortAddressProps) {
         <button
           type="button"
           onClick={handleCopy}
-          className={`text-zinc-500 hover:text-zinc-700 transition-colors flex items-center gap-2 ${className}`}
+          className={`text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 ${className}`}
         >
           <span className="font-mono text-sm">{shortAddress}</span>
           <Copy className="h-3 w-3" />
