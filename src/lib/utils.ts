@@ -26,5 +26,5 @@ export function truncateEmail(email: string, maxLength = 20): string {
 }
 
 export const getCanCancelPayment = (status: string) => {
-  return status === "pending" || status === "active";
+  return status !== "cancelled" && status !== "completed";
 };

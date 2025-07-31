@@ -21,14 +21,8 @@ export function useCancelRecurringPayment({
   const updateRecurringPaymentMutation =
     api.recurringPayment.updateRecurringPayment.useMutation();
 
-  const setRecurringPaymentStatusMutation =
-    api.recurringPayment.setRecurringPaymentStatus.useMutation();
-
   const updateRecurringPaymentForSubscriptionMutation =
     api.recurringPayment.updateRecurringPaymentForSubscription.useMutation();
-
-  const setRecurringPaymentStatusForSubscriptionMutation =
-    api.recurringPayment.setRecurringPaymentStatusForSubscription.useMutation();
 
   const cancelRecurringPayment = async (
     payment: RecurringPayment,
@@ -67,7 +61,8 @@ export function useCancelRecurringPayment({
 
       if (transactions?.length) {
         toast.info("Signature required", {
-          description: "Please sign the transactions in your wallet",
+          description:
+            "Please sign the transactions in your wallet to reduce spending cap",
         });
 
         for (let i = 0; i < transactions.length; i++) {
@@ -77,23 +72,10 @@ export function useCancelRecurringPayment({
             const txResponse = await signer.sendTransaction(transaction);
             await txResponse.wait();
           } catch (txError) {
-            // the transaction are just for reducing the spending cap, the payment was still cancelled in the backend
+            // The transactions are just for reducing the spending cap, the payment was already cancelled
             console.error("Transaction error:", txError);
           }
         }
-      }
-
-      if (subscriptionId) {
-        await setRecurringPaymentStatusForSubscriptionMutation.mutateAsync({
-          id: payment.id,
-          subscriptionId,
-          status: "cancelled",
-        });
-      } else {
-        await setRecurringPaymentStatusMutation.mutateAsync({
-          id: payment.id,
-          status: "cancelled",
-        });
       }
 
       await utils.recurringPayment.getRecurringPayments.invalidate();
@@ -113,8 +95,6 @@ export function useCancelRecurringPayment({
     cancelRecurringPayment,
     isLoading:
       updateRecurringPaymentMutation.isLoading ||
-      setRecurringPaymentStatusMutation.isLoading ||
-      updateRecurringPaymentForSubscriptionMutation.isLoading ||
-      setRecurringPaymentStatusForSubscriptionMutation.isLoading,
+      updateRecurringPaymentForSubscriptionMutation.isLoading,
   };
 }

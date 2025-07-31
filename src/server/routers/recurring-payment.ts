@@ -4,11 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
-import {
-  RecurringPaymentStatus,
-  recurringPaymentTable,
-  subscriptionPlanTable,
-} from "../db/schema";
+import { recurringPaymentTable, subscriptionPlanTable } from "../db/schema";
 import { protectedProcedure, router } from "../trpc";
 
 // Response type for the external API
@@ -70,85 +66,6 @@ export const recurringPaymentRouter = router({
       return recurringPayment[0];
     }),
 
-  setRecurringPaymentStatus: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().min(1, "ID is required"),
-        status: z.enum(RecurringPaymentStatus),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { db, user } = ctx;
-
-      const recurringPayment = await db.query.recurringPaymentTable.findFirst({
-        where: and(
-          eq(recurringPaymentTable.id, input.id),
-          eq(recurringPaymentTable.userId, user.id),
-        ),
-      });
-
-      if (!recurringPayment) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Recurring payment not found",
-        });
-      }
-
-      await db
-        .update(recurringPaymentTable)
-        .set({ status: input.status })
-        .where(eq(recurringPaymentTable.id, input.id));
-
-      return;
-    }),
-
-  setRecurringPaymentStatusForSubscription: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().min(1, "ID is required"),
-        subscriptionId: z.string().min(1, "Subscription ID is required"),
-        status: z.enum(RecurringPaymentStatus),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { db, user } = ctx;
-
-      const subscriptionPlan = await db.query.subscriptionPlanTable.findFirst({
-        where: and(
-          eq(subscriptionPlanTable.id, input.subscriptionId),
-          eq(subscriptionPlanTable.userId, user.id),
-        ),
-      });
-
-      if (!subscriptionPlan) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Subscription plan not found or access denied",
-        });
-      }
-
-      const recurringPayment = await db.query.recurringPaymentTable.findFirst({
-        where: and(
-          eq(recurringPaymentTable.id, input.id),
-          eq(recurringPaymentTable.subscriptionId, input.subscriptionId),
-        ),
-      });
-
-      if (!recurringPayment) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Recurring payment not found",
-        });
-      }
-
-      await db
-        .update(recurringPaymentTable)
-        .set({ status: input.status })
-        .where(eq(recurringPaymentTable.id, recurringPayment.id));
-
-      return;
-    }),
-
   updateRecurringPayment: protectedProcedure
     .input(
       z.object({
@@ -186,6 +103,12 @@ export const recurringPaymentRouter = router({
           message: "Failed to update recurring payment",
         });
       }
+
+      const newStatus = input.action === "cancel" ? "cancelled" : "active";
+      await db
+        .update(recurringPaymentTable)
+        .set({ status: newStatus })
+        .where(eq(recurringPaymentTable.id, recurringPayment.id));
 
       return response.data as UpdateRecurringPaymentResponse;
     }),
@@ -242,6 +165,12 @@ export const recurringPaymentRouter = router({
           message: "Failed to update recurring payment",
         });
       }
+
+      const newStatus = input.action === "cancel" ? "cancelled" : "active";
+      await db
+        .update(recurringPaymentTable)
+        .set({ status: newStatus })
+        .where(eq(recurringPaymentTable.id, recurringPayment.id));
 
       return response.data as UpdateRecurringPaymentResponse;
     }),
