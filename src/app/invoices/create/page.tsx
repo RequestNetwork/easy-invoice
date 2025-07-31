@@ -27,7 +27,7 @@ export default async function CreateInvoicePage() {
         <div className="flex items-center mb-8">
           <Link
             href="/dashboard"
-            className="text-zinc-600 hover:text-black transition-colors mr-4"
+            className="text-muted-foreground hover:text-foreground transition-colors mr-4"
           >
             <ArrowLeft className="h-6 w-6" />
           </Link>

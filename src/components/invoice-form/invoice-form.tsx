@@ -588,12 +588,12 @@ export function InvoiceForm({
             <DialogTitle>Payment Method Pending Approval</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900" />
-            <p className="text-center text-zinc-600">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground" />
+            <p className="text-center text-muted-foreground">
               The payment method you selected is currently pending approval.
               Please wait until it is approved before creating an invoice.
             </p>
-            <p className="text-center text-zinc-500 text-sm">
+            <p className="text-center text-muted-foreground text-sm">
               You can close this dialog. We'll notify you when approval is
               complete.
             </p>
@@ -1026,7 +1026,7 @@ export function InvoiceForm({
         <div className="flex justify-end">
           <Button
             type="submit"
-            className="bg-black hover:bg-zinc-800 text-white transition-colors"
+            className="bg-primary hover:bg-primary/80 text-primary-foreground transition-colors"
             disabled={isLoading || isSubmitting || invoiceCreated}
           >
             {isLoading || isSubmitting

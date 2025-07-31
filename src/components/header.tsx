@@ -1,5 +1,6 @@
 "use client";
 
+import { ModeToggle } from "@/components/mode-toggle";
 import type { User } from "@/server/db/schema";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,10 +21,12 @@ export function Header({ user }: { user?: User | undefined }) {
           href={user ? "/dashboard" : "/"}
           className="flex items-center gap-x-2"
         >
-          <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
-            <span className="text-white font-bold">EI</span>
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-bold">EI</span>
           </div>
-          <span className="text-xl font-semibold">EasyInvoice</span>
+          <span className="text-xl font-semibold text-foreground">
+            EasyInvoice
+          </span>
         </Link>
 
         <div className="flex items-center space-x-4">
@@ -31,38 +34,38 @@ export function Header({ user }: { user?: User | undefined }) {
             <>
               <Link
                 href="/dashboard"
-                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+                className="text-foreground hover:text-muted-foreground transition-colors"
               >
                 Dashboard
               </Link>
               <Link
                 href="/payouts"
-                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+                className="text-foreground hover:text-muted-foreground transition-colors"
               >
                 Payouts
               </Link>
               <Link
                 href="/invoice-me"
-                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+                className="text-foreground hover:text-muted-foreground transition-colors"
               >
                 Invoice Me
               </Link>
               <Link
                 href="/subscription-plans"
-                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+                className="text-foreground hover:text-muted-foreground transition-colors"
               >
                 Subscription Plans
               </Link>
               <Link
                 href="/crypto-to-fiat"
-                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+                className="text-foreground hover:text-muted-foreground transition-colors"
               >
                 Crypto-to-fiat
               </Link>
               {demoMeetingUrl && (
                 <Link
                   href={demoMeetingUrl}
-                  className="font-semibold text-zinc-900 underline underline-offset-4 decoration-zinc-400 hover:text-zinc-600 transition-colors"
+                  className="font-semibold text-foreground underline underline-offset-4 decoration-border hover:text-muted-foreground transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -76,7 +79,7 @@ export function Header({ user }: { user?: User | undefined }) {
           {demoMeetingUrl && !user && (
             <Button
               asChild
-              className="bg-black hover:bg-zinc-800 text-white transition-colors"
+              className="bg-primary hover:bg-primary/80 text-primary-foreground transition-colors"
             >
               <Link
                 href={demoMeetingUrl}
@@ -87,6 +90,7 @@ export function Header({ user }: { user?: User | undefined }) {
               </Link>
             </Button>
           )}
+          <ModeToggle />
         </div>
       </nav>
     </header>

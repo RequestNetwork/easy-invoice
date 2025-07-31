@@ -265,8 +265,8 @@ export function BatchPayout() {
 
   return (
     <div className="flex justify-center mx-auto w-full">
-      <Card className="w-full shadow-lg border-zinc-200/80">
-        <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
+      <Card className="w-full shadow-lg border border-border bg-card text-card-foreground">
+        <CardHeader className="bg-muted rounded-t-lg border-b border-border">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
@@ -288,8 +288,10 @@ export function BatchPayout() {
         {!isAppKitReady ? (
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="h-10 w-10 animate-spin text-zinc-400" />
-              <p className="text-zinc-500">Initializing payment system...</p>
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">
+                Initializing payment system...
+              </p>
             </div>
           </CardContent>
         ) : (
@@ -299,13 +301,13 @@ export function BatchPayout() {
               <div className="flex justify-center mb-6">
                 <div className="flex items-center space-x-4">
                   <div
-                    className={`flex items-center ${currentStep >= 1 ? "text-black" : "text-zinc-300"}`}
+                    className={`flex items-center ${currentStep >= 1 ? "text-foreground" : "text-muted-foreground"}`}
                   >
                     <div
                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
                         currentStep >= 1
-                          ? "border-black bg-zinc-50"
-                          : "border-zinc-300"
+                          ? "border-foreground bg-muted"
+                          : "border-border"
                       }`}
                     >
                       <Wallet className="w-4 h-4" />
@@ -314,17 +316,17 @@ export function BatchPayout() {
                   </div>
 
                   <div
-                    className={`w-16 h-0.5 ${currentStep >= 2 ? "bg-black" : "bg-zinc-300"}`}
+                    className={`w-16 h-0.5 ${currentStep >= 2 ? "bg-foreground" : "bg-border"}`}
                   />
 
                   <div
-                    className={`flex items-center ${currentStep >= 2 ? "text-black" : "text-zinc-300"}`}
+                    className={`flex items-center ${currentStep >= 2 ? "text-foreground" : "text-muted-foreground"}`}
                   >
                     <div
                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
                         currentStep >= 2
-                          ? "border-black bg-zinc-50"
-                          : "border-zinc-300"
+                          ? "border-foreground bg-muted"
+                          : "border-border"
                       }`}
                     >
                       <Send className="w-4 h-4" />
@@ -336,7 +338,7 @@ export function BatchPayout() {
 
               {currentStep === 1 ? (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                  <p className="text-zinc-600 text-center max-w-md">
+                  <p className="text-muted-foreground text-center max-w-md">
                     Connect your wallet to send batch payments to multiple
                     addresses
                   </p>
@@ -351,10 +353,10 @@ export function BatchPayout() {
                   className="space-y-6"
                 >
                   {/* Excel-like table */}
-                  <div className="border rounded-lg overflow-hidden">
+                  <div className="border rounded-lg overflow-hidden border-border">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-zinc-50">
+                        <TableRow className="bg-muted">
                           <TableHead className="w-12 text-center">#</TableHead>
                           <TableHead className="min-w-[300px]">
                             Recipient Address
@@ -382,9 +384,9 @@ export function BatchPayout() {
                           return (
                             <TableRow
                               key={field.id}
-                              className="hover:bg-zinc-50/50"
+                              className="hover:bg-muted/50"
                             >
-                              <TableCell className="text-center text-sm text-zinc-500 font-medium">
+                              <TableCell className="text-center text-sm text-muted-foreground font-medium">
                                 {index + 1}
                               </TableCell>
                               <TableCell>
@@ -392,7 +394,7 @@ export function BatchPayout() {
                                   placeholder="0x..."
                                   {...form.register(`payouts.${index}.payee`)}
                                   disabled={paymentStatus === "processing"}
-                                  className="font-mono text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-zinc-300"
+                                  className="font-mono text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-border"
                                 />
                               </TableCell>
                               <TableCell>
@@ -405,7 +407,7 @@ export function BatchPayout() {
                                     valueAsNumber: true,
                                   })}
                                   disabled={paymentStatus === "processing"}
-                                  className="text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-zinc-300"
+                                  className="text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-border"
                                 />
                               </TableCell>
                               <TableCell>
@@ -416,7 +418,7 @@ export function BatchPayout() {
                                   }
                                   disabled={paymentStatus === "processing"}
                                 >
-                                  <SelectTrigger className="text-sm border-0 shadow-none focus:ring-1 focus:ring-zinc-300">
+                                  <SelectTrigger className="text-sm border-0 shadow-none focus:ring-1 focus:ring-border">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -447,7 +449,7 @@ export function BatchPayout() {
                                     }
                                     disabled={paymentStatus === "processing"}
                                   >
-                                    <SelectTrigger className="text-sm border-0 shadow-none focus:ring-1 focus:ring-zinc-300">
+                                    <SelectTrigger className="text-sm border-0 shadow-none focus:ring-1 focus:ring-border">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -464,7 +466,7 @@ export function BatchPayout() {
                                     </SelectContent>
                                   </Select>
                                 ) : (
-                                  <div className="text-sm text-zinc-500 px-3 py-2">
+                                  <div className="text-sm text-muted-foreground px-3 py-2">
                                     {formatCurrencyLabel(invoiceCurrency)}
                                   </div>
                                 )}
@@ -477,7 +479,7 @@ export function BatchPayout() {
                                     size="sm"
                                     onClick={() => duplicatePayment(index)}
                                     disabled={fields.length >= MAX_PAYMENTS}
-                                    className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-700"
+                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                                   >
                                     <Copy className="h-3 w-3" />
                                   </Button>
@@ -487,7 +489,7 @@ export function BatchPayout() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => removePayment(index)}
-                                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                      className="h-8 w-8 p-0 text-destructive hover:text-destructive-foreground hover:bg-destructive/10"
                                     >
                                       <Trash2 className="h-3 w-3" />
                                     </Button>
@@ -510,26 +512,28 @@ export function BatchPayout() {
                       fields.length >= MAX_PAYMENTS ||
                       paymentStatus === "processing"
                     }
-                    className="w-full border-dashed border-2 border-zinc-300 text-zinc-600 hover:border-zinc-400 hover:text-zinc-700"
+                    className="w-full border-dashed border-2 border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Payment Row ({fields.length}/{MAX_PAYMENTS})
                   </Button>
 
                   {/* Enhanced Summary */}
-                  <Card className="bg-zinc-50 border-zinc-200">
+                  <Card className="bg-muted border border-border">
                     <CardContent className="p-4">
-                      <h3 className="font-medium text-zinc-900 mb-3">
+                      <h3 className="font-medium text-foreground mb-3">
                         Batch Summary
                       </h3>
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-zinc-600">Total Items:</span>
+                            <span className="text-muted-foreground">
+                              Total Items:
+                            </span>
                             <span className="font-medium">{fields.length}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-zinc-600">
+                            <span className="text-muted-foreground">
                               Ready to Process:
                             </span>
                             <span className="font-medium">
@@ -537,7 +541,7 @@ export function BatchPayout() {
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-zinc-600">
+                            <span className="text-muted-foreground">
                               Unique Addresses:
                             </span>
                             <span className="font-medium">
@@ -546,7 +550,7 @@ export function BatchPayout() {
                           </div>
                         </div>
                         <div className="space-y-2 text-sm">
-                          <div className="font-medium text-zinc-900 mb-2">
+                          <div className="font-medium text-foreground mb-2">
                             Totals by Currency:
                           </div>
                           {Object.keys(totalsByCurrency).length > 0 ? (
@@ -556,7 +560,7 @@ export function BatchPayout() {
                                   key={currency}
                                   className="flex justify-between"
                                 >
-                                  <span className="text-zinc-600">
+                                  <span className="text-muted-foreground">
                                     {formatCurrencyLabel(currency)}:
                                   </span>
                                   <span className="font-medium">{total}</span>
@@ -564,7 +568,7 @@ export function BatchPayout() {
                               ),
                             )
                           ) : (
-                            <div className="text-zinc-500 italic">
+                            <div className="text-muted-foreground italic">
                               No amounts entered
                             </div>
                           )}
@@ -577,7 +581,7 @@ export function BatchPayout() {
                     <button
                       type="button"
                       onClick={() => open()}
-                      className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+                      className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <span className="font-mono mr-2">
                         {address?.substring(0, 6)}...

@@ -194,8 +194,8 @@ export function DirectPayment() {
 
   return (
     <div className="flex justify-center mx-auto w-full">
-      <Card className="w-full shadow-lg border-zinc-200/80">
-        <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
+      <Card className="w-full shadow-lg border border-border bg-card text-card-foreground">
+        <CardHeader className="bg-muted rounded-t-lg border-b border-border">
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
             Direct Payout
@@ -205,8 +205,10 @@ export function DirectPayment() {
         {!isAppKitReady ? (
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="h-10 w-10 animate-spin text-zinc-400" />
-              <p className="text-zinc-500">Initializing payment system...</p>
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">
+                Initializing payment system...
+              </p>
             </div>
           </CardContent>
         ) : (
@@ -217,14 +219,16 @@ export function DirectPayment() {
                 <div className="flex items-center space-x-4">
                   <div
                     className={`flex items-center ${
-                      currentStep >= 1 ? "text-black" : "text-zinc-300"
+                      currentStep >= 1
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                     }`}
                   >
                     <div
                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
                         currentStep >= 1
-                          ? "border-black bg-zinc-50"
-                          : "border-zinc-300"
+                          ? "border-foreground bg-muted"
+                          : "border-border"
                       }`}
                     >
                       <Wallet className="w-4 h-4" />
@@ -234,20 +238,22 @@ export function DirectPayment() {
 
                   <div
                     className={`w-16 h-0.5 ${
-                      currentStep >= 2 ? "bg-black" : "bg-zinc-300"
+                      currentStep >= 2 ? "bg-foreground" : "bg-border"
                     }`}
                   />
 
                   <div
                     className={`flex items-center ${
-                      currentStep >= 2 ? "text-black" : "text-zinc-300"
+                      currentStep >= 2
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                     }`}
                   >
                     <div
                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
                         currentStep >= 2
-                          ? "border-black bg-zinc-50"
-                          : "border-zinc-300"
+                          ? "border-foreground bg-muted"
+                          : "border-border"
                       }`}
                     >
                       <Send className="w-4 h-4" />
@@ -259,7 +265,7 @@ export function DirectPayment() {
 
               {currentStep === 1 ? (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                  <p className="text-zinc-600 text-center max-w-md">
+                  <p className="text-muted-foreground text-center max-w-md">
                     Connect your wallet to send direct payments to any address
                   </p>
                   <Button onClick={() => open()} size="lg" className="mt-2">
@@ -302,7 +308,7 @@ export function DirectPayment() {
                           </SelectContent>
                         </Select>
                         {form.formState.errors.invoiceCurrency && (
-                          <p className="text-sm text-red-500">
+                          <p className="text-sm text-destructive">
                             {form.formState.errors.invoiceCurrency.message}
                           </p>
                         )}
@@ -337,7 +343,7 @@ export function DirectPayment() {
                             </SelectContent>
                           </Select>
                           {form.formState.errors.paymentCurrency && (
-                            <p className="text-sm text-red-500">
+                            <p className="text-sm text-destructive">
                               {form.formState.errors.paymentCurrency.message}
                             </p>
                           )}
@@ -360,7 +366,7 @@ export function DirectPayment() {
                         disabled={paymentStatus === "processing"}
                       />
                       {form.formState.errors.amount && (
-                        <p className="text-sm text-red-500">
+                        <p className="text-sm text-destructive">
                           {form.formState.errors.amount.message}
                         </p>
                       )}
@@ -376,7 +382,7 @@ export function DirectPayment() {
                         className="font-mono"
                       />
                       {form.formState.errors.payee && (
-                        <p className="text-sm text-red-500">
+                        <p className="text-sm text-destructive">
                           {form.formState.errors.payee.message}
                         </p>
                       )}
@@ -387,7 +393,7 @@ export function DirectPayment() {
                     <button
                       type="button"
                       onClick={() => open()}
-                      className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+                      className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <span className="font-mono mr-2">
                         {address?.substring(0, 6)}...
