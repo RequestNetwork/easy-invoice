@@ -14,7 +14,7 @@ import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { addDays } from "date-fns";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import {
   ArrowLeft,
   CheckCircle,
@@ -71,12 +71,15 @@ export function SubscriptionPlanPreview({
     !sessionError &&
     sessionData.session?.userId !== subscriptionPlan.userId;
 
-  const amount = BigNumber.from(subscriptionPlan.amount || "0");
+  const amount = utils.parseUnits(subscriptionPlan.amount, 18);
   const totalPayments = BigNumber.from(
     subscriptionPlan.totalNumberOfPayments.toString(),
   );
   const totalAmount = amount.mul(totalPayments);
+
   const displayCurrency = formatCurrencyLabel(subscriptionPlan.paymentCurrency);
+  const displayAmount = utils.formatUnits(amount, 18);
+  const displayTotalAmount = utils.formatUnits(totalAmount, 18);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -145,7 +148,7 @@ export function SubscriptionPlanPreview({
               <div>
                 <p className="text-sm text-zinc-600 mb-1">Amount Per Payment</p>
                 <p className="text-2xl font-bold">
-                  {displayCurrency} {amount.toString()}
+                  {displayCurrency} {displayAmount}
                 </p>
               </div>
 
@@ -167,7 +170,7 @@ export function SubscriptionPlanPreview({
               <div>
                 <p className="text-sm text-zinc-600 mb-1">Total Amount</p>
                 <p className="font-semibold">
-                  {displayCurrency} {totalAmount.toString()}
+                  {displayCurrency} {displayTotalAmount}
                 </p>
               </div>
               <div>

@@ -142,7 +142,9 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
             </div>
             <p className="text-sm text-zinc-600">
               {plan.amount} {displayCurrency} · {plan.recurrenceFrequency} ·{" "}
-              {plan.trialDays} day trial
+              {plan.trialDays > 0
+                ? `${plan.trialDays} day${plan.trialDays > 1 ? "s" : ""} trial`
+                : "No trial"}{" "}
             </p>
             <code className="text-xs text-zinc-600 bg-zinc-50 px-3 py-1.5 rounded-md truncate flex-1">
               {linkUrl}
