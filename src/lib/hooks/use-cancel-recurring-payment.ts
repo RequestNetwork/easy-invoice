@@ -14,7 +14,6 @@ interface UseCancelRecurringPaymentProps {
 export function useCancelRecurringPayment({
   onSuccess,
 }: UseCancelRecurringPaymentProps) {
-  const utils = api.useUtils();
   const { isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
 
@@ -79,7 +78,6 @@ export function useCancelRecurringPayment({
         }
       }
 
-      await utils.recurringPayment.getRecurringPayments.invalidate();
       toast.success("Recurring payment cancelled successfully");
       await onSuccess?.();
     } catch (error) {

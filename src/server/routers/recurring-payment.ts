@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { createRecurringPaymentSchema } from "@/lib/schemas/recurring-payment";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { recurringPaymentTable, subscriptionPlanTable } from "../db/schema";
@@ -21,16 +21,21 @@ type UpdateRecurringPaymentResponse = {
 };
 
 export const recurringPaymentRouter = router({
-  getRecurringPayments: protectedProcedure.query(async ({ ctx }) => {
-    const { db, user } = ctx;
+  getNonSubscriptionRecurringPayments: protectedProcedure.query(
+    async ({ ctx }) => {
+      const { db, user } = ctx;
 
-    const recurringPayments = await db.query.recurringPaymentTable.findMany({
-      where: and(eq(recurringPaymentTable.userId, user.id)),
-      orderBy: desc(recurringPaymentTable.createdAt),
-    });
+      const recurringPayments = await db.query.recurringPaymentTable.findMany({
+        where: and(
+          eq(recurringPaymentTable.userId, user.id),
+          isNull(recurringPaymentTable.subscriptionId),
+        ),
+        orderBy: desc(recurringPaymentTable.createdAt),
+      });
 
-    return recurringPayments;
-  }),
+      return recurringPayments;
+    },
+  ),
 
   createRecurringPayment: protectedProcedure
     .input(createRecurringPaymentSchema)

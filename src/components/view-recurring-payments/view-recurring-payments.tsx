@@ -41,15 +41,20 @@ interface ViewRecurringPaymentsProps {
 export function ViewRecurringPayments({
   initialRecurringPayments,
 }: ViewRecurringPaymentsProps) {
+  const utils = api.useUtils();
+
   const {
     data: recurringPayments,
     isLoading,
     error,
     refetch,
     isRefetching,
-  } = api.recurringPayment.getRecurringPayments.useQuery(undefined, {
-    initialData: initialRecurringPayments,
-  });
+  } = api.recurringPayment.getNonSubscriptionRecurringPayments.useQuery(
+    undefined,
+    {
+      initialData: initialRecurringPayments,
+    },
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [cancellingPaymentId, setCancellingPaymentId] = useState<string | null>(
@@ -61,7 +66,7 @@ export function ViewRecurringPayments({
 
   const { cancelRecurringPayment } = useCancelRecurringPayment({
     onSuccess: async () => {
-      refetch();
+      await utils.recurringPayment.getNonSubscriptionRecurringPayments.invalidate();
       setCancellingPaymentId(null);
       setCancelDialogOpenFor(null);
     },
@@ -134,15 +139,15 @@ export function ViewRecurringPayments({
           <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
             <CardTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5" />
-              View Recurring Payments
+              View Recurring Payouts
             </CardTitle>
           </CardHeader>
 
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <p className="text-zinc-500">No recurring payments found</p>
+              <p className="text-zinc-500">No recurring payouts found</p>
               <p className="text-zinc-400 text-sm">
-                Your recurring payments will appear here
+                Your recurring payouts will appear here
               </p>
             </div>
           </CardContent>
