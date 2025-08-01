@@ -25,7 +25,7 @@ import type { SubscriptionWithDetails } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { CreditCard, DollarSign, Filter } from "lucide-react";
 import { useState } from "react";
 import { StatCard } from "../../stat-card";
@@ -74,7 +74,8 @@ const SubscriberRow = ({
     }
   };
 
-  const totalAmount = BigNumber.from(subscription.totalAmount || "0");
+  const totalAmount = utils.parseUnits(subscription.totalAmount, 18);
+  const displayAmount = utils.formatUnits(totalAmount, 18);
 
   return (
     <TableRow className="hover:bg-zinc-50/50">
@@ -95,7 +96,7 @@ const SubscriberRow = ({
       </TableCell>
       <TableCell>
         <span className="font-semibold">
-          {totalAmount.toString()} {subscription.paymentCurrency}
+          {displayAmount} {subscription.paymentCurrency}
         </span>
       </TableCell>
       <TableCell>
@@ -168,12 +169,8 @@ export function SubscribersTable({
       ) {
         const currency = sub.paymentCurrency;
         try {
-          const totalAmount = BigNumber.from(sub.totalAmount || "0");
+          const totalAmount = utils.parseUnits(sub.totalAmount || "0", 18);
           const paymentsCount = BigNumber.from(sub.payments.length.toString());
-          // ASSUMPTION: This calculation assumes each payment equals the full totalAmount.
-          // This is correct for our current system which does not support partial recurring payments.
-          // If partial payments are implemented in the future, this logic must be updated to sum
-          // actual payment amounts from the payments array instead of multiplying by count.
           const revenue = totalAmount.mul(paymentsCount);
 
           if (!acc[currency]) {
@@ -191,10 +188,10 @@ export function SubscribersTable({
 
   const revenueValues = Object.entries(revenuesByCurrency)
     .map(([currency, amount]) => ({
-      amount: amount.toString(),
+      amount: utils.formatUnits(amount, 18),
       currency,
     }))
-    .filter((value) => BigNumber.from(value.amount).gt(0));
+    .filter((value) => utils.parseUnits(value.amount, 18).gt(0));
 
   return (
     <div className="space-y-6">

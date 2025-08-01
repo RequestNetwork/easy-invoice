@@ -23,7 +23,7 @@ import type { SubscriptionPayment } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format } from "date-fns";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import {
   CreditCard,
   DollarSign,
@@ -56,6 +56,10 @@ const PaymentTableColumns = () => (
 );
 
 const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
+  // Parse and format the payment amount properly
+  const paymentAmount = utils.parseUnits(payment.amount, 18);
+  const displayAmount = utils.formatUnits(paymentAmount, 18);
+
   return (
     <TableRow className="hover:bg-zinc-50/50">
       <TableCell>
@@ -65,7 +69,7 @@ const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
       <TableCell>{formatCurrencyLabel(payment.currency)}</TableCell>
       <TableCell>
         <span className="font-semibold">
-          {payment.amount} {payment.currency}
+          {displayAmount} {payment.currency}
         </span>
       </TableCell>
       <TableCell>
@@ -140,7 +144,7 @@ export function PaymentsTable({
     (acc, payment) => {
       const currency = payment.currency;
       try {
-        const amount = BigNumber.from(payment.amount || "0");
+        const amount = utils.parseUnits(payment.amount || "0", 18);
         if (!acc[currency]) {
           acc[currency] = BigNumber.from("0");
         }
@@ -155,7 +159,7 @@ export function PaymentsTable({
 
   const revenueValues = Object.entries(revenuesByCurrency).map(
     ([currency, amount]) => ({
-      amount: amount.toString(),
+      amount: utils.formatUnits(amount, 18),
       currency,
     }),
   );

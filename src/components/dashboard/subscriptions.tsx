@@ -27,7 +27,7 @@ import type { SubscriptionWithDetails } from "@/lib/types";
 import { getCanCancelPayment } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { Ban, CreditCard, DollarSign, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
@@ -194,8 +194,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
         if (ACTIVE_STATUSES.includes(sub.status) && sub.paymentCurrency) {
           const currency = sub.paymentCurrency;
           try {
-            // Only count the next payment amount for active subscriptions
-            const nextPaymentAmount = BigNumber.from(sub.totalAmount || "0");
+            const nextPaymentAmount = utils.parseUnits(sub.totalAmount, 18);
             if (!acc[currency]) {
               acc[currency] = BigNumber.from("0");
             }
@@ -215,7 +214,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
         if (sub.payments && sub.payments.length > 0 && sub.paymentCurrency) {
           const currency = sub.paymentCurrency;
           try {
-            const paymentAmount = BigNumber.from(sub.totalAmount || "0");
+            const paymentAmount = utils.parseUnits(sub.totalAmount, 18);
             const completedPayments = BigNumber.from(
               sub.payments.length.toString(),
             );
@@ -236,14 +235,14 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
 
   const commitmentValues = Object.entries(commitmentsByCurrency).map(
     ([currency, amount]) => ({
-      amount: amount.toString(),
+      amount: utils.formatUnits(amount, 18),
       currency,
     }),
   );
 
   const spentValues = Object.entries(totalSpentByCurrency).map(
     ([currency, amount]) => ({
-      amount: amount.toString(),
+      amount: utils.formatUnits(amount, 18),
       currency,
     }),
   );
