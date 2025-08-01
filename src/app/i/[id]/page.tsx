@@ -19,6 +19,8 @@ export default async function InvoiceMePage({
 }: {
   params: { id: string };
 }) {
+  // TODO solve unauthenticated access
+  // TODO solve not found error like the subscription plan page
   const invoiceMeLink = await api.invoiceMe.getById.query(params.id);
 
   if (!invoiceMeLink) {

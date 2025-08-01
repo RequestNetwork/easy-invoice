@@ -1,3 +1,5 @@
+import type { RecurringPayment } from "@/server/db/schema";
+
 export interface PaymentRoute {
   id: string;
   fee: number;
@@ -8,3 +10,26 @@ export interface PaymentRoute {
   isCryptoToFiat?: boolean;
   platformFee?: number;
 }
+
+export type SubscriptionWithDetails = RecurringPayment & {
+  subscription: {
+    label: string;
+    id: string;
+    trialDays: number;
+  } | null;
+};
+
+export type SubscriptionPayment = {
+  id: string;
+  amount: string;
+  currency: string;
+  planId: string;
+  planName: string;
+  txHash: string;
+  createdAt: Date;
+  requestScanUrl?: string;
+  chain: string;
+  subscriber: string;
+  totalNumberOfPayments: number;
+  paymentNumber: number;
+};

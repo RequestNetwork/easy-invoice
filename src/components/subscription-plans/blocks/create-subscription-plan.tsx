@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -33,14 +32,14 @@ import { subscriptionPlanApiSchema } from "@/lib/schemas/subscription-plan";
 import { RecurrenceFrequency } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
-import { LogOut, Plus, Wallet } from "lucide-react";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { Plus } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
 const subscriptionPlanFormSchema = subscriptionPlanApiSchema.omit({
-  payee: true,
   chain: true,
 });
 
@@ -54,8 +53,7 @@ export function CreateSubscriptionPlan({
   onClose,
 }: CreateSubscriptionPlanProps) {
   const trpcContext = api.useUtils();
-  const { address, isConnected } = useAppKitAccount();
-  const { open } = useAppKit();
+  const { address } = useAppKitAccount();
 
   const { mutateAsync: createSubscriptionPlan, isLoading } =
     api.subscriptionPlan.create.useMutation({
@@ -80,39 +78,26 @@ export function CreateSubscriptionPlan({
       amount: 0,
       totalPayments: 12,
       paymentCurrency: "FAU-sepolia",
+      payee: "",
     },
   });
 
-  const onSubmit = async (data: SubscriptionPlanFormValues) => {
-    if (!isConnected || !address) {
-      toast.error("Please connect your wallet first");
-      return;
+  useEffect(() => {
+    if (address) {
+      form.setValue("payee", address);
     }
+  }, [address, form]);
 
+  const onSubmit = async (data: SubscriptionPlanFormValues) => {
     await createSubscriptionPlan({
       ...data,
-      payee: address,
       chain: "sepolia",
     });
   };
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent
-        className="sm:max-w-[600px]"
-        onInteractOutside={(e) => {
-          const target = e.target as Element;
-          // Check if the click target is part of the AppKit modal (custom element)
-          if (
-            target.closest("w3m-modal") ||
-            target.closest('[data-testid*="w3m"]') ||
-            target.closest(".w3m-modal") ||
-            target.tagName?.toLowerCase().startsWith("w3m-")
-          ) {
-            e.preventDefault();
-          }
-        }}
-      >
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Create New Subscription Plan</DialogTitle>
         </DialogHeader>
@@ -128,6 +113,24 @@ export function CreateSubscriptionPlan({
                   <FormControl>
                     <Input
                       placeholder="e.g. Monthly Update"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="payee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Recipient Address</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="0x..."
                       disabled={isLoading}
                       {...field}
                     />
@@ -165,6 +168,7 @@ export function CreateSubscriptionPlan({
                 </FormItem>
               )}
             />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -210,26 +214,27 @@ export function CreateSubscriptionPlan({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/*We use this directly since FormField doesn't have this option */}
-              <div>
-                <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="0.00"
-                  step="any"
-                  min="0"
-                  {...form.register("amount", {
-                    valueAsNumber: true,
-                  })}
-                  disabled={isLoading}
-                />
-                {form.formState.errors.amount && (
-                  <p className="text-sm text-red-500">
-                    {form.formState.errors.amount.message}
-                  </p>
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amount</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        step="any"
+                        min="0"
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
               <FormField
                 control={form.control}
                 name="paymentCurrency"
@@ -262,43 +267,17 @@ export function CreateSubscriptionPlan({
 
             <PaymentSecuredUsingRequest />
 
-            <div className="flex justify-between items-center pt-4">
-              {!isConnected ? (
-                <Button
-                  type="button"
-                  onClick={() => open()}
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  <Wallet className="mr-2 h-4 w-4" />
-                  Connect Wallet
-                </Button>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
-                    disabled={isLoading}
-                  >
-                    <span className="font-mono mr-2">
-                      {address?.substring(0, 6)}...
-                      {address?.substring(address?.length - 4)}
-                    </span>
-                    <LogOut className="h-3 w-3" />
-                  </button>
-                  <Button type="submit" disabled={isLoading || !isConnected}>
-                    {isLoading ? (
-                      "Creating..."
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create Plan
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  "Creating..."
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Plan
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         </Form>

@@ -21,7 +21,7 @@ export function RecurringPaymentsNavigation() {
     <Tabs value={activeTab} className="w-fit">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger className="mx-0" value="view" asChild>
-          <Link href="/payouts/recurring">View Payments</Link>
+          <Link href="/payouts/recurring">View Payouts</Link>
         </TabsTrigger>
         <TabsTrigger value="create" asChild>
           <Link href="/payouts/recurring/create">Create New</Link>

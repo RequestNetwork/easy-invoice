@@ -8,17 +8,17 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table/table";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, DollarSign, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { EmptyState } from "./blocks/empty-state";
+import { StatCard } from "../stat-card";
+import { EmptyState } from "../ui/table/empty-state";
+import { Pagination } from "../ui/table/pagination";
+import { TableHeadCell } from "../ui/table/table-head-cell";
 import { InvoiceRow } from "./blocks/invoice-row";
-import { Pagination } from "./blocks/pagination";
-import { StatCard } from "./blocks/stat-card";
-import { TableHeadCell } from "./blocks/table-head-cell";
 
 const ITEMS_PER_PAGE = 10;
 const RETRIEVE_ALL_INVOICES_POLLING_INTERVAL = 3000;
