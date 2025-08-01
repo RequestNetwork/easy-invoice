@@ -5,7 +5,7 @@ import { and, desc, eq, inArray, isNotNull, not } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { recurringPaymentTable, subscriptionPlanTable } from "../db/schema";
-import { protectedProcedure, publicProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
 
 export const subscriptionPlanRouter = router({
   create: protectedProcedure
@@ -57,36 +57,37 @@ export const subscriptionPlanRouter = router({
           ),
         );
     }),
-  getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    const { db } = ctx;
+  getById: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const { db } = ctx;
 
-    const subscriptionPlanLink = await db.query.subscriptionPlanTable.findFirst(
-      {
-        where: and(
-          eq(subscriptionPlanTable.id, input),
-          eq(subscriptionPlanTable.active, true),
-        ),
-        with: {
-          user: {
-            columns: {
-              name: true,
-              email: true,
-              id: true,
+      const subscriptionPlanLink =
+        await db.query.subscriptionPlanTable.findFirst({
+          where: and(
+            eq(subscriptionPlanTable.id, input),
+            eq(subscriptionPlanTable.active, true),
+          ),
+          with: {
+            user: {
+              columns: {
+                name: true,
+                email: true,
+                id: true,
+              },
             },
           },
-        },
-      },
-    );
+        });
 
-    if (!subscriptionPlanLink) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Subscription plan link not found",
-      });
-    }
+      if (!subscriptionPlanLink) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Subscription plan link not found",
+        });
+      }
 
-    return subscriptionPlanLink;
-  }),
+      return subscriptionPlanLink;
+    }),
   getAllSubscribers: protectedProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
 
