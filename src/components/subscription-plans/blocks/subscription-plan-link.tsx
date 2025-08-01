@@ -139,6 +139,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
             </div>
             <p className="text-sm text-zinc-600">
               {displayCurrency} {displayAmount} · {plan.recurrenceFrequency} ·{" "}
+              {plan.totalNumberOfPayments} payments ·{" "}
               {plan.trialDays > 0
                 ? `${plan.trialDays} day${plan.trialDays > 1 ? "s" : ""} trial`
                 : "No trial"}{" "}

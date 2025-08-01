@@ -50,13 +50,13 @@ const PaymentTableColumns = () => (
     <TableHeadCell>Plan Name</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
     <TableHeadCell>Amount</TableHeadCell>
+    <TableHeadCell>Payment Number</TableHeadCell>
     <TableHeadCell>Subscriber</TableHeadCell>
     <TableHeadCell>Request Scan URL</TableHeadCell>
   </TableRow>
 );
 
 const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
-  // Parse and format the payment amount properly
   const paymentAmount = utils.parseUnits(payment.amount, 18);
   const displayAmount = utils.formatUnits(paymentAmount, 18);
 
@@ -71,6 +71,14 @@ const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
         <span className="font-semibold">
           {displayAmount} {payment.currency}
         </span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col items-start gap-1">
+          <span className="text-sm font-bold">{payment.paymentNumber}</span>
+          <span className="text-xs text-zinc-500">
+            of {payment.totalNumberOfPayments}
+          </span>
+        </div>
       </TableCell>
       <TableCell>
         <ShortAddress address={payment.subscriber} />
@@ -220,7 +228,7 @@ export function PaymentsTable({
             <TableBody>
               {filteredPayments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="p-0">
+                  <TableCell colSpan={7} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No payments"

@@ -49,6 +49,8 @@ const SubscriptionTableColumns = () => (
     <TableHeadCell>Trial Info</TableHeadCell>
     <TableHeadCell>Frequency</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
+    <TableHeadCell>Total Payments</TableHeadCell>
+    <TableHeadCell>Current Payment</TableHeadCell>
     <TableHeadCell>Chain</TableHeadCell>
     <TableHeadCell>Recipient</TableHeadCell>
     <TableHeadCell>Payment History</TableHeadCell>
@@ -115,6 +117,22 @@ const SubscriptionRow = ({
       </TableCell>
       <TableCell>
         {formatCurrencyLabel(subscription.paymentCurrency || "")}
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col items-start gap-1">
+          <span className="text-sm font-bold">
+            {subscription.totalNumberOfPayments}
+          </span>
+          <span className="text-xs text-zinc-500">scheduled</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col items-start gap-1">
+          <span className="text-sm font-bold">
+            {subscription.currentNumberOfPayments}
+          </span>
+          <span className="text-xs text-zinc-500">completed</span>
+        </div>
       </TableCell>
       <TableCell>{subscription.chain || "N/A"}</TableCell>
       <TableCell>
@@ -279,7 +297,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
             <TableBody>
               {!subscriptions || subscriptions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="p-0">
+                  <TableCell colSpan={12} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No active subscriptions"

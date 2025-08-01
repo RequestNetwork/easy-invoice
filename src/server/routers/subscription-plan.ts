@@ -154,6 +154,7 @@ export const subscriptionPlanRouter = router({
               id: true,
               label: true,
               trialDays: true,
+              totalNumberOfPayments: true,
             },
           },
         },
@@ -161,20 +162,23 @@ export const subscriptionPlanRouter = router({
 
       return subscribers.reduce<SubscriptionPayment[]>((acc, subscriber) => {
         if (subscriber.payments && subscriber.payments.length > 0) {
-          for (const payment of subscriber.payments) {
+          subscriber.payments.forEach((payment, index) => {
             acc.push({
               id: `${subscriber.id}-${payment.txHash}`,
               amount: subscriber.totalAmount,
               currency: subscriber.paymentCurrency,
               planId: subscriber.subscriptionId || "no-plan",
               planName: subscriber.subscription?.label || "Unnamed Plan",
+              totalNumberOfPayments:
+                subscriber.subscription?.totalNumberOfPayments || 0,
+              paymentNumber: index + 1,
               txHash: payment.txHash,
               createdAt: new Date(payment.date),
               requestScanUrl: payment.requestScanUrl,
               chain: subscriber.chain,
               subscriber: subscriber.payer,
             });
-          }
+          });
         }
         return acc;
       }, []);

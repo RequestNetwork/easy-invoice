@@ -47,6 +47,8 @@ const SubscriberTableColumns = () => (
     <TableHeadCell>Frequency</TableHeadCell>
     <TableHeadCell>Currency</TableHeadCell>
     <TableHeadCell>Amount</TableHeadCell>
+    <TableHeadCell>Total Payments</TableHeadCell>
+    <TableHeadCell>Current Payment</TableHeadCell>
     <TableHeadCell>Subscriber</TableHeadCell>
     <TableHeadCell>Payment History</TableHeadCell>
   </TableRow>
@@ -74,7 +76,7 @@ const SubscriberRow = ({
     }
   };
 
-  const totalAmount = utils.parseUnits(subscription.totalAmount, 18);
+  const totalAmount = utils.parseUnits(subscription.totalAmount || "0", 18);
   const displayAmount = utils.formatUnits(totalAmount, 18);
 
   return (
@@ -98,6 +100,22 @@ const SubscriberRow = ({
         <span className="font-semibold">
           {displayAmount} {subscription.paymentCurrency}
         </span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col items-start gap-1">
+          <span className="text-sm font-bold">
+            {subscription.totalNumberOfPayments}
+          </span>
+          <span className="text-xs text-zinc-500">scheduled</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col items-start gap-1">
+          <span className="text-sm font-bold">
+            {subscription.currentNumberOfPayments}
+          </span>
+          <span className="text-xs text-zinc-500">completed</span>
+        </div>
       </TableCell>
       <TableCell>
         <ShortAddress address={subscription.payer} />
@@ -244,7 +262,7 @@ export function SubscribersTable({
             <TableBody>
               {filteredSubscribers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="p-0">
+                  <TableCell colSpan={10} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No subscribers"

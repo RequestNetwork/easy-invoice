@@ -30,4 +30,6 @@ export type SubscriptionPayment = {
   requestScanUrl?: string;
   chain: string;
   subscriber: string;
+  totalNumberOfPayments: number;
+  paymentNumber: number;
 };
