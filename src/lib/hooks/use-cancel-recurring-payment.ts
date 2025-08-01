@@ -59,7 +59,8 @@ export function useCancelRecurringPayment({
 
       const { transactions } = response;
 
-      if (transactions?.length) {
+      // when cancelling subscriptions, we don't need to sign spending cap transactions
+      if (transactions?.length && !subscriptionId) {
         toast.info("Signature required", {
           description:
             "Please sign the transactions in your wallet to reduce spending cap",

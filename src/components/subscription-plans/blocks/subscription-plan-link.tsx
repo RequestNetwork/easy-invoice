@@ -17,7 +17,7 @@ import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { Copy, DollarSign, ExternalLink, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -61,16 +61,11 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
     });
 
   const totalNumberOfSubscribers = recurringPayments?.length || 0;
-  const totalAmount =
-    recurringPayments?.reduce((sum, recurringPayment) => {
-      try {
-        const amount = BigNumber.from(recurringPayment.totalAmount || "0");
-        return sum.add(amount);
-      } catch (error) {
-        console.error("Error parsing totalAmount:", error);
-        return sum;
-      }
-    }, BigNumber.from("0")) || BigNumber.from("0");
+
+  const planAmount = utils.parseUnits(plan.amount, 18);
+  const totalAmount = planAmount.mul(
+    BigNumber.from(totalNumberOfSubscribers.toString()),
+  );
 
   const linkUrl = mounted
     ? `${window.location.origin}/s/${plan.id}`
@@ -118,6 +113,8 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
   };
 
   const displayCurrency = formatCurrencyLabel(plan.paymentCurrency);
+  const displayAmount = utils.formatUnits(planAmount, 18);
+  const displayTotalAmount = utils.formatUnits(totalAmount, 18);
   const isProcessing = isDeletingPlan || isCancellingPayment;
 
   return (
@@ -135,13 +132,13 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-4 w-4" />
                   <span>
-                    {totalAmount.toString()} {displayCurrency} total
+                    {displayCurrency} {displayTotalAmount} total
                   </span>
                 </div>
               </div>
             </div>
             <p className="text-sm text-zinc-600">
-              {plan.amount} {displayCurrency} · {plan.recurrenceFrequency} ·{" "}
+              {displayCurrency} {displayAmount} · {plan.recurrenceFrequency} ·{" "}
               {plan.trialDays > 0
                 ? `${plan.trialDays} day${plan.trialDays > 1 ? "s" : ""} trial`
                 : "No trial"}{" "}
