@@ -2,9 +2,10 @@ import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { SubscriptionPlanPreview } from "@/components/subscription-plan-preview";
-import { api } from "@/trpc/server";
+import { getCurrentSession } from "@/server/auth";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSubscriptionPlan } from "./helpers";
 
 export const metadata: Metadata = {
   title: "Subscribe | EasyInvoice",
@@ -16,7 +17,10 @@ export default async function SubscriptionPlanPage({
 }: {
   params: { id: string };
 }) {
-  const subscriptionPlan = await api.subscriptionPlan.getById.query(params.id);
+  const { user } = await getCurrentSession();
+  if (!user) redirect("/");
+
+  const subscriptionPlan = await getSubscriptionPlan(params.id);
 
   if (!subscriptionPlan) {
     notFound();

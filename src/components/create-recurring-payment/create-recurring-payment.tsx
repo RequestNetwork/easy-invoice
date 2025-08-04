@@ -39,7 +39,7 @@ export function CreateRecurringPayment() {
         <CardHeader className="bg-zinc-50 rounded-t-lg border-b border-zinc-200/80">
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Create New Recurring Payment
+            Create New Recurring Payout
           </CardTitle>
         </CardHeader>
 
@@ -101,7 +101,7 @@ export function CreateRecurringPayment() {
                     >
                       <Send className="w-4 h-4" />
                     </div>
-                    <span className="ml-2 font-medium">Create Payment</span>
+                    <span className="ml-2 font-medium">Create Payout</span>
                   </div>
                 </div>
               </div>
@@ -109,7 +109,7 @@ export function CreateRecurringPayment() {
               {currentStep === "connect-wallet" ? (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4">
                   <p className="text-zinc-600 text-center max-w-md">
-                    Connect your wallet to create recurring payments
+                    Connect your wallet to create recurring payouts
                   </p>
                   <Button onClick={() => open()} size="lg" className="mt-2">
                     <Wallet className="mr-2 h-4 w-4" />
