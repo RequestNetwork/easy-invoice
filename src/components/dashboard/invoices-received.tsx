@@ -9,7 +9,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table/table";
 import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
 import { handleBatchPayment } from "@/lib/invoice/batch-payment";
 import type { Request } from "@/server/db/schema";
@@ -24,11 +24,11 @@ import { ethers } from "ethers";
 import { AlertCircle, DollarSign, FileText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { EmptyState } from "./blocks/empty-state";
+import { StatCard } from "../stat-card";
+import { EmptyState } from "../ui/table/empty-state";
+import { Pagination } from "../ui/table/pagination";
+import { TableHeadCell } from "../ui/table/table-head-cell";
 import { InvoiceRow } from "./blocks/invoice-row";
-import { Pagination } from "./blocks/pagination";
-import { StatCard } from "./blocks/stat-card";
-import { TableHeadCell } from "./blocks/table-head-cell";
 
 const ITEMS_PER_PAGE = 10;
 const RETRIEVE_ALL_INVOICES_POLLING_INTERVAL = 3000;

@@ -29,7 +29,7 @@ export function PayoutNavigation() {
           <Link href="/payouts/batch">Batch Payout</Link>
         </TabsTrigger>
         <TabsTrigger value="recurring" asChild>
-          <Link href="/payouts/recurring">Recurring Payments</Link>
+          <Link href="/payouts/recurring">Recurring Payouts</Link>
         </TabsTrigger>
       </TabsList>
     </Tabs>

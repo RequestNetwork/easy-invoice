@@ -1,4 +1,4 @@
-import { TableHead } from "@/components/ui/table";
+import { TableHead } from "@/components/ui/table/table";
 import { cn } from "@/lib/utils";
 
 interface TableHeadCellProps {

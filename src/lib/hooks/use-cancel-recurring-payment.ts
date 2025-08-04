@@ -9,36 +9,34 @@ import { toast } from "sonner";
 
 interface UseCancelRecurringPaymentProps {
   onSuccess?: () => Promise<void>;
-  confirmMessage: string;
 }
 
 export function useCancelRecurringPayment({
-  confirmMessage,
   onSuccess,
 }: UseCancelRecurringPaymentProps) {
-  const utils = api.useUtils();
   const { isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
 
   const updateRecurringPaymentMutation =
     api.recurringPayment.updateRecurringPayment.useMutation();
 
-  const setRecurringPaymentStatusMutation =
-    api.recurringPayment.setRecurringPaymentStatus.useMutation();
+  const updateRecurringPaymentForSubscriptionMutation =
+    api.recurringPayment.updateRecurringPaymentForSubscription.useMutation();
 
-  const cancelRecurringPayment = async (payment: RecurringPayment) => {
+  const cancelRecurringPayment = async (
+    payment: RecurringPayment,
+    subscriptionId?: string,
+  ) => {
     if (!getCanCancelPayment(payment.status)) {
-      toast.error("This payment cannot be cancelled");
-      return;
+      const error = new Error("This payment cannot be cancelled");
+      toast.error(error.message);
+      throw error;
     }
 
     if (!isConnected || !walletProvider) {
-      toast.error("Please connect your wallet first");
-      return;
-    }
-
-    if (!confirm(confirmMessage)) {
-      return;
+      const error = new Error("Please connect your wallet first");
+      toast.error(error.message);
+      throw error;
     }
 
     try {
@@ -47,16 +45,24 @@ export function useCancelRecurringPayment({
 
       toast.info("Cancelling recurring payment...");
 
-      const response = await updateRecurringPaymentMutation.mutateAsync({
-        externalPaymentId: payment.externalPaymentId,
-        action: "cancel",
-      });
+      const response = subscriptionId
+        ? await updateRecurringPaymentForSubscriptionMutation.mutateAsync({
+            externalPaymentId: payment.externalPaymentId,
+            subscriptionId,
+            action: "cancel",
+          })
+        : await updateRecurringPaymentMutation.mutateAsync({
+            externalPaymentId: payment.externalPaymentId,
+            action: "cancel",
+          });
 
       const { transactions } = response;
 
-      if (transactions?.length) {
+      // when cancelling subscriptions, we don't need to sign spending cap transactions
+      if (transactions?.length && !subscriptionId) {
         toast.info("Signature required", {
-          description: "Please sign the transactions in your wallet",
+          description:
+            "Please sign the transactions in your wallet to reduce spending cap",
         });
 
         for (let i = 0; i < transactions.length; i++) {
@@ -66,18 +72,12 @@ export function useCancelRecurringPayment({
             const txResponse = await signer.sendTransaction(transaction);
             await txResponse.wait();
           } catch (txError) {
-            // the transaction are just for reducing the spending cap, the payment was still cancelled in the backend
+            // The transactions are just for reducing the spending cap, the payment was already cancelled
             console.error("Transaction error:", txError);
           }
         }
       }
 
-      await setRecurringPaymentStatusMutation.mutateAsync({
-        id: payment.id,
-        status: "cancelled",
-      });
-
-      await utils.recurringPayment.getRecurringPayments.invalidate();
       toast.success("Recurring payment cancelled successfully");
       await onSuccess?.();
     } catch (error) {
@@ -86,6 +86,7 @@ export function useCancelRecurringPayment({
         description:
           "There was an error cancelling your recurring payment. Please try again.",
       });
+      throw error; // Rethrow the error so calling components can handle it
     }
   };
 
@@ -93,6 +94,6 @@ export function useCancelRecurringPayment({
     cancelRecurringPayment,
     isLoading:
       updateRecurringPaymentMutation.isLoading ||
-      setRecurringPaymentStatusMutation.isLoading,
+      updateRecurringPaymentForSubscriptionMutation.isLoading,
   };
 }

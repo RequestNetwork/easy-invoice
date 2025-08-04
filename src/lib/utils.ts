@@ -1,3 +1,5 @@
+import { TRPCClientError } from "@trpc/client";
+import { TRPCError } from "@trpc/server";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -26,5 +28,13 @@ export function truncateEmail(email: string, maxLength = 20): string {
 }
 
 export const getCanCancelPayment = (status: string) => {
-  return status === "pending" || status === "active";
+  return status !== "cancelled" && status !== "completed";
+};
+
+export const isNotFoundError = (error: unknown): boolean => {
+  return (
+    error instanceof TRPCClientError &&
+    error.cause instanceof TRPCError &&
+    error.cause.code === "NOT_FOUND"
+  );
 };
