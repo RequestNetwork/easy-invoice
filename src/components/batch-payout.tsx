@@ -55,7 +55,7 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
-import { handleBatchPayment } from "@/lib/invoice/batch-payment";
+import { handleBatchPayment } from "@/lib/helpers/batch-payment";
 import { payoutSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
 import { z } from "zod";

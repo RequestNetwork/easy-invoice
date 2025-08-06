@@ -2,7 +2,7 @@ import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { InvoiceCreator } from "@/components/invoice-creator";
-import { getInvoiceCount } from "@/lib/invoice";
+import { getInvoiceCount } from "@/lib/helpers/invoice";
 import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";

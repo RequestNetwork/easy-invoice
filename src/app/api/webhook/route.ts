@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { ResourceNotFoundError } from "@/lib/errors";
-import { getInvoiceCount } from "@/lib/invoice";
-import { generateInvoiceNumber } from "@/lib/invoice/client";
+import { generateInvoiceNumber } from "@/lib/helpers/client";
+import { getInvoiceCount } from "@/lib/helpers/invoice";
 import { db } from "@/server/db";
 import {
   paymentDetailsPayersTable,

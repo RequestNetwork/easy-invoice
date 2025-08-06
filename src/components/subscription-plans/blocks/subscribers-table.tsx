@@ -21,11 +21,15 @@ import {
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
+import {
+  calculateTotalsByCurrency,
+  formatCurrencyTotals,
+} from "@/lib/helpers/currency";
 import type { SubscriptionWithDetails } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
-import { BigNumber, utils } from "ethers";
+import { utils } from "ethers";
 import { CreditCard, DollarSign, Filter } from "lucide-react";
 import { useState } from "react";
 import { StatCard } from "../../stat-card";
@@ -178,38 +182,17 @@ export function SubscribersTable({
     ACTIVE_STATUSES.includes(sub.status),
   ).length;
 
-  const revenuesByCurrency = filteredSubscribers.reduce(
-    (acc, sub) => {
-      if (
-        ACTIVE_STATUSES.includes(sub.status) &&
-        sub.payments &&
-        sub.paymentCurrency
-      ) {
-        const currency = sub.paymentCurrency;
-        try {
-          const totalAmount = utils.parseUnits(sub.totalAmount || "0", 18);
-          const paymentsCount = BigNumber.from(sub.payments.length.toString());
-          const revenue = totalAmount.mul(paymentsCount);
+  const revenueItems = filteredSubscribers
+    .filter(
+      (sub) => ACTIVE_STATUSES.includes(sub.status) && sub.payments?.length,
+    )
+    .flatMap((sub) => ({
+      amount: sub.totalAmount || "0",
+      currency: sub.paymentCurrency,
+    }));
 
-          if (!acc[currency]) {
-            acc[currency] = BigNumber.from("0");
-          }
-          acc[currency] = acc[currency].add(revenue);
-        } catch (error) {
-          console.error("Error calculating revenue:", error);
-        }
-      }
-      return acc;
-    },
-    {} as Record<string, BigNumber>,
-  );
-
-  const revenueValues = Object.entries(revenuesByCurrency)
-    .map(([currency, amount]) => ({
-      amount: utils.formatUnits(amount, 18),
-      currency,
-    }))
-    .filter((value) => utils.parseUnits(value.amount, 18).gt(0));
+  const revenueTotal = calculateTotalsByCurrency(revenueItems);
+  const revenueValues = formatCurrencyTotals(revenueTotal);
 
   return (
     <div className="space-y-6">

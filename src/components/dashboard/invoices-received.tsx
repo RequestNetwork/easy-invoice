@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table/table";
 import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
-import { handleBatchPayment } from "@/lib/invoice/batch-payment";
+import { handleBatchPayment } from "@/lib/helpers/batch-payment";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import {
