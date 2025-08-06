@@ -187,7 +187,7 @@ export function SubscribersTable({
       (sub) => ACTIVE_STATUSES.includes(sub.status) && sub.payments?.length,
     )
     .flatMap((sub) => ({
-      amount: sub.totalAmount || "0",
+      amount: sub.totalAmount,
       currency: sub.paymentCurrency,
     }));
 

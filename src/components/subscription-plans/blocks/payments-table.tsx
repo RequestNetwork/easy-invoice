@@ -153,7 +153,7 @@ export function PaymentsTable({
     : payments;
 
   const paymentItems = filteredPayments.map((payment) => ({
-    amount: payment.amount || "0",
+    amount: payment.amount,
     currency: payment.currency,
   }));
 

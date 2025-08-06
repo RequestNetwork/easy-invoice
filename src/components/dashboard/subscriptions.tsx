@@ -221,7 +221,7 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
     subscriptions
       ?.filter((sub) => (sub?.payments ? sub.payments.length > 0 : false))
       .flatMap((sub) => ({
-        amount: sub.totalAmount || "0",
+        amount: sub.totalAmount,
         currency: sub.paymentCurrency,
       })) || [];
 
