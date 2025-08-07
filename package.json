@@ -18,6 +18,9 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@dynamic-labs/ethereum": "^4.25.9",
+    "@dynamic-labs/ethereum-aa": "^4.25.9",
+    "@dynamic-labs/sdk-react-core": "^4.25.9",
     "@hookform/resolvers": "^3.10.0",
     "@next/third-parties": "^15.1.7",
     "@oslojs/crypto": "^1.0.1",

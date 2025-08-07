@@ -1,5 +1,6 @@
 import { BackgroundWrapper } from "@/components/background-wrapper";
 import { DashboardNavigation } from "@/components/dashboard-navigation";
+import { DynamicGoogleAuthHandler } from "@/components/dynamic-provider";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { getCurrentSession } from "@/server/auth";
@@ -12,7 +13,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = await getCurrentSession();
+  const { user, session } = await getCurrentSession();
   if (!user) redirect("/");
 
   return (
@@ -20,6 +21,10 @@ export default async function DashboardLayout({
       topGradient={{ from: "orange-100", to: "orange-200" }}
       bottomGradient={{ from: "zinc-100", to: "zinc-200" }}
     >
+      <DynamicGoogleAuthHandler
+        googleSub={session.googleSub}
+        idToken={session.idToken}
+      />
       <Header user={user} />
       <main className="flex-grow flex flex-col w-full max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
         <div className="flex justify-between items-center mb-8">

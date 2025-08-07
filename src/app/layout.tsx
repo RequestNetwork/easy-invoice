@@ -9,6 +9,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import "./globals.css";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
+import { ZeroDevSmartWalletConnectors } from "@dynamic-labs/ethereum-aa";
+import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,15 +40,25 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppKit>
-          <TooltipProvider>
-            <TRPCReactProvider cookies={cookies().toString()}>
-              <BackgroundWrapper>{children}</BackgroundWrapper>
-            </TRPCReactProvider>
-            <Toaster />
-          </TooltipProvider>
-        </AppKit>
-        <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
+        <DynamicContextProvider
+          settings={{
+            environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID as string,
+            walletConnectors: [
+              EthereumWalletConnectors,
+              ZeroDevSmartWalletConnectors,
+            ],
+          }}
+        >
+          <AppKit>
+            <TooltipProvider>
+              <TRPCReactProvider cookies={cookies().toString()}>
+                <BackgroundWrapper>{children}</BackgroundWrapper>
+              </TRPCReactProvider>
+              <Toaster />
+            </TooltipProvider>
+          </AppKit>
+          <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
+        </DynamicContextProvider>
       </body>
     </html>
   );

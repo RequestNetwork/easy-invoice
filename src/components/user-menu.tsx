@@ -12,6 +12,7 @@ import {
 import { truncateEmail } from "@/lib/utils";
 import type { User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { CopyIcon, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -21,6 +22,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter();
+  const { handleLogOut } = useDynamicContext();
   const logout = api.auth.logout.useMutation({
     onSuccess: () => {
       router.replace("/");
@@ -68,7 +70,10 @@ export function UserMenu({ user }: UserMenuProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => logout.mutate()}
+          onClick={async () => {
+            await handleLogOut();
+            await logout.mutate();
+          }}
           className="text-sm text-neutral-700 cursor-pointer hover:text-neutral-900"
         >
           <LogOut className="mr-2 h-4 w-4" />

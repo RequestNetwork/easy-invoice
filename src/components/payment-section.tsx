@@ -9,9 +9,15 @@ import {
   MAINNET_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
+import {
+  getPaymentSectionStatusClass,
+  getStatusDisplayText,
+  getStatusIconName,
+} from "@/lib/invoice-status";
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import {
   useAppKit,
   useAppKitAccount,
@@ -21,12 +27,6 @@ import {
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
-
-import {
-  getPaymentSectionStatusClass,
-  getStatusDisplayText,
-  getStatusIconName,
-} from "@/lib/invoice-status";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -112,6 +112,8 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType | null>(
     null,
   );
+
+  const { primaryWallet } = useDynamicContext();
 
   const [invoice, setInvoice] = useState(serverInvoice);
 
@@ -408,6 +410,8 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
             be processed safely and transparently.
           </p>
         </div>
+
+        <p>Connected Dyanamic address {primaryWallet?.address}</p>
 
         {MAINNET_CURRENCIES.includes(invoice.invoiceCurrency as any) && (
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
