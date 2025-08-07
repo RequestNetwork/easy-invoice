@@ -233,6 +233,7 @@ export const recurringPaymentTable = createTable("recurring_payment", {
   subscriptionId: text().references(() => subscriptionPlanTable.id, {
     onDelete: "set null",
   }),
+  payer: text().notNull(),
   recurrence: json()
     .$type<{
       startDate: Date;
@@ -294,6 +295,7 @@ export const subscriptionPlanTable = createTable("subscription_plans", {
   recurrenceFrequency: frequencyEnum("frequency").notNull(),
   amount: text().notNull(),
   recipient: text().notNull(),
+  active: boolean().default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -57,6 +57,13 @@
       "when": 1752764223067,
       "tag": "0007_slimy_tyger_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1753346217295,
+      "tag": "0008_mysterious_celestials",
+      "breakpoints": true
     }
   ]
 }
