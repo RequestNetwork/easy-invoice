@@ -46,7 +46,10 @@ export async function GET(request: Request): Promise<Response> {
       email?: string;
       email_verified?: boolean;
     }
-    const claims = decodeIdToken(tokens.idToken()) as GoogleClaims;
+
+    const idToken = tokens.idToken();
+
+    const claims = decodeIdToken(idToken) as GoogleClaims;
     const emailFromClaims = claims.email;
 
     if (!claims?.sub || !claims?.name || !emailFromClaims) {
@@ -65,6 +68,8 @@ export async function GET(request: Request): Promise<Response> {
       const session = await createSession(
         sessionToken,
         existingUser?.id as string,
+        idToken,
+        claims.sub,
       );
       await setSessionTokenCookie(sessionToken, session.expiresAt);
       return new Response(null, {
@@ -88,7 +93,12 @@ export async function GET(request: Request): Promise<Response> {
       .returning();
 
     const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, userId);
+    const session = await createSession(
+      sessionToken,
+      userId,
+      idToken,
+      claims.sub,
+    );
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,

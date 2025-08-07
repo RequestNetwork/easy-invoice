@@ -263,6 +263,8 @@ export const sessionTable = createTable("session", {
     .references(() => userTable.id, {
       onDelete: "cascade",
     }),
+  idToken: encryptedText("id_token"),
+  googleSub: encryptedText("google_sub"),
   expiresAt: timestamp("expires_at", {
     withTimezone: true,
     mode: "date",
