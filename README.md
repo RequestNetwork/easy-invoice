@@ -34,11 +34,17 @@ cd easy-invoice
 cp .env.example .env
 ```
 
-3. Fill in the required environment variables in `.env`:
+3. You need to manually create an API key on the Request API, either via our Open API reference or the API portal.
+
+4. After your API key is created, register your easy invoice webhook URL at Request API, either via our Open API reference or the API portal. The default Easy Invoice webhook URL when running locally is `http://localhost:3000/api/webhook`.
+
+5. Fill in the required environment variables in `.env`:
 
 - `DATABASE_URL`: Your PostgreSQL connection string
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth credentials
-- `REQUEST_API_KEY`: Your Request Network API key
+- `GOOGLE_REDIRECT_URI`: your google login redirect url, when running locally it should be `http://localhost:3000/login/google/callback`
+- `REQUEST_API_KEY`: The key created in step 3 (starts with `rn_...`)
+- `WEBHOOK_SECRET`: The webhook secret from step 4
 - `REQUEST_API_URL`: Request Network API URL
 - `NEXT_PUBLIC_REOWN_PROJECT_ID`: Your Reown project ID
 - Other required environment variables as specified in `.env.example`
