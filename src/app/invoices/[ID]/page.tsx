@@ -9,6 +9,7 @@ import { formatDate } from "@/lib/date-utils";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getInvoice } from "./helpers";
 export const metadata: Metadata = {
   title: "Invoice Payment | EasyInvoice",
   description: "Process payment for your invoice",
@@ -25,7 +26,7 @@ export default async function PaymentPage({
 }: {
   params: { ID: string };
 }) {
-  const invoice = await api.invoice.getById.query(params.ID);
+  const invoice = await getInvoice(params.ID);
 
   if (!invoice) {
     notFound();
