@@ -16,13 +16,15 @@ export default function NotFound() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Wallet className="w-5 h-5 text-gray-600" />
             <span className="text-lg font-medium text-gray-700">
-              Transaction Not Found
+              Page Not Found
             </span>
           </div>
           <p className="text-gray-600 mb-2">
-            Looks like this page got lost in the blockchain. Don't
+            This page seems to have been sent to a non-existent wallet address.
           </p>
-          <p className="text-gray-600">worry, your funds are safe!</p>
+          <p className="text-gray-600">
+            Don't worry, your invoices are safe and sound!{" "}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -35,7 +37,7 @@ export default function NotFound() {
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">Payouts</h3>
             <p className="text-sm text-gray-600">
-              Find your invoices and payments
+              Single, batch or recurring payouts
             </p>
           </Link>
 
@@ -73,10 +75,6 @@ export default function NotFound() {
           <Home className="w-4 h-4" />
           Back to Dashboard
         </Link>
-
-        <div className="mt-8 text-sm text-gray-400 font-mono">
-          <span>Error Code: 0x404 • Block not found in this chain</span>
-        </div>
       </div>
     </div>
   );
