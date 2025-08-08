@@ -3,11 +3,11 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { InvoiceCreator } from "@/components/invoice-creator";
 import { getInvoiceCount } from "@/lib/helpers/invoice";
-import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getInvoiceMeLink } from "./helpers";
 
 export const metadata: Metadata = {
   title: "Invoice Me | EasyInvoice",
@@ -19,9 +19,7 @@ export default async function InvoiceMePage({
 }: {
   params: { id: string };
 }) {
-  // TODO solve unauthenticated access
-  // TODO solve not found error like the subscription plan page
-  const invoiceMeLink = await api.invoiceMe.getById.query(params.id);
+  const invoiceMeLink = await getInvoiceMeLink(params.id);
 
   if (!invoiceMeLink) {
     notFound();
