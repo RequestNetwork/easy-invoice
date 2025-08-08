@@ -22,12 +22,15 @@ import {
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
+import {
+  calculateTotalsByCurrency,
+  formatCurrencyTotals,
+} from "@/lib/helpers/currency";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import type { SubscriptionWithDetails } from "@/lib/types";
 import { getCanCancelPayment } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
-import { BigNumber, utils } from "ethers";
 import { Ban, CreditCard, DollarSign, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
@@ -206,64 +209,27 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
       initialData: initialSubscriptions,
     });
 
-  const commitmentsByCurrency =
-    subscriptions?.reduce(
-      (acc, sub) => {
-        if (ACTIVE_STATUSES.includes(sub.status) && sub.paymentCurrency) {
-          const currency = sub.paymentCurrency;
-          try {
-            const nextPaymentAmount = utils.parseUnits(sub.totalAmount, 18);
-            if (!acc[currency]) {
-              acc[currency] = BigNumber.from("0");
-            }
-            acc[currency] = acc[currency].add(nextPaymentAmount);
-          } catch (error) {
-            console.error("Error calculating commitment amount:", error);
-          }
-        }
-        return acc;
-      },
-      {} as Record<string, BigNumber>,
-    ) || {};
+  const commitmentItems =
+    subscriptions
+      ?.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
+      .map((sub) => ({
+        amount: sub.totalAmount,
+        currency: sub.paymentCurrency,
+      })) || [];
 
-  const totalSpentByCurrency =
-    subscriptions?.reduce(
-      (acc, sub) => {
-        if (sub.payments && sub.payments.length > 0 && sub.paymentCurrency) {
-          const currency = sub.paymentCurrency;
-          try {
-            const paymentAmount = utils.parseUnits(sub.totalAmount, 18);
-            const completedPayments = BigNumber.from(
-              sub.payments.length.toString(),
-            );
-            const totalSpent = paymentAmount.mul(completedPayments);
+  const spentItems =
+    subscriptions
+      ?.filter((sub) => (sub?.payments ? sub.payments.length > 0 : false))
+      .flatMap((sub) => ({
+        amount: sub.totalAmount,
+        currency: sub.paymentCurrency,
+      })) || [];
 
-            if (!acc[currency]) {
-              acc[currency] = BigNumber.from("0");
-            }
-            acc[currency] = acc[currency].add(totalSpent);
-          } catch (error) {
-            console.error("Error calculating total spent:", error);
-          }
-        }
-        return acc;
-      },
-      {} as Record<string, BigNumber>,
-    ) || {};
+  const commitmentTotals = calculateTotalsByCurrency(commitmentItems);
+  const spentTotals = calculateTotalsByCurrency(spentItems);
 
-  const commitmentValues = Object.entries(commitmentsByCurrency).map(
-    ([currency, amount]) => ({
-      amount: utils.formatUnits(amount, 18),
-      currency,
-    }),
-  );
-
-  const spentValues = Object.entries(totalSpentByCurrency).map(
-    ([currency, amount]) => ({
-      amount: utils.formatUnits(amount, 18),
-      currency,
-    }),
-  );
+  const commitmentValues = formatCurrencyTotals(commitmentTotals);
+  const spentValues = formatCurrencyTotals(spentTotals);
 
   return (
     <div className="space-y-6">
