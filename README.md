@@ -121,12 +121,12 @@ yarn db:studio --port=4984
 
 #### Resetting the Database for Development
 
-The PostgreSQL database container stores its data in the `/dev/postgres-data` directory (mounted as a volume).
+The PostgreSQL database container stores its data in the `./dev/postgres-data` directory (mounted as a volume).
 
 To fully reset the database:
 
 1. **Delete the PostgreSQL container.**
-2. **Delete the `/dev/postgres-data` directory.**
+2. **Delete the `./dev/postgres-data` directory.**
 
 This will remove all persisted data and ensure a fresh database instance is created on the next startup.
 
