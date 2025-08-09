@@ -42,7 +42,7 @@ const ITEMS_PER_PAGE = 10;
 const ACTIVE_STATUSES = ["pending", "active"];
 
 const SubscriptionTableColumns = () => (
-  <TableRow className="hover:bg-transparent border-none">
+  <TableRow className="hover:bg-muted/50 border-none">
     <TableHeadCell>Start Date</TableHeadCell>
     <TableHeadCell>Plan Name</TableHeadCell>
     <TableHeadCell>Status</TableHeadCell>
@@ -95,7 +95,7 @@ const SubscriptionRow = ({
   const canCancel = getCanCancelPayment(subscription.status);
 
   return (
-    <TableRow className="hover:bg-zinc-50/50">
+    <TableRow className="hover:bg-muted/50">
       <TableCell>
         {subscription.createdAt
           ? format(new Date(subscription.createdAt), "do MMM yyyy")
@@ -123,7 +123,7 @@ const SubscriptionRow = ({
           <span className="text-sm font-bold">
             {subscription.totalNumberOfPayments}
           </span>
-          <span className="text-xs text-zinc-500">scheduled</span>
+          <span className="text-xs text-muted-foreground">scheduled</span>
         </div>
       </TableCell>
       <TableCell>
@@ -131,7 +131,7 @@ const SubscriptionRow = ({
           <span className="text-sm font-bold">
             {subscription.currentNumberOfPayments}
           </span>
-          <span className="text-xs text-zinc-500">completed</span>
+          <span className="text-xs text-muted-foreground">completed</span>
         </div>
       </TableCell>
       <TableCell>{subscription.chain || "N/A"}</TableCell>
@@ -274,21 +274,21 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
             subscriptions?.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
               .length || 0
           }
-          icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
+          icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
         />
         <MultiCurrencyStatCard
           title="Subscription Commitments"
-          icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           values={commitmentValues}
         />
         <MultiCurrencyStatCard
           title="Total Spent"
-          icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           values={spentValues}
         />
       </div>
 
-      <Card className="border border-zinc-100">
+      <Card className="border border-border">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -299,7 +299,9 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
                 <TableRow>
                   <TableCell colSpan={12} className="p-0">
                     <EmptyState
-                      icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
+                      icon={
+                        <CreditCard className="h-6 w-6 text-muted-foreground" />
+                      }
                       title="No active subscriptions"
                       subtitle="You haven't subscribed to any plans yet"
                     />

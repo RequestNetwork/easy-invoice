@@ -28,29 +28,29 @@ type StatusConfig = {
 
 const STATUS_CONFIG: Record<StatusType, StatusConfig> = {
   not_started: {
-    icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+    icon: <AlertCircle className="h-5 w-5 text-destructive" />,
     text: "Not Started",
-    color: "bg-red-50 border-red-200 text-red-700",
+    color: "bg-destructive/10 border-destructive text-destructive-foreground",
   },
   initiated: {
-    icon: <Clock className="h-5 w-5 text-amber-500" />,
+    icon: <Clock className="h-5 w-5 text-warning" />,
     text: "Initiated",
-    color: "bg-amber-50 border-amber-200 text-amber-700",
+    color: "bg-warning/10 border-warning text-warning-foreground",
   },
   pending: {
-    icon: <Clock className="h-5 w-5 text-amber-500" />,
+    icon: <Clock className="h-5 w-5 text-warning" />,
     text: "Pending",
-    color: "bg-amber-50 border-amber-200 text-amber-700",
+    color: "bg-warning/10 border-warning text-warning-foreground",
   },
   completed: {
-    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+    icon: <CheckCircle className="h-5 w-5 text-success" />,
     text: "Completed",
-    color: "bg-green-50 border-green-200 text-green-700",
+    color: "bg-success/10 border-success text-success-foreground",
   },
   approved: {
-    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+    icon: <CheckCircle className="h-5 w-5 text-success" />,
     text: "Completed",
-    color: "bg-green-50 border-green-200 text-green-700",
+    color: "bg-success/10 border-success text-success-foreground",
   },
 };
 
