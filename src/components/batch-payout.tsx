@@ -1,11 +1,7 @@
 "use client";
 
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  useAppKit,
-  useAppKitAccount,
-  useAppKitProvider,
-} from "@reown/appkit/react";
 import { ethers } from "ethers";
 import {
   ArrowRight,
@@ -55,8 +51,8 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
-import { handleBatchPayment } from "@/lib/invoice/batch-payment";
 import { payoutSchema } from "@/lib/schemas/payment";
+import { useRequestSmartAccount } from "@/lib/smart-account";
 import { api } from "@/trpc/react";
 import { z } from "zod";
 import { PaymentSecuredUsingRequest } from "./payment-secured-using-request";
@@ -79,7 +75,7 @@ export function BatchPayout() {
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
-  const [isAppKitReady, setIsAppKitReady] = useState(false);
+  const [isDynamicReady, setIsDynamicReady] = useState(false);
 
   const form = useForm<BatchPaymentFormValues>({
     resolver: zodResolver(batchPaymentFormSchema),
@@ -100,14 +96,17 @@ export function BatchPayout() {
     name: "payouts",
   });
 
-  const { open } = useAppKit();
-  const { isConnected, address } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider("eip155");
+  const { user, setShowAuthFlow } = useDynamicContext();
+  const { handleBatchTransactions, isSubmittingTransactions } =
+    useRequestSmartAccount();
+
+  const isConnected = !!user;
+  const address = user?.verifiedCredentials?.[0]?.address || "";
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsAppKitReady(true);
-    }, 2000);
+      setIsDynamicReady(true);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -206,51 +205,65 @@ export function BatchPayout() {
       return;
     }
 
-    if (!walletProvider) {
-      toast.error("Please connect your wallet first");
-      return;
-    }
+    setPaymentStatus("processing");
 
     try {
-      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
-
-      const signer = ethersProvider.getSigner();
+      toast.info("Preparing batch payment...");
 
       const batchPaymentData = await batchPay({
         ...data,
         payer: address,
       });
 
-      const result = await handleBatchPayment({
-        signer,
-        batchPaymentData,
-        onSuccess: () => {
-          toast.success("Batch payment successful", {
-            description: `Successfully processed ${data.payouts.length} payments`,
-          });
-          form.reset({
-            payouts: [
-              {
-                payee: "",
-                amount: 0,
-                invoiceCurrency: "USD",
-                paymentCurrency: "ETH-sepolia-sepolia",
-              },
-            ],
-          });
-          setPaymentStatus("idle");
-        },
-        onError: () => {
-          setPaymentStatus("error");
-        },
-        onStatusChange: setPaymentStatus,
+      // Convert batch payment data to transactions for smart account
+      const transactions = [];
+
+      // Add approval transactions first
+      for (const approvalTx of batchPaymentData.ERC20ApprovalTransactions) {
+        transactions.push({
+          to: approvalTx.to as `0x${string}`,
+          data: (approvalTx.data || "0x") as `0x${string}`,
+          value: approvalTx.value || 0,
+        });
+      }
+
+      // Add the main batch payment transaction
+      transactions.push({
+        to: batchPaymentData.batchPaymentTransaction.to as `0x${string}`,
+        data: (batchPaymentData.batchPaymentTransaction.data ||
+          "0x") as `0x${string}`,
+        value: batchPaymentData.batchPaymentTransaction.value || 0,
       });
 
-      if (!result.success) {
-        console.error("Batch payment failed:", result.error);
+      toast.info("Executing batch payment...", {
+        description: "Please confirm the transaction in your wallet",
+      });
+
+      const receipt = await handleBatchTransactions({ transactions });
+
+      if (receipt) {
+        toast.success("Batch payment successful", {
+          description: `Successfully processed ${data.payouts.length} payments`,
+        });
+        form.reset({
+          payouts: [
+            {
+              payee: "",
+              amount: 0,
+              invoiceCurrency: "USD",
+              paymentCurrency: "ETH-sepolia-sepolia",
+            },
+          ],
+        });
+        setPaymentStatus("success");
+      } else {
+        throw new Error("Transaction failed");
       }
     } catch (error) {
-      console.error("Failed to initiate batch payment:", error);
+      console.error("Failed to process batch payment:", error);
+      toast.error("Batch payment failed", {
+        description: "Please try again or check your wallet connection",
+      });
       setPaymentStatus("error");
     }
   };
@@ -279,7 +292,7 @@ export function BatchPayout() {
           </div>
         </CardHeader>
 
-        {!isAppKitReady ? (
+        {!isDynamicReady ? (
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
               <Loader2 className="h-10 w-10 animate-spin text-zinc-400" />
@@ -334,7 +347,11 @@ export function BatchPayout() {
                     Connect your wallet to send batch payments to multiple
                     addresses
                   </p>
-                  <Button onClick={() => open()} size="lg" className="mt-2">
+                  <Button
+                    onClick={() => setShowAuthFlow(true)}
+                    size="lg"
+                    className="mt-2"
+                  >
                     <Wallet className="mr-2 h-4 w-4" />
                     Connect Wallet
                   </Button>
@@ -570,7 +587,7 @@ export function BatchPayout() {
                   <CardFooter className="flex justify-between items-center pt-2 pb-0 px-0">
                     <button
                       type="button"
-                      onClick={() => open()}
+                      onClick={() => setShowAuthFlow(true)}
                       className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
                     >
                       <span className="font-mono mr-2">
@@ -584,10 +601,12 @@ export function BatchPayout() {
                       className="relative"
                       disabled={
                         paymentStatus === "processing" ||
+                        isSubmittingTransactions ||
                         getValidPaymentsCount() === 0
                       }
                     >
-                      {paymentStatus === "processing" ? (
+                      {paymentStatus === "processing" ||
+                      isSubmittingTransactions ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Processing Batch...
