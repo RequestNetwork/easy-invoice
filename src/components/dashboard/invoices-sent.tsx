@@ -9,11 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
+import {
+  calculateTotalsByCurrency,
+  formatCurrencyTotals,
+} from "@/lib/helpers/currency";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, DollarSign, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
 import { StatCard } from "../stat-card";
 import { EmptyState } from "../ui/table/empty-state";
 import { Pagination } from "../ui/table/pagination";
@@ -49,8 +54,15 @@ export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
     refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
   });
 
-  const total =
-    invoices?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
+  const invoiceItems =
+    invoices?.map((invoice) => ({
+      amount: invoice.amount,
+      currency: invoice.paymentCurrency,
+    })) || [];
+
+  const totalsByCurrency = calculateTotalsByCurrency(invoiceItems);
+  const totalValues = formatCurrencyTotals(totalsByCurrency);
+
   const outstanding =
     invoices?.filter((inv) => inv.status !== "paid").length || 0;
 
@@ -67,10 +79,10 @@ export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
           value={outstanding}
           icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
         />
-        <StatCard
+        <MultiCurrencyStatCard
           title="Total Payments"
-          value={`$${total.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          values={totalValues}
         />
       </div>
 
