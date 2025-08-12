@@ -3,7 +3,7 @@
 import { InvoiceForm } from "@/components/invoice-form";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generateInvoiceNumber } from "@/lib/invoice/client";
+import { generateInvoiceNumber } from "@/lib/helpers/client";
 import {
   type InvoiceFormValues,
   invoiceFormSchema,

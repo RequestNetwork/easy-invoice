@@ -19,11 +19,15 @@ import {
   TableRow,
 } from "@/components/ui/table/table";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
+import {
+  calculateTotalsByCurrency,
+  formatCurrencyTotals,
+} from "@/lib/helpers/currency";
 import type { SubscriptionPayment } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { format } from "date-fns";
-import { BigNumber, utils } from "ethers";
+import { utils } from "ethers";
 import {
   CreditCard,
   DollarSign,
@@ -148,29 +152,13 @@ export function PaymentsTable({
     ? payments.filter((payment) => payment.planId === activePlan)
     : payments;
 
-  const revenuesByCurrency = filteredPayments.reduce(
-    (acc, payment) => {
-      const currency = payment.currency;
-      try {
-        const amount = utils.parseUnits(payment.amount || "0", 18);
-        if (!acc[currency]) {
-          acc[currency] = BigNumber.from("0");
-        }
-        acc[currency] = acc[currency].add(amount);
-      } catch (error) {
-        console.error("Error calculating payment revenue:", error);
-      }
-      return acc;
-    },
-    {} as Record<string, BigNumber>,
-  );
+  const paymentItems = filteredPayments.map((payment) => ({
+    amount: payment.amount,
+    currency: payment.currency,
+  }));
 
-  const revenueValues = Object.entries(revenuesByCurrency).map(
-    ([currency, amount]) => ({
-      amount: utils.formatUnits(amount, 18),
-      currency,
-    }),
-  );
+  const revenueTotal = calculateTotalsByCurrency(paymentItems);
+  const revenueValues = formatCurrencyTotals(revenueTotal);
 
   const paginatedPayments = filteredPayments.slice(
     (page - 1) * ITEMS_PER_PAGE,
