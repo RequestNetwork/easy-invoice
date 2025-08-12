@@ -11,7 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table/table";
 import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
-import { handleBatchPayment } from "@/lib/invoice/batch-payment";
+import { handleBatchPayment } from "@/lib/helpers/batch-payment";
+import {
+  calculateTotalsByCurrency,
+  formatCurrencyTotals,
+} from "@/lib/helpers/currency";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import {
@@ -24,6 +28,7 @@ import { ethers } from "ethers";
 import { AlertCircle, DollarSign, FileText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
 import { StatCard } from "../stat-card";
 import { EmptyState } from "../ui/table/empty-state";
 import { Pagination } from "../ui/table/pagination";
@@ -77,8 +82,14 @@ export const InvoicesReceived = ({
     refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
   });
 
-  const total =
-    invoices?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
+  const invoiceItems =
+    invoices?.map((invoice) => ({
+      amount: invoice.amount,
+      currency: invoice.paymentCurrency,
+    })) || [];
+
+  const totalsByCurrency = calculateTotalsByCurrency(invoiceItems);
+  const totalValues = formatCurrencyTotals(totalsByCurrency);
   const outstanding =
     invoices?.filter((inv) => inv.status !== "paid").length || 0;
 
@@ -223,10 +234,10 @@ export const InvoicesReceived = ({
           value={outstanding}
           icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
         />
-        <StatCard
+        <MultiCurrencyStatCard
           title="Total Due"
-          value={`$${total.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          values={totalValues}
         />
       </div>
 
