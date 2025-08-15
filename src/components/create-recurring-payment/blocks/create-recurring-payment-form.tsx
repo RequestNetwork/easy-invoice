@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
 import {
   RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
@@ -31,6 +32,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAppKit,
   useAppKitAccount,
+  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { CheckCircle, Loader2, LogOut, Plus, X } from "lucide-react";
@@ -50,6 +52,8 @@ type RecurringPaymentFormValues = z.infer<typeof recurringPaymentFormSchema>;
 
 export function CreateRecurringPaymentForm() {
   const router = useRouter();
+
+  const { chainId, switchNetwork } = useAppKitNetwork();
 
   const { address, isConnected } = useAppKitAccount();
   const { open } = useAppKit();
@@ -89,6 +93,16 @@ export function CreateRecurringPaymentForm() {
     if (!walletProvider) {
       toast.error("Please connect your wallet first");
       return;
+    }
+
+    const paymentNetwork = data.invoiceCurrency.split("-").at(-1) ?? "sepolia";
+    const targetChain =
+      NETWORK_TO_ID[paymentNetwork as keyof typeof NETWORK_TO_ID];
+
+    if (chainId !== targetChain) {
+      switchNetwork(
+        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK],
+      );
     }
 
     const recurringPaymentCurrency = data.invoiceCurrency;
