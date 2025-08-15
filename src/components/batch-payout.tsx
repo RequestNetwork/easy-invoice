@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAppKit,
   useAppKitAccount,
+  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
@@ -49,6 +50,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
+import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
 import {
   PAYOUT_CURRENCIES,
   type PayoutCurrency,
@@ -74,6 +76,7 @@ export type BatchPaymentFormValues = z.infer<typeof batchPaymentFormSchema>;
 
 export function BatchPayout() {
   const { mutateAsync: batchPay } = api.payment.batchPay.useMutation();
+  const { chainId, switchNetwork } = useAppKitNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
@@ -209,6 +212,17 @@ export function BatchPayout() {
     if (!walletProvider) {
       toast.error("Please connect your wallet first");
       return;
+    }
+
+    const paymentNetwork =
+      data.payouts[0].paymentCurrency.split("-").at(-1) ?? "sepolia";
+    const targetChain =
+      NETWORK_TO_ID[paymentNetwork as keyof typeof NETWORK_TO_ID];
+
+    if (chainId !== targetChain) {
+      switchNetwork(
+        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK],
+      );
     }
 
     try {

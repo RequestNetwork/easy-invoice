@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAppKit,
   useAppKitAccount,
+  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
@@ -38,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
 import {
   PAYOUT_CURRENCIES,
   type PayoutCurrency,
@@ -57,6 +59,7 @@ export type DirectPaymentFormValues = z.infer<typeof directPaymentFormSchema>;
 
 export function DirectPayment() {
   const { mutateAsync: pay } = api.payment.pay.useMutation();
+  const { chainId, switchNetwork } = useAppKitNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
@@ -118,6 +121,15 @@ export function DirectPayment() {
       return;
     }
 
+    const paymentNetwork = data.paymentCurrency.split("-").at(-1) ?? "sepolia";
+    const targetChain =
+      NETWORK_TO_ID[paymentNetwork as keyof typeof NETWORK_TO_ID];
+
+    if (chainId !== targetChain) {
+      switchNetwork(
+        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK],
+      );
+    }
     setPaymentStatus("processing");
 
     try {
