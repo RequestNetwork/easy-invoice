@@ -20,11 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
+
 import {
   RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
+import { getChainFromPaymentCurrency } from "@/lib/helpers/chain";
 import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-payment";
 import { paymentApiSchema } from "@/lib/schemas/payment";
 import { RecurrenceFrequency } from "@/server/db/schema";
@@ -95,14 +96,15 @@ export function CreateRecurringPaymentForm() {
       return;
     }
 
-    const paymentNetwork = data.invoiceCurrency.split("-").at(-1) ?? "sepolia";
-    const targetChain =
-      NETWORK_TO_ID[paymentNetwork as keyof typeof NETWORK_TO_ID];
+    const targetChain = getChainFromPaymentCurrency(data.invoiceCurrency);
 
-    if (chainId !== targetChain) {
-      switchNetwork(
-        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK],
-      );
+    if (chainId !== targetChain.id) {
+      try {
+        switchNetwork(targetChain);
+      } catch (error: unknown) {
+        console.error("Failed to switch network:", error);
+        toast.error("Failed to switch network");
+      }
     }
 
     const recurringPaymentCurrency = data.invoiceCurrency;

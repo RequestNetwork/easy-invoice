@@ -39,13 +39,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
+
 import {
   PAYOUT_CURRENCIES,
   type PayoutCurrency,
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
+import { getChainFromPaymentCurrency } from "@/lib/helpers/chain";
 import { paymentApiSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
 import type { z } from "zod";
@@ -121,14 +122,15 @@ export function DirectPayment() {
       return;
     }
 
-    const paymentNetwork = data.paymentCurrency.split("-").at(-1) ?? "sepolia";
-    const targetChain =
-      NETWORK_TO_ID[paymentNetwork as keyof typeof NETWORK_TO_ID];
+    const targetChain = getChainFromPaymentCurrency(data.paymentCurrency);
 
-    if (chainId !== targetChain) {
-      switchNetwork(
-        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK],
-      );
+    if (chainId !== targetChain.id) {
+      try {
+        switchNetwork(targetChain);
+      } catch (error: unknown) {
+        console.error("Failed to switch network:", error);
+        toast.error("Failed to switch network");
+      }
     }
     setPaymentStatus("processing");
 

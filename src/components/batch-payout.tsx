@@ -50,7 +50,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
-import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
+
 import {
   PAYOUT_CURRENCIES,
   type PayoutCurrency,
@@ -58,6 +58,7 @@ import {
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
 import { handleBatchPayment } from "@/lib/helpers/batch-payment";
+import { getChainFromPaymentCurrency } from "@/lib/helpers/chain";
 import { payoutSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
 import { z } from "zod";
@@ -214,15 +215,17 @@ export function BatchPayout() {
       return;
     }
 
-    const paymentNetwork =
-      data.payouts[0].paymentCurrency.split("-").at(-1) ?? "sepolia";
-    const targetChain =
-      NETWORK_TO_ID[paymentNetwork as keyof typeof NETWORK_TO_ID];
+    const targetChain = getChainFromPaymentCurrency(
+      data.payouts[0].paymentCurrency,
+    );
 
-    if (chainId !== targetChain) {
-      switchNetwork(
-        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK],
-      );
+    if (chainId !== targetChain.id) {
+      try {
+        switchNetwork(targetChain);
+      } catch (error: unknown) {
+        console.error("Failed to switch network:", error);
+        toast.error("Failed to switch network");
+      }
     }
 
     try {
