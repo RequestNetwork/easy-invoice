@@ -215,7 +215,7 @@ export function BatchPayout() {
       return;
     }
 
-    switchToPaymentNetwork(data.payouts[0].paymentCurrency);
+    await switchToPaymentNetwork(data.payouts[0].paymentCurrency);
 
     try {
       const ethersProvider = new ethers.providers.Web3Provider(walletProvider);

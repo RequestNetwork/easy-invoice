@@ -96,7 +96,7 @@ export function CreateRecurringPaymentForm() {
       return;
     }
 
-    switchToPaymentNetwork(data.invoiceCurrency);
+    await switchToPaymentNetwork(data.invoiceCurrency);
 
     const recurringPaymentCurrency = data.invoiceCurrency;
     const recurringPaymentBody = {

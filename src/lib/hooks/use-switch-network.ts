@@ -7,30 +7,33 @@ import { type RetryHooks, retry } from "../utils";
 export const useSwitchNetwork = () => {
   const { switchNetwork, chainId } = useAppKitNetwork();
 
-  const switchWithRetry = (chain: Chain, opts?: RetryHooks<void>) => {
-    retry(() => Promise.resolve(switchNetwork(chain)), {
+  const switchWithRetry = async (chain: Chain, opts?: RetryHooks<void>) => {
+    return await retry(() => Promise.resolve(switchNetwork(chain)), {
       retries: 3,
       delay: 0,
       ...opts,
     });
   };
 
-  const switchToPaymentNetwork = (
+  const switchToPaymentNetwork = async (
     paymentCurrency: string,
     opts?: RetryHooks<void>,
   ) => {
     const targetChain = getChainFromPaymentCurrency(paymentCurrency);
 
-    if (chainId !== targetChain.id) {
-      switchWithRetry(targetChain, opts);
-    }
+    if (chainId === targetChain.id) return;
+    await switchWithRetry(targetChain, opts);
   };
 
-  const switchToChainId = (chainId: number, opts?: RetryHooks<void>) => {
+  const switchToChainId = async (
+    targetChainId: number,
+    opts?: RetryHooks<void>,
+  ) => {
+    if (chainId === targetChainId) return;
     const targetChain =
-      ID_TO_APPKIT_NETWORK[chainId as keyof typeof ID_TO_APPKIT_NETWORK];
+      ID_TO_APPKIT_NETWORK[targetChainId as keyof typeof ID_TO_APPKIT_NETWORK];
 
-    switchWithRetry(targetChain, opts);
+    await switchWithRetry(targetChain, opts);
   };
 
   return { switchToPaymentNetwork, switchToChainId, chainId };

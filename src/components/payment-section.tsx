@@ -336,7 +336,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         description: `Switching to ${targetAppkitNetwork.name} network`,
       });
 
-      switchToChainId(targetChain);
+      await switchToChainId(targetChain);
     }
 
     const ethersProvider = new ethers.providers.Web3Provider(

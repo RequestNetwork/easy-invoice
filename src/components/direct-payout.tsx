@@ -122,7 +122,7 @@ export function DirectPayment() {
       return;
     }
 
-    switchToPaymentNetwork(data.paymentCurrency);
+    await switchToPaymentNetwork(data.paymentCurrency);
     setPaymentStatus("processing");
 
     try {
