@@ -25,15 +25,15 @@ import {
   RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
-import { getChainFromPaymentCurrency } from "@/lib/helpers/chain";
+
 import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-payment";
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import { paymentApiSchema } from "@/lib/schemas/payment";
 import { RecurrenceFrequency } from "@/server/db/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAppKit,
   useAppKitAccount,
-  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { CheckCircle, Loader2, LogOut, Plus, X } from "lucide-react";
@@ -54,7 +54,7 @@ type RecurringPaymentFormValues = z.infer<typeof recurringPaymentFormSchema>;
 export function CreateRecurringPaymentForm() {
   const router = useRouter();
 
-  const { chainId, switchNetwork } = useAppKitNetwork();
+  const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const { address, isConnected } = useAppKitAccount();
   const { open } = useAppKit();
@@ -96,16 +96,7 @@ export function CreateRecurringPaymentForm() {
       return;
     }
 
-    const targetChain = getChainFromPaymentCurrency(data.invoiceCurrency);
-
-    if (chainId !== targetChain.id) {
-      try {
-        switchNetwork(targetChain);
-      } catch (error: unknown) {
-        console.error("Failed to switch network:", error);
-        toast.error("Failed to switch network");
-      }
-    }
+    switchToPaymentNetwork(data.invoiceCurrency);
 
     const recurringPaymentCurrency = data.invoiceCurrency;
     const recurringPaymentBody = {

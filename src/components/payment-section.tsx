@@ -15,13 +15,13 @@ import { api } from "@/trpc/react";
 import {
   useAppKit,
   useAppKitAccount,
-  useAppKitNetwork,
   useAppKitProvider,
   useDisconnect,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
 import { AlertCircle, CheckCircle, Clock, Loader2, Wallet } from "lucide-react";
 
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import {
   getPaymentSectionStatusClass,
   getStatusDisplayText,
@@ -106,8 +106,8 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const { open } = useAppKit();
   const { disconnect } = useDisconnect();
   const { isConnected, address } = useAppKitAccount();
+  const { chainId, switchToChainId } = useSwitchNetwork();
   const { walletProvider } = useAppKitProvider("eip155");
-  const { chainId, switchNetwork } = useAppKitNetwork();
   const [showRoutes, setShowRoutes] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<PaymentRouteType | null>(
     null,
@@ -336,12 +336,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         description: `Switching to ${targetAppkitNetwork.name} network`,
       });
 
-      try {
-        await switchNetwork(targetAppkitNetwork);
-      } catch (_) {
-        toast("Error switching network");
-        return;
-      }
+      switchToChainId(targetChain);
     }
 
     const ethersProvider = new ethers.providers.Web3Provider(

@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAppKit,
   useAppKitAccount,
-  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
@@ -58,7 +57,8 @@ import {
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
 import { handleBatchPayment } from "@/lib/helpers/batch-payment";
-import { getChainFromPaymentCurrency } from "@/lib/helpers/chain";
+
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import { payoutSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
 import { z } from "zod";
@@ -77,7 +77,7 @@ export type BatchPaymentFormValues = z.infer<typeof batchPaymentFormSchema>;
 
 export function BatchPayout() {
   const { mutateAsync: batchPay } = api.payment.batchPay.useMutation();
-  const { chainId, switchNetwork } = useAppKitNetwork();
+  const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
@@ -215,18 +215,7 @@ export function BatchPayout() {
       return;
     }
 
-    const targetChain = getChainFromPaymentCurrency(
-      data.payouts[0].paymentCurrency,
-    );
-
-    if (chainId !== targetChain.id) {
-      try {
-        switchNetwork(targetChain);
-      } catch (error: unknown) {
-        console.error("Failed to switch network:", error);
-        toast.error("Failed to switch network");
-      }
-    }
+    switchToPaymentNetwork(data.payouts[0].paymentCurrency);
 
     try {
       const ethersProvider = new ethers.providers.Web3Provider(walletProvider);

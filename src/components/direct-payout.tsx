@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAppKit,
   useAppKitAccount,
-  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
@@ -46,7 +45,8 @@ import {
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
-import { getChainFromPaymentCurrency } from "@/lib/helpers/chain";
+
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import { paymentApiSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
 import type { z } from "zod";
@@ -60,7 +60,7 @@ export type DirectPaymentFormValues = z.infer<typeof directPaymentFormSchema>;
 
 export function DirectPayment() {
   const { mutateAsync: pay } = api.payment.pay.useMutation();
-  const { chainId, switchNetwork } = useAppKitNetwork();
+  const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
@@ -122,16 +122,7 @@ export function DirectPayment() {
       return;
     }
 
-    const targetChain = getChainFromPaymentCurrency(data.paymentCurrency);
-
-    if (chainId !== targetChain.id) {
-      try {
-        switchNetwork(targetChain);
-      } catch (error: unknown) {
-        console.error("Failed to switch network:", error);
-        toast.error("Failed to switch network");
-      }
-    }
+    switchToPaymentNetwork(data.paymentCurrency);
     setPaymentStatus("processing");
 
     try {

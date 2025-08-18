@@ -10,18 +10,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
-import { ID_TO_APPKIT_NETWORK, NETWORK_TO_ID } from "@/lib/constants/chains";
+import { NETWORK_TO_ID } from "@/lib/constants/chains";
 import { handleBatchPayment } from "@/lib/helpers/batch-payment";
 import {
   calculateTotalsByCurrency,
   formatCurrencyTotals,
 } from "@/lib/helpers/currency";
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import {
   useAppKit,
   useAppKitAccount,
-  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
@@ -73,7 +73,7 @@ export const InvoicesReceived = ({
   const { open } = useAppKit();
   const { isConnected, address } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
-  const { chainId, switchNetwork } = useAppKitNetwork();
+  const { switchToChainId } = useSwitchNetwork();
 
   const { data: invoices } = api.invoice.getAllIssuedToMe.useQuery(undefined, {
     initialData: initialReceivedInvoices,
@@ -134,27 +134,12 @@ export const InvoicesReceived = ({
       return;
     }
 
-    const targetChain =
-      NETWORK_TO_ID[lastSelectedNetwork as keyof typeof NETWORK_TO_ID];
-
-    if (targetChain !== chainId) {
-      const targetAppkitNetwork =
-        ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK];
-
-      toast("Switching to network", {
-        description: `Switching to ${targetAppkitNetwork.name} network`,
-      });
-
-      try {
-        switchNetwork(targetAppkitNetwork);
-      } catch (_) {
-        toast("Error switching network");
-        setIsPayingInvoices(false);
-        return;
-      }
-    }
-
     try {
+      const targetChainId =
+        NETWORK_TO_ID[lastSelectedNetwork as keyof typeof NETWORK_TO_ID];
+
+      switchToChainId(targetChainId);
+
       const ethersProvider = new ethers.providers.Web3Provider(
         walletProvider as ethers.providers.ExternalProvider,
       );
