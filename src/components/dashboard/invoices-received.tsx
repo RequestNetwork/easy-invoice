@@ -138,7 +138,7 @@ export const InvoicesReceived = ({
       const targetChainId =
         NETWORK_TO_ID[lastSelectedNetwork as keyof typeof NETWORK_TO_ID];
 
-      switchToChainId(targetChainId);
+      await switchToChainId(targetChainId);
 
       const ethersProvider = new ethers.providers.Web3Provider(
         walletProvider as ethers.providers.ExternalProvider,
