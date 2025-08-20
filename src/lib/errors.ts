@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
-import { AxiosError } from "axios";
+import { isAxiosError } from "axios";
 
 export class ResourceNotFoundError extends Error {
   constructor(message: string) {
@@ -39,7 +39,7 @@ export function toTRPCError(error: unknown): TRPCError {
     return error;
   }
 
-  if (error instanceof AxiosError) {
+  if (isAxiosError(error)) {
     const statusCode = error.response?.status || 500;
     const message = error.response?.data?.message || error.message;
     const code = mapStatusCodeToTRPCCode(statusCode);
