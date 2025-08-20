@@ -9,6 +9,31 @@ export class ResourceNotFoundError extends Error {
   }
 }
 
+function mapStatusCodeToTRPCCode(statusCode: number): TRPC_ERROR_CODE_KEY {
+  if (statusCode >= 400 && statusCode < 500) {
+    switch (statusCode) {
+      case 400:
+        return "BAD_REQUEST";
+      case 401:
+        return "UNAUTHORIZED";
+      case 403:
+        return "FORBIDDEN";
+      case 404:
+        return "NOT_FOUND";
+      case 409:
+        return "CONFLICT";
+      case 422:
+        return "UNPROCESSABLE_CONTENT";
+      case 429:
+        return "TOO_MANY_REQUESTS";
+      default:
+        return "BAD_REQUEST";
+    }
+  }
+
+  return "INTERNAL_SERVER_ERROR";
+}
+
 export function toTRPCError(error: unknown): TRPCError {
   if (error instanceof TRPCError) {
     return error;
@@ -17,26 +42,7 @@ export function toTRPCError(error: unknown): TRPCError {
   if (error instanceof AxiosError) {
     const statusCode = error.response?.status || 500;
     const message = error.response?.data?.message || error.message;
-
-    const code: TRPC_ERROR_CODE_KEY =
-      statusCode >= 400 && statusCode < 500
-        ? statusCode === 400
-          ? "BAD_REQUEST"
-          : statusCode === 401
-            ? "UNAUTHORIZED"
-            : statusCode === 403
-              ? "FORBIDDEN"
-              : statusCode === 404
-                ? "NOT_FOUND"
-                : statusCode === 409
-                  ? "CONFLICT"
-                  : statusCode === 422
-                    ? "UNPROCESSABLE_CONTENT"
-                    : statusCode === 429
-                      ? "TOO_MANY_REQUESTS"
-                      : "BAD_REQUEST"
-        : "INTERNAL_SERVER_ERROR";
-
+    const code = mapStatusCodeToTRPCCode(statusCode);
     return new TRPCError({ code, message, cause: error });
   }
 
@@ -46,6 +52,20 @@ export function toTRPCError(error: unknown): TRPCError {
       message: error.message,
       cause: error,
     });
+  }
+
+  // Handle regular Error objects with custom status codes
+  if (error instanceof Error) {
+    const errorWithStatus = error as Error & {
+      status?: number;
+      statusCode?: number;
+    };
+    const statusCode = errorWithStatus.status || errorWithStatus.statusCode;
+
+    if (statusCode) {
+      const code = mapStatusCodeToTRPCCode(statusCode);
+      return new TRPCError({ code, message: error.message, cause: error });
+    }
   }
 
   const message =
