@@ -385,9 +385,9 @@ export const invoiceRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { requestId } = input;
 
-      const request = await apiClient.patch(
-        `/v2/request/${requestId}/stop-recurrence`,
-      );
+      const request = await apiClient.patch(`/v2/request/${requestId}`, {
+        isRecurrenceStopped: true,
+      });
 
       if (request.status !== 200) {
         throw new TRPCError({
