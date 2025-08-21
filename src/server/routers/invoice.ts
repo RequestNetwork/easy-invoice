@@ -462,4 +462,35 @@ export const invoiceRouter = router({
 
       return response.data;
     }),
+  setInvoiceAsProcessing: publicProcedure
+    .input(
+      z.object({
+        id: z.string().ulid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      try {
+        const invoice = await db.query.requestTable.findFirst({
+          where: (requestTable, { eq }) => eq(requestTable.id, input.id),
+        });
+
+        if (!invoice) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Invoice not found",
+          });
+        }
+
+        await db
+          .update(requestTable)
+          .set({
+            status: "processing",
+          })
+          .where(eq(requestTable.id, input.id));
+      } catch (error) {
+        throw toTRPCError(error);
+      }
+    }),
 });

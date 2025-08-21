@@ -142,6 +142,9 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const { mutateAsync: payRequest } = api.invoice.payRequest.useMutation();
   const { mutateAsync: sendPaymentIntent } =
     api.invoice.sendPaymentIntent.useMutation();
+  const { mutateAsync: setInvoiceAsProcessing } =
+    api.invoice.setInvoiceAsProcessing.useMutation();
+
   const {
     data: paymentRoutesData,
     refetch,
@@ -371,6 +374,10 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
       } else {
         await handleDirectPayments(paymentData, signer);
       }
+
+      await setInvoiceAsProcessing({
+        id: invoice.id,
+      });
     } catch (error) {
       console.error("Error : ", error);
       toast("Payment Failed", {
@@ -464,7 +471,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         </div>
 
         {/* Payment Steps */}
-        {paymentStatus !== "paid" && (
+        {paymentStatus === "pending" && (
           <div className="space-y-8">
             {/* Step indicators */}
             <div className="flex justify-center">
