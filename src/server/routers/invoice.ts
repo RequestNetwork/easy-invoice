@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { toTRPCError } from "@/lib/errors";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import {
   type PaymentDetailsPayers,
@@ -138,11 +139,7 @@ export const invoiceRouter = router({
           invoiceNumber: input.invoiceNumber,
           error: error instanceof Error ? error.message : error,
         });
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to create invoice",
-        });
+        throw toTRPCError(error);
       }
     }),
 
@@ -192,11 +189,7 @@ export const invoiceRouter = router({
             error: error instanceof Error ? error.message : error,
           },
         );
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to create invoice",
-        });
+        throw toTRPCError(error);
       }
     }),
 
