@@ -285,6 +285,8 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
 
   const handleDirectPayments = async (paymentData: any, signer: any) => {
     const isApprovalNeeded = paymentData.metadata.needsApproval;
+    const paymentTransactionIndex =
+      paymentData.metadata.paymentTransactionIndex;
 
     if (isApprovalNeeded) {
       setPaymentProgress("approving");
@@ -292,13 +294,15 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         description: "Please approve the payment in your wallet",
       });
 
-      const approvalIndex = paymentData.metadata.approvalTransactionIndex;
-
-      const approvalTransaction = await signer.sendTransaction(
-        paymentData.transactions[approvalIndex],
-      );
-
-      await approvalTransaction.wait();
+      // Execute all approval transactions (all transactions except the payment transaction)
+      for (let i = 0; i < paymentData.transactions.length; i++) {
+        if (i !== paymentTransactionIndex) {
+          const approvalTransaction = await signer.sendTransaction(
+            paymentData.transactions[i],
+          );
+          await approvalTransaction.wait();
+        }
+      }
     }
 
     setPaymentProgress("paying");
@@ -308,7 +312,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
     });
 
     const paymentTransaction = await signer.sendTransaction(
-      paymentData.transactions[isApprovalNeeded ? 1 : 0],
+      paymentData.transactions[paymentTransactionIndex],
     );
 
     await paymentTransaction.wait();
@@ -333,7 +337,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK];
 
       toast("Switching to network", {
-        description: `Switching to ${targetAppkitNetwork.name} network`,
+        description: `Switching to ${targetAppkitNetwork?.name} network`,
       });
 
       try {
