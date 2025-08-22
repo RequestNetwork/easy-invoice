@@ -20,11 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import {
   RECURRING_PAYMENT_CURRENCIES,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
+
 import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-payment";
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import { paymentApiSchema } from "@/lib/schemas/payment";
 import { RecurrenceFrequency } from "@/server/db/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,6 +53,8 @@ type RecurringPaymentFormValues = z.infer<typeof recurringPaymentFormSchema>;
 
 export function CreateRecurringPaymentForm() {
   const router = useRouter();
+
+  const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const { address, isConnected } = useAppKitAccount();
   const { open } = useAppKit();
@@ -90,6 +95,8 @@ export function CreateRecurringPaymentForm() {
       toast.error("Please connect your wallet first");
       return;
     }
+
+    await switchToPaymentNetwork(data.invoiceCurrency);
 
     const recurringPaymentCurrency = data.invoiceCurrency;
     const recurringPaymentBody = {

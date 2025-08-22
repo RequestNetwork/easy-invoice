@@ -49,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
+
 import {
   PAYOUT_CURRENCIES,
   type PayoutCurrency,
@@ -56,6 +57,8 @@ import {
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
 import { handleBatchPayment } from "@/lib/helpers/batch-payment";
+
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import { payoutSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
 import { z } from "zod";
@@ -74,6 +77,7 @@ export type BatchPaymentFormValues = z.infer<typeof batchPaymentFormSchema>;
 
 export function BatchPayout() {
   const { mutateAsync: batchPay } = api.payment.batchPay.useMutation();
+  const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
@@ -210,6 +214,8 @@ export function BatchPayout() {
       toast.error("Please connect your wallet first");
       return;
     }
+
+    await switchToPaymentNetwork(data.payouts[0].paymentCurrency);
 
     try {
       const ethersProvider = new ethers.providers.Web3Provider(walletProvider);

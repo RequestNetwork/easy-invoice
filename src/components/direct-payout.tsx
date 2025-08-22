@@ -38,12 +38,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import {
   PAYOUT_CURRENCIES,
   type PayoutCurrency,
   formatCurrencyLabel,
   getPaymentCurrenciesForPayout,
 } from "@/lib/constants/currencies";
+
+import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import { paymentApiSchema } from "@/lib/schemas/payment";
 import { api } from "@/trpc/react";
 import type { z } from "zod";
@@ -57,6 +60,7 @@ export type DirectPaymentFormValues = z.infer<typeof directPaymentFormSchema>;
 
 export function DirectPayment() {
   const { mutateAsync: pay } = api.payment.pay.useMutation();
+  const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
@@ -118,6 +122,7 @@ export function DirectPayment() {
       return;
     }
 
+    await switchToPaymentNetwork(data.paymentCurrency);
     setPaymentStatus("processing");
 
     try {
