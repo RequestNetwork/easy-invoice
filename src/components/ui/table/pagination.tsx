@@ -20,7 +20,7 @@ export const Pagination = ({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-4 border-t border-zinc-100">
+    <div className="flex items-center justify-between px-4 py-4 border-t border-border">
       <Button
         variant="outline"
         onClick={() => setPage(Math.max(1, page - 1))}
@@ -29,7 +29,7 @@ export const Pagination = ({
       >
         Previous
       </Button>
-      <span className="text-sm text-zinc-600">
+      <span className="text-sm text-muted-foreground">
         Page {page} of {totalPages}
       </span>
       <Button
