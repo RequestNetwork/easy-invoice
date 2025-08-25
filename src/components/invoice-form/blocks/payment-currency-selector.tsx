@@ -10,7 +10,6 @@ import {
   type InvoiceCurrency,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
-import type { GetConversionCurrenciesResponse } from "@/server/routers/currency";
 import { api } from "@/trpc/react";
 import { Loader2 } from "lucide-react";
 
@@ -29,12 +28,11 @@ export function PaymentCurrencySelector({
     data: conversionData,
     isLoading,
     error,
-  } = api.currency.getConversionCurrencies.useQuery<GetConversionCurrenciesResponse>(
-    {
-      targetCurrency,
-      network,
-    },
-  );
+    refetch,
+  } = api.currency.getConversionCurrencies.useQuery({
+    targetCurrency,
+    network,
+  });
 
   if (isLoading) {
     return (
@@ -65,6 +63,16 @@ export function PaymentCurrencySelector({
         </Select>
         <p className="text-sm text-red-500">
           Failed to load payment currencies: {error.message}
+        </p>
+        <p className="text-sm text-red-500">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="text-red-500 underline"
+          >
+            Retry
+          </button>{" "}
+          or refresh the page.
         </p>
       </div>
     );
