@@ -375,9 +375,18 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         await handleDirectPayments(paymentData, signer);
       }
 
-      await setInvoiceAsProcessing({
-        id: invoice.id,
-      });
+      try {
+        await setInvoiceAsProcessing({
+          id: invoice.id,
+        });
+      } catch (statusError) {
+        console.error("Status update failed:", statusError);
+        toast("Payment Successful", {
+          description:
+            "Payment confirmed but status update failed. Please refresh.",
+        });
+        return; // Don't reset to idle
+      }
     } catch (error) {
       console.error("Error : ", error);
       toast("Payment Failed", {
@@ -655,11 +664,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                   <Button
                     onClick={handlePayment}
                     className="w-full bg-black hover:bg-zinc-800 text-white"
-                    disabled={
-                      paymentProgress !== "idle" ||
-                      !hasRoutes ||
-                      paymentStatus === "processing"
-                    }
+                    disabled={paymentProgress !== "idle" || !hasRoutes}
                   >
                     {!hasRoutes ? (
                       "No payment routes available"
