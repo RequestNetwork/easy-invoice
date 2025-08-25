@@ -178,7 +178,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-red-50"
+                  className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-950"
                   title="Deactivate subscription plan"
                   disabled={isProcessing}
                 >
@@ -212,7 +212,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                   <AlertDialogAction
                     onClick={handleDeletePlan}
                     disabled={isProcessing}
-                    className="bg-red-600 hover:bg-red-700"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     {isProcessing ? "Deactivating..." : "Deactivate Plan"}
                   </AlertDialogAction>
