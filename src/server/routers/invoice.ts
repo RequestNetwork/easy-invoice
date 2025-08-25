@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/axios";
 import { toTRPCError } from "@/lib/errors";
+import { getRedis } from "@/lib/redis";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import {
   type PaymentDetailsPayers,
@@ -280,7 +281,16 @@ export const invoiceRouter = router({
       });
     }
 
-    return invoice;
+    const redis = getRedis();
+    const isProcessing = await redis.get(`processing:${invoice.id}`);
+
+    return {
+      ...invoice,
+      status:
+        isProcessing && invoice.status === "pending"
+          ? "processing"
+          : invoice.status,
+    };
   }),
   payRequest: publicProcedure
     .input(
@@ -461,5 +471,37 @@ export const invoiceRouter = router({
       );
 
       return response.data;
+    }),
+  setInvoiceAsProcessing: publicProcedure
+    .input(
+      z.object({
+        id: z.string().ulid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      try {
+        const invoice = await db.query.requestTable.findFirst({
+          where: (requestTable, { eq }) => eq(requestTable.id, input.id),
+        });
+
+        if (!invoice) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Invoice not found",
+          });
+        }
+
+        const redis = getRedis();
+
+        await redis.setex(
+          `processing:${invoice.id}`,
+          Number(process.env.INVOICE_PROCESSING_TTL) || 60,
+          "true",
+        );
+      } catch (error) {
+        throw toTRPCError(error);
+      }
     }),
 });
