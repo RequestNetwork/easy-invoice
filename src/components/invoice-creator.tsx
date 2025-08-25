@@ -1,6 +1,6 @@
 "use client";
 
-import { InvoiceForm } from "@/components/invoice-form";
+import { InvoiceForm } from "@/components/invoice-form/invoice-form";
 import { InvoicePreview } from "@/components/invoice-preview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateInvoiceNumber } from "@/lib/helpers/client";
