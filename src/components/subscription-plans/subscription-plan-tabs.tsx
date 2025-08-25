@@ -44,8 +44,8 @@ export function SubscriptionPlanTabs({
   if (!mounted) {
     return (
       <div className="flex items-center justify-center w-full h-40">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-600" />
-        <span className="ml-2 text-zinc-600">Loading...</span>
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }

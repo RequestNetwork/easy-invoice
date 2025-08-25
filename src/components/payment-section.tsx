@@ -651,7 +651,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                   {/* Payment button should be disabled if there are no routes */}
                   <Button
                     onClick={handlePayment}
-                    className="w-full bg-foreground hover:bg-zinc-800 text-white"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                     disabled={
                       paymentProgress !== "idle" ||
                       !hasRoutes ||
