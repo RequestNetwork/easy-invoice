@@ -167,14 +167,6 @@ export async function POST(req: Request) {
           }
         }
         break;
-      case "payment.failed":
-        console.debug("Handling failed");
-        if (!isCryptoToFiat) {
-          await updateRequestStatus(requestId, "pending");
-        } else {
-          await updateRequestStatus(requestId, "offramp_failed");
-        }
-        break;
       case "request.recurring":
         await db.transaction(async (tx) => {
           const originalRequests = await tx

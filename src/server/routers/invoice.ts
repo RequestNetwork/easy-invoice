@@ -483,12 +483,7 @@ export const invoiceRouter = router({
           });
         }
 
-        await db
-          .update(requestTable)
-          .set({
-            status: "processing",
-          })
-          .where(eq(requestTable.id, input.id));
+        // TODO: set a timebound cache in redis
       } catch (error) {
         throw toTRPCError(error);
       }
