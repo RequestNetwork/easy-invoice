@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/axios";
 import { toTRPCError } from "@/lib/errors";
+import { getRedis } from "@/lib/redis";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import {
   type PaymentDetailsPayers,
@@ -280,7 +281,16 @@ export const invoiceRouter = router({
       });
     }
 
-    return invoice;
+    const redis = getRedis();
+    const isProcessing = await redis.get(`processing:${invoice.id}`);
+
+    return {
+      ...invoice,
+      status:
+        isProcessing && invoice.status === "pending"
+          ? "processing"
+          : invoice.status,
+    };
   }),
   payRequest: publicProcedure
     .input(
@@ -483,7 +493,13 @@ export const invoiceRouter = router({
           });
         }
 
-        // TODO: set a timebound cache in redis
+        const redis = getRedis();
+
+        await redis.setex(
+          `processing:${invoice.id}`,
+          Number(process.env.INVOICE_PROCESSING_TTL) || 60,
+          "true",
+        );
       } catch (error) {
         throw toTRPCError(error);
       }
