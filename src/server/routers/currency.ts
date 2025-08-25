@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { TRPCError } from "@trpc/server";
-import type { AxiosError, AxiosResponse } from "axios";
+import type { AxiosResponse } from "axios";
+import axios from "axios";
 import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
 
@@ -38,11 +39,19 @@ export const currencyRouter = router({
 
         return response.data;
       } catch (error) {
-        if (error && typeof error === "object" && "isAxiosError" in error) {
-          const axiosError = error as AxiosError;
+        if (axios.isAxiosError(error)) {
+          const statusCode = error.response?.status;
+          const code =
+            statusCode === 404
+              ? "NOT_FOUND"
+              : statusCode === 400
+                ? "BAD_REQUEST"
+                : "INTERNAL_SERVER_ERROR";
+
           throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: axiosError.message,
+            code,
+            message: error.response?.data?.message || error.message,
+            cause: error,
           });
         }
 

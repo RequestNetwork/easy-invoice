@@ -45,6 +45,7 @@ import { PaymentCurrencySelector } from "./blocks/payment-currency-selector";
 // Constants
 const PAYMENT_DETAILS_POLLING_INTERVAL = 30000; // 30 seconds in milliseconds
 const BANK_ACCOUNT_APPROVAL_TIMEOUT = 60000; // 1 minute timeout for bank account approval
+const DEFAULT_NETWORK = "sepolia";
 
 type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
@@ -899,7 +900,7 @@ export function InvoiceForm({
             <PaymentCurrencySelector
               onChange={(value) => form.setValue("paymentCurrency", value)}
               targetCurrency="USD"
-              network="sepolia"
+              network={DEFAULT_NETWORK}
             />
             {form.formState.errors.paymentCurrency && (
               <p className="text-sm text-red-500">
