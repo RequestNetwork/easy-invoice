@@ -281,16 +281,24 @@ export const invoiceRouter = router({
       });
     }
 
-    const redis = getRedis();
-    const isProcessing = await redis.get(`processing:${invoice.id}`);
+    try {
+      const redis = getRedis();
+      const isProcessing = await redis.get(`processing:${invoice.id}`);
 
-    return {
-      ...invoice,
-      status:
-        isProcessing && invoice.status === "pending"
-          ? "processing"
-          : invoice.status,
-    };
+      return {
+        ...invoice,
+        status:
+          isProcessing && invoice.status === "pending"
+            ? "processing"
+            : invoice.status,
+      };
+    } catch (error) {
+      console.warn(
+        "[invoice.getById] Redis unavailable, falling back to DB status",
+        error,
+      );
+      return invoice;
+    }
   }),
   payRequest: publicProcedure
     .input(
