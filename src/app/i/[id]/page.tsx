@@ -28,7 +28,7 @@ export default async function InvoiceMePage({
     notFound();
   }
 
-  if (currentUser.user && currentUser.user.id !== invoiceMeLink.user.id) {
+  if (currentUser.user && currentUser.user.id === invoiceMeLink.user.id) {
     return redirect("/dashboard");
   }
 
