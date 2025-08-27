@@ -389,7 +389,6 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
           description:
             "Payment confirmed but status update failed. Please refresh.",
         });
-        return; // Don't reset to idle
       }
     } catch (error) {
       console.error("Error : ", error);
