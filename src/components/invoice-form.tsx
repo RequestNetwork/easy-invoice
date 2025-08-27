@@ -90,7 +90,7 @@ const checkPaymentDetailsApproval = (
 interface InvoiceFormProps {
   currentUser: User;
   form: UseFormReturn<InvoiceFormValues>;
-  onSubmit: (data: InvoiceFormValues) => void;
+  onSubmit: (data: InvoiceFormValues) => Promise<void>;
   isLoading: boolean;
   recipientDetails?: {
     clientName: string;
@@ -1037,7 +1037,7 @@ export function InvoiceForm({
           <Button
             type="submit"
             className="bg-black hover:bg-zinc-800 text-white transition-colors"
-            disabled={isLoading || isSubmitting}
+            disabled={isLoading || isSubmitting || invoiceCreated}
           >
             {isLoading || isSubmitting
               ? "Creating..."

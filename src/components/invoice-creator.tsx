@@ -37,22 +37,44 @@ export function InvoiceCreator({
   const router = useRouter();
   const isInvoiceMe = !!recipientDetails?.userId;
   const utils = api.useUtils();
-  const { mutateAsync: createInvoice, isLoading } =
-    api.invoice.create.useMutation({
-      onSuccess: async () => {
-        toast.success("Invoice created successfully");
-        await utils.invoice.getAll.invalidate();
-        router.push("/dashboard");
-      },
-      onError: (error) => {
-        toast.error("Failed to create invoice", {
-          description:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred",
-        });
-      },
-    });
+
+  const { mutateAsync: createInvoice, isLoading } = isInvoiceMe
+    ? api.invoice.createFromInvoiceMe.useMutation({
+        onSuccess: async () => {
+          if (!currentUser) {
+            toast.success("Invoice created successfully", {
+              description: "You can safely close this page now",
+            });
+            return;
+          }
+          toast.success("Invoice created successfully");
+          await utils.invoice.getAll.invalidate();
+          router.push("/dashboard");
+        },
+        onError: (error) => {
+          toast.error("Failed to create invoice", {
+            description:
+              error instanceof Error
+                ? error.message
+                : "An unexpected error occurred",
+          });
+        },
+      })
+    : api.invoice.create.useMutation({
+        onSuccess: async () => {
+          toast.success("Invoice created successfully");
+          await utils.invoice.getAll.invalidate();
+          router.push("/dashboard");
+        },
+        onError: (error) => {
+          toast.error("Failed to create invoice", {
+            description:
+              error instanceof Error
+                ? error.message
+                : "An unexpected error occurred",
+          });
+        },
+      });
 
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
