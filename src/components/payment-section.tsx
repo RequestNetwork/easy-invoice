@@ -142,6 +142,9 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const { mutateAsync: payRequest } = api.invoice.payRequest.useMutation();
   const { mutateAsync: sendPaymentIntent } =
     api.invoice.sendPaymentIntent.useMutation();
+  const { mutateAsync: setInvoiceAsProcessing } =
+    api.invoice.setInvoiceAsProcessing.useMutation();
+
   const {
     data: paymentRoutesData,
     refetch,
@@ -285,6 +288,8 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
 
   const handleDirectPayments = async (paymentData: any, signer: any) => {
     const isApprovalNeeded = paymentData.metadata.needsApproval;
+    const paymentTransactionIndex =
+      paymentData.metadata.paymentTransactionIndex;
 
     if (isApprovalNeeded) {
       setPaymentProgress("approving");
@@ -292,13 +297,15 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         description: "Please approve the payment in your wallet",
       });
 
-      const approvalIndex = paymentData.metadata.approvalTransactionIndex;
-
-      const approvalTransaction = await signer.sendTransaction(
-        paymentData.transactions[approvalIndex],
-      );
-
-      await approvalTransaction.wait();
+      // Execute all approval transactions (all transactions except the payment transaction)
+      for (let i = 0; i < paymentData.transactions.length; i++) {
+        if (i !== paymentTransactionIndex) {
+          const approvalTransaction = await signer.sendTransaction(
+            paymentData.transactions[i],
+          );
+          await approvalTransaction.wait();
+        }
+      }
     }
 
     setPaymentProgress("paying");
@@ -308,7 +315,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
     });
 
     const paymentTransaction = await signer.sendTransaction(
-      paymentData.transactions[isApprovalNeeded ? 1 : 0],
+      paymentData.transactions[paymentTransactionIndex],
     );
 
     await paymentTransaction.wait();
@@ -333,7 +340,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         ID_TO_APPKIT_NETWORK[targetChain as keyof typeof ID_TO_APPKIT_NETWORK];
 
       toast("Switching to network", {
-        description: `Switching to ${targetAppkitNetwork.name} network`,
+        description: `Switching to ${targetAppkitNetwork?.name} network`,
       });
 
       await switchToChainId(targetChain);
@@ -365,6 +372,18 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         await handleCrosschainPayments(paymentData, signer);
       } else {
         await handleDirectPayments(paymentData, signer);
+      }
+
+      try {
+        await setInvoiceAsProcessing({
+          id: invoice.id,
+        });
+      } catch (statusError) {
+        console.error("Status update failed:", statusError);
+        toast("Payment Successful", {
+          description:
+            "Payment confirmed but status update failed. Please refresh.",
+        });
       }
     } catch (error) {
       console.error("Error : ", error);
@@ -459,7 +478,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         </div>
 
         {/* Payment Steps */}
-        {paymentStatus !== "paid" && (
+        {paymentStatus === "pending" && (
           <div className="space-y-8">
             {/* Step indicators */}
             <div className="flex justify-center">
@@ -643,11 +662,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                   <Button
                     onClick={handlePayment}
                     className="w-full bg-black hover:bg-zinc-800 text-white"
-                    disabled={
-                      paymentProgress !== "idle" ||
-                      !hasRoutes ||
-                      paymentStatus === "processing"
-                    }
+                    disabled={paymentProgress !== "idle" || !hasRoutes}
                   >
                     {!hasRoutes ? (
                       "No payment routes available"

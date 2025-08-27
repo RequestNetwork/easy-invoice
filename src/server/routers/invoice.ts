@@ -1,4 +1,6 @@
 import { apiClient } from "@/lib/axios";
+import { toTRPCError } from "@/lib/errors";
+import { getRedis } from "@/lib/redis";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
 import {
   type PaymentDetailsPayers,
@@ -138,11 +140,7 @@ export const invoiceRouter = router({
           invoiceNumber: input.invoiceNumber,
           error: error instanceof Error ? error.message : error,
         });
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to create invoice",
-        });
+        throw toTRPCError(error);
       }
     }),
 
@@ -192,11 +190,7 @@ export const invoiceRouter = router({
             error: error instanceof Error ? error.message : error,
           },
         );
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to create invoice",
-        });
+        throw toTRPCError(error);
       }
     }),
 
@@ -287,7 +281,24 @@ export const invoiceRouter = router({
       });
     }
 
-    return invoice;
+    try {
+      const redis = getRedis();
+      const isProcessing = await redis.get(`processing:${invoice.id}`);
+
+      return {
+        ...invoice,
+        status:
+          isProcessing && invoice.status === "pending"
+            ? "processing"
+            : invoice.status,
+      };
+    } catch (error) {
+      console.warn(
+        "[invoice.getById] Redis unavailable, falling back to DB status",
+        error,
+      );
+      return invoice;
+    }
   }),
   payRequest: publicProcedure
     .input(
@@ -392,9 +403,9 @@ export const invoiceRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { requestId } = input;
 
-      const request = await apiClient.patch(
-        `/v2/request/${requestId}/stop-recurrence`,
-      );
+      const request = await apiClient.patch(`/v2/request/${requestId}`, {
+        isRecurrenceStopped: true,
+      });
 
       if (request.status !== 200) {
         throw new TRPCError({
@@ -468,5 +479,37 @@ export const invoiceRouter = router({
       );
 
       return response.data;
+    }),
+  setInvoiceAsProcessing: publicProcedure
+    .input(
+      z.object({
+        id: z.string().ulid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      try {
+        const invoice = await db.query.requestTable.findFirst({
+          where: (requestTable, { eq }) => eq(requestTable.id, input.id),
+        });
+
+        if (!invoice) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Invoice not found",
+          });
+        }
+
+        const redis = getRedis();
+
+        await redis.setex(
+          `processing:${invoice.id}`,
+          Number(process.env.INVOICE_PROCESSING_TTL) || 60,
+          "true",
+        );
+      } catch (error) {
+        throw toTRPCError(error);
+      }
     }),
 });

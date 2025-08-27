@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { PaymentDetailsStatus } from "@/lib/constants/bank-account";
 import { Gender } from "@/lib/constants/compliance";
+import { toTRPCError } from "@/lib/errors";
 import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
 import { filterDefinedValues } from "@/lib/utils";
@@ -129,14 +130,7 @@ export const complianceRouter = router({
 
         return { success: true };
       } catch (error) {
-        console.error("Error updating agreement status:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to update agreement status",
-        });
+        throw toTRPCError(error);
       }
     }),
 
@@ -403,28 +397,7 @@ export const complianceRouter = router({
           throw error;
         }
 
-        // Map API client errors to appropriate error codes
-        if (error instanceof AxiosError) {
-          const status = error.response?.status;
-          // Map client errors (400, 422) to BAD_REQUEST
-          if (status === 400 || status === 422) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message:
-                error.response?.data?.message ||
-                "Invalid payment details provided",
-            });
-          }
-        }
-
-        // Otherwise wrap it in a TRPCError
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error
-              ? `Failed to allow payment details: ${error.message}`
-              : "Failed to allow payment details",
-        });
+        throw toTRPCError(error);
       }
     }),
 
@@ -496,13 +469,7 @@ export const complianceRouter = router({
         };
       } catch (error) {
         console.error("Error getting payment details:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error
-              ? `Failed to retrieve payment details: ${error.message}`
-              : "Failed to retrieve payment details",
-        });
+        throw toTRPCError(error);
       }
     }),
 
@@ -563,13 +530,7 @@ export const complianceRouter = router({
           throw error;
         }
 
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error
-              ? `Failed to retrieve payment details by ID: ${error.message}`
-              : "Failed to retrieve payment details by ID",
-        });
+        throw toTRPCError(error);
       }
     }),
 
@@ -602,13 +563,7 @@ export const complianceRouter = router({
         }
 
         console.error("Error finding user by email:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error
-              ? `Failed to find user by email: ${error.message}`
-              : "Failed to find user by email",
-        });
+        throw toTRPCError(error);
       }
     }),
 });
