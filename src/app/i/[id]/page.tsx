@@ -24,12 +24,12 @@ export default async function InvoiceMePage({
   const invoiceMeLink = await api.invoiceMe.getById.query(params.id);
   const currentUser = await api.auth.getSessionInfo.query();
 
-  if (currentUser.user?.id === invoiceMeLink.user.id) {
-    return redirect("/dashboard");
-  }
-
   if (!invoiceMeLink) {
     notFound();
+  }
+
+  if (currentUser.user && currentUser.user.id !== invoiceMeLink.user.id) {
+    return redirect("/dashboard");
   }
 
   const invoiceCount = await getInvoiceCount(invoiceMeLink.user.id);
