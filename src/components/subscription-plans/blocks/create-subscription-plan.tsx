@@ -37,6 +37,7 @@ import { Plus } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { getAddress } from "viem";
 import type { z } from "zod";
 
 const subscriptionPlanFormSchema = subscriptionPlanApiSchema.omit({
@@ -84,7 +85,7 @@ export function CreateSubscriptionPlan({
 
   useEffect(() => {
     if (address) {
-      form.setValue("payee", address);
+      form.setValue("payee", getAddress(address));
     }
   }, [address, form]);
 

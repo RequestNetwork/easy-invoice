@@ -37,12 +37,19 @@ export function InvoiceCreator({
   const router = useRouter();
   const isInvoiceMe = !!recipientDetails?.userId;
   const utils = api.useUtils();
-  const { mutate: createInvoice, isLoading } = isInvoiceMe
+
+  const { mutateAsync: createInvoice, isLoading } = isInvoiceMe
     ? api.invoice.createFromInvoiceMe.useMutation({
-        onSuccess: () => {
-          toast.success("Invoice created successfully", {
-            description: "You can safely close this page now",
-          });
+        onSuccess: async () => {
+          if (!currentUser) {
+            toast.success("Invoice created successfully", {
+              description: "You can safely close this page now",
+            });
+            return;
+          }
+          toast.success("Invoice created successfully");
+          await utils.invoice.getAll.invalidate();
+          router.push("/dashboard");
         },
         onError: (error) => {
           toast.error("Failed to create invoice", {
