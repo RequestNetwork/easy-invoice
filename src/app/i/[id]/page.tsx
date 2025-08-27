@@ -7,7 +7,7 @@ import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Invoice Me | EasyInvoice",
@@ -22,6 +22,11 @@ export default async function InvoiceMePage({
   // TODO solve unauthenticated access
   // TODO solve not found error like the subscription plan page
   const invoiceMeLink = await api.invoiceMe.getById.query(params.id);
+  const currentUser = await api.auth.getSessionInfo.query();
+
+  if (currentUser.user?.id === invoiceMeLink.user.id) {
+    return redirect("/dashboard");
+  }
 
   if (!invoiceMeLink) {
     notFound();
@@ -54,6 +59,15 @@ export default async function InvoiceMePage({
             clientEmail: invoiceMeLink.user.email ?? "",
             userId: invoiceMeLink.user.id,
           }}
+          currentUser={
+            currentUser.user
+              ? {
+                  id: currentUser.user.id,
+                  name: currentUser.user.name ?? "",
+                  email: currentUser.user.email ?? "",
+                }
+              : undefined
+          }
           invoiceCount={invoiceCount}
         />
       </main>
