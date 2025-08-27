@@ -29,7 +29,7 @@ export default async function InvoiceMePage({
   }
 
   if (currentUser.user && currentUser.user.id === invoiceMeLink.user.id) {
-    return redirect("/dashboard");
+    redirect("/dashboard");
   }
 
   const invoiceCount = await getInvoiceCount(invoiceMeLink.user.id);
