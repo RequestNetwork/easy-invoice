@@ -142,6 +142,9 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const { mutateAsync: payRequest } = api.invoice.payRequest.useMutation();
   const { mutateAsync: sendPaymentIntent } =
     api.invoice.sendPaymentIntent.useMutation();
+  const { mutateAsync: setInvoiceAsProcessing } =
+    api.invoice.setInvoiceAsProcessing.useMutation();
+
   const {
     data: paymentRoutesData,
     refetch,
@@ -375,6 +378,18 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
       } else {
         await handleDirectPayments(paymentData, signer);
       }
+
+      try {
+        await setInvoiceAsProcessing({
+          id: invoice.id,
+        });
+      } catch (statusError) {
+        console.error("Status update failed:", statusError);
+        toast("Payment Successful", {
+          description:
+            "Payment confirmed but status update failed. Please refresh.",
+        });
+      }
     } catch (error) {
       console.error("Error : ", error);
       toast("Payment Failed", {
@@ -468,7 +483,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
         </div>
 
         {/* Payment Steps */}
-        {paymentStatus !== "paid" && (
+        {paymentStatus === "pending" && (
           <div className="space-y-8">
             {/* Step indicators */}
             <div className="flex justify-center">
@@ -652,11 +667,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                   <Button
                     onClick={handlePayment}
                     className="w-full bg-black hover:bg-zinc-800 text-white"
-                    disabled={
-                      paymentProgress !== "idle" ||
-                      !hasRoutes ||
-                      paymentStatus === "processing"
-                    }
+                    disabled={paymentProgress !== "idle" || !hasRoutes}
                   >
                     {!hasRoutes ? (
                       "No payment routes available"
