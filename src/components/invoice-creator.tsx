@@ -81,8 +81,8 @@ export function InvoiceCreator({
     defaultValues: {
       invoiceNumber: generateInvoiceNumber(invoiceCount),
       dueDate: "",
-      creatorName: !isInvoiceMe ? (currentUser?.name ?? "") : "",
-      creatorEmail: !isInvoiceMe ? (currentUser?.email ?? "") : "",
+      creatorName: currentUser?.name ?? "",
+      creatorEmail: currentUser?.email ?? "",
       clientName: recipientDetails?.clientName ?? "",
       clientEmail: recipientDetails?.clientEmail ?? "",
       invoicedTo: recipientDetails?.userId ?? "",

@@ -148,7 +148,7 @@ export const invoiceRouter = router({
   createFromInvoiceMe: publicProcedure
     .input(invoiceFormSchema)
     .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
+      const { db, session } = ctx;
 
       if (!input.invoicedTo) {
         throw new TRPCError({
@@ -177,7 +177,7 @@ export const invoiceRouter = router({
             {
               ...input,
             },
-            input.invoicedTo as string,
+            session?.userId || (input?.invoicedTo as string),
           );
         });
       } catch (error) {
