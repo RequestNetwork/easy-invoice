@@ -26,7 +26,6 @@ import {
   MAINNET_CURRENCIES,
   type MainnetCurrency,
   formatCurrencyLabel,
-  getPaymentCurrenciesForInvoice,
 } from "@/lib/constants/currencies";
 import type { InvoiceFormValues } from "@/lib/schemas/invoice";
 import type {
@@ -40,11 +39,13 @@ import { useCallback, useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { PaymentCurrencySelector } from "./blocks/payment-currency-selector";
 
 // Constants
 const PAYMENT_DETAILS_POLLING_INTERVAL = 30000; // 30 seconds in milliseconds
 const BANK_ACCOUNT_APPROVAL_TIMEOUT = 60000; // 1 minute timeout for bank account approval
+const DEFAULT_NETWORK = "sepolia";
 
 type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
@@ -896,22 +897,11 @@ export function InvoiceForm({
         {/* Only show payment currency selector for USD invoices */}
         {form.watch("invoiceCurrency") === "USD" && (
           <div className="space-y-2">
-            <Label htmlFor="paymentCurrency">Payment Currency</Label>
-            <Select
-              onValueChange={(value) => form.setValue("paymentCurrency", value)}
-              defaultValue={form.getValues("paymentCurrency")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment currency" />
-              </SelectTrigger>
-              <SelectContent>
-                {getPaymentCurrenciesForInvoice("USD").map((currency) => (
-                  <SelectItem key={currency} value={currency}>
-                    {formatCurrencyLabel(currency)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <PaymentCurrencySelector
+              onChange={(value) => form.setValue("paymentCurrency", value)}
+              targetCurrency="USD"
+              network={DEFAULT_NETWORK}
+            />
             {form.formState.errors.paymentCurrency && (
               <p className="text-sm text-red-500">
                 {form.formState.errors.paymentCurrency.message}
