@@ -24,12 +24,16 @@ export function generateSessionToken(): string {
 export async function createSession(
   token: string,
   userId: string,
+  idToken: string,
+  googleSub,
 ): Promise<Session> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const session: Session = {
     id: sessionId,
     userId,
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+    idToken,
+    googleSub,
   };
   await db.insert(sessionTable).values(session);
   return session;
