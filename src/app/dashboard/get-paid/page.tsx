@@ -4,7 +4,7 @@ import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 
 export default async function GetPaidPage() {
-  const { user } = await getCurrentSession();
+  const { user, session } = await getCurrentSession();
 
   if (!user) {
     redirect("/");
@@ -12,5 +12,5 @@ export default async function GetPaidPage() {
 
   const invoiceData = await api.invoice.getAllIssuedByMe.query();
 
-  return <InvoicesSent initialSentInvoices={invoiceData} />;
+  return <InvoicesSent initialSentInvoices={invoiceData} session={session} />;
 }

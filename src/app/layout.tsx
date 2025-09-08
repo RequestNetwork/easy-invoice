@@ -1,7 +1,7 @@
-import { AppKit } from "@/components/app-kit";
 import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
+import { Web3AuthAppProvider } from "@/components/web3auth-provider";
 import { TRPCReactProvider } from "@/trpc/react";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
@@ -37,15 +37,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppKit>
+        <Web3AuthAppProvider>
           <TooltipProvider>
             <TRPCReactProvider cookies={cookies().toString()}>
               <BackgroundWrapper>{children}</BackgroundWrapper>
             </TRPCReactProvider>
             <Toaster />
           </TooltipProvider>
-        </AppKit>
-        <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
+          <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
+        </Web3AuthAppProvider>
       </body>
     </html>
   );

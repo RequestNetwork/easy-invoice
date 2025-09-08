@@ -15,6 +15,8 @@ import {
 } from "@/lib/helpers/currency";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
+import { AUTH_CONNECTION, WALLET_CONNECTORS } from "@web3auth/modal";
+import { useWeb3AuthConnect } from "@web3auth/modal/react";
 import { AlertCircle, DollarSign, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -42,10 +44,15 @@ const TableColumns = () => (
 
 interface InvoicesSentProps {
   initialSentInvoices: Request[];
+  session: any;
 }
 
-export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
+export const InvoicesSent = ({
+  initialSentInvoices,
+  session,
+}: InvoicesSentProps) => {
   const [page, setPage] = useState(1);
+  const { connectTo } = useWeb3AuthConnect();
 
   const { data: invoices } = api.invoice.getAllIssuedByMe.useQuery(undefined, {
     initialData: initialSentInvoices,
@@ -68,6 +75,18 @@ export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
 
   return (
     <div className="space-y-6">
+      <Button
+        onClick={async () => {
+          await connectTo(WALLET_CONNECTORS.AUTH, {
+            authConnectionId: "rn-google-jwt-verifier",
+            authConnection: AUTH_CONNECTION.CUSTOM,
+            idToken: session.idToken as string,
+          });
+        }}
+      >
+        Connect to google
+      </Button>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Total Invoices"

@@ -25,7 +25,7 @@ export async function createSession(
   token: string,
   userId: string,
   idToken: string,
-  googleSub,
+  googleSub: string,
 ): Promise<Session> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const session: Session = {
