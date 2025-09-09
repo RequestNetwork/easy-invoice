@@ -16,7 +16,7 @@ import {
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AUTH_CONNECTION, WALLET_CONNECTORS } from "@web3auth/modal";
-import { useWeb3AuthConnect } from "@web3auth/modal/react";
+import { useWeb3AuthConnect, useWeb3AuthUser } from "@web3auth/modal/react";
 import { AlertCircle, DollarSign, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -52,7 +52,9 @@ export const InvoicesSent = ({
   session,
 }: InvoicesSentProps) => {
   const [page, setPage] = useState(1);
-  const { connectTo } = useWeb3AuthConnect();
+
+  const { connectTo, isConnected, loading: isLoading } = useWeb3AuthConnect();
+  const { userInfo } = useWeb3AuthUser();
 
   const { data: invoices } = api.invoice.getAllIssuedByMe.useQuery(undefined, {
     initialData: initialSentInvoices,
@@ -75,17 +77,27 @@ export const InvoicesSent = ({
 
   return (
     <div className="space-y-6">
-      <Button
-        onClick={async () => {
-          await connectTo(WALLET_CONNECTORS.AUTH, {
-            authConnectionId: "rn-google-jwt-verifier",
-            authConnection: AUTH_CONNECTION.CUSTOM,
-            idToken: session.idToken as string,
-          });
-        }}
-      >
-        Connect to google
-      </Button>
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : !isConnected || !userInfo ? (
+        <Button
+          onClick={async () => {
+            await connectTo(WALLET_CONNECTORS.AUTH, {
+              authConnectionId: "rn-google-jwt-verifier",
+              authConnection: AUTH_CONNECTION.CUSTOM,
+              idToken: session.idToken as string,
+            });
+          }}
+        >
+          Connect to google
+        </Button>
+      ) : (
+        <>
+          {/*<h2>Connected to {connector?.name}</h2>
+          <div>{address}</div>*/}
+          <p>{JSON.stringify(userInfo)}</p>
+        </>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
