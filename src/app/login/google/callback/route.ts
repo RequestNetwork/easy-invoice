@@ -68,7 +68,7 @@ export async function GET(request: Request): Promise<Response> {
         sessionToken,
         existingUser?.id as string,
         idToken,
-        claims.sub,
+        claims?.email as string,
       );
       await setSessionTokenCookie(sessionToken, session.expiresAt);
       return new Response(null, {
@@ -96,7 +96,7 @@ export async function GET(request: Request): Promise<Response> {
       sessionToken,
       userId,
       idToken,
-      claims.sub,
+      claims?.email as string,
     );
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {

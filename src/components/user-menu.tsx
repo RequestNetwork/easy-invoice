@@ -12,6 +12,7 @@ import {
 import { truncateEmail } from "@/lib/utils";
 import type { User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
+import { useWeb3Auth } from "@web3auth/modal/react";
 import { CopyIcon, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -21,8 +22,17 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter();
+  const { web3Auth, isConnected } = useWeb3Auth();
+
   const logout = api.auth.logout.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (isConnected && web3Auth) {
+        try {
+          await web3Auth.logout();
+        } catch (error) {
+          console.error("Error disconnecting from Web3Auth:", error);
+        }
+      }
       router.replace("/");
     },
   });
