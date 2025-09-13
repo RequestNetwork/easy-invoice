@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { env } from "@/env/server";
 import { ResourceNotFoundError } from "@/lib/errors";
 import { generateInvoiceNumber } from "@/lib/helpers/client";
 import { getInvoiceCount } from "@/lib/helpers/invoice";
@@ -90,7 +91,7 @@ export async function POST(req: Request) {
     webhookData = body;
     const signature = req.headers.get("x-request-network-signature");
 
-    const webhookSecret = process.env.WEBHOOK_SECRET;
+    const webhookSecret = env.WEBHOOK_SECRET;
 
     if (!webhookSecret) {
       throw new Error("WEBHOOK_SECRET is not set");

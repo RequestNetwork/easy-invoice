@@ -1,3 +1,4 @@
+import { env } from "@/env/server";
 import { type EncryptionVersion, getEncryptionKey } from "@/lib/encryption";
 import CryptoJS from "crypto-js";
 import { type InferSelectModel, relations } from "drizzle-orm";
@@ -14,7 +15,7 @@ import {
 
 export const createTable = pgTableCreator((name) => `easyinvoice_${name}`);
 
-const encryptionKey = process.env.ENCRYPTION_KEY as string;
+const encryptionKey = env.ENCRYPTION_KEY as string;
 
 // Define enum types for status fields
 export const agreementStatusEnum = pgEnum("agreement_status", [

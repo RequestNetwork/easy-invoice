@@ -1,5 +1,6 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { env } from "@/env/client";
 import { getCurrentSession } from "@/server/auth";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -52,7 +53,7 @@ export default async function LoginPage() {
             <p className="text-center text-sm text-zinc-500">
               By continuing, you agree to our{" "}
               <Link
-                href={process.env.NEXT_PUBLIC_API_TERMS_CONDITIONS as string}
+                href={env.NEXT_PUBLIC_API_TERMS_CONDITIONS as string}
                 className="underline hover:text-zinc-900"
                 target="_blank"
                 rel="noopener noreferrer"
