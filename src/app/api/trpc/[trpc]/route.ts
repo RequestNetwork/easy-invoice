@@ -2,6 +2,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { TRPC_ERROR_CODES_BY_KEY } from "@trpc/server/rpc";
 import type { NextRequest } from "next/server";
 
+import { env } from "@/env/server";
 import { appRouter } from "@/server/index";
 import { createTRPCContext } from "@/server/trpc";
 
@@ -60,7 +61,7 @@ const handler = (req: NextRequest) =>
     // @ts-expect-error: This works , no need to fix
     createContext: () => createContext(req),
     onError:
-      process.env.NODE_ENV === "development"
+      env.NODE_ENV === "development"
         ? ({ path, error }) => {
             console.error(
               `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,

@@ -6,6 +6,7 @@ import { createTRPCReact } from "@trpc/react-query";
 import { useState } from "react";
 import superjson from "superjson";
 
+import { env } from "@/env/server";
 import type { AppRouter } from "@/server/index";
 import { getUrl } from "./shared";
 
@@ -34,7 +35,7 @@ export function TRPCReactProvider(props: {
       links: [
         loggerLink({
           enabled: (op) =>
-            process.env.NODE_ENV === "development" ||
+            env.NODE_ENV === "development" ||
             (op.direction === "down" && op.result instanceof Error),
         }),
         httpBatchLink({

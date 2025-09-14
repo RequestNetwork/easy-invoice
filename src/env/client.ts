@@ -7,6 +7,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_TERMS_CONDITIONS: z.string().url(),
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
     NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS: z.string().optional(),
+    NEXT_PUBLIC_DEMO_MEETING: z.string().optional(),
   },
   runtimeEnv: {
     NEXT_PUBLIC_REOWN_PROJECT_ID: process.env.NEXT_PUBLIC_REOWN_PROJECT_ID,
@@ -15,5 +16,6 @@ export const env = createEnv({
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
     NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS:
       process.env.NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS,
+    NEXT_PUBLIC_DEMO_MEETING: process.env.NEXT_PUBLIC_DEMO_MEETING,
   },
 });

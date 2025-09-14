@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { env } from "@/env/client";
+import { env as serverEnv } from "@/env/server";
 import { COMPLIANCE_COUNTRIES } from "@/lib/constants/compliance";
 import {
   BeneficiaryType,
@@ -73,7 +74,7 @@ export function ComplianceForm({ user }: { user: User }) {
       : ["https://request.network", "https://core-api-staging.pay.so"];
 
     // Add localhost in development
-    if (process.env.NODE_ENV === "development") {
+    if (serverEnv.NODE_ENV === "development") {
       origins.push("http://localhost:3000");
     }
 

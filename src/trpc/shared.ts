@@ -1,14 +1,15 @@
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import superjson from "superjson";
 
+import { env } from "@/env/server";
 import type { AppRouter } from "@/server/index";
 
 export const transformer = superjson;
 
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return `http://localhost:${process.env.PORT ?? 3000}`;
+  if (env.VERCEL_URL) return `https://${env.VERCEL_URL}`;
+  return `http://localhost:${env.PORT ?? 3000}`;
 }
 
 export function getUrl() {

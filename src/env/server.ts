@@ -16,6 +16,9 @@ export const env = createEnv({
     FEE_ADDRESS_FOR_PAYMENT: z.string().default(""),
     REDIS_URL: z.string().default(""),
     INVOICE_PROCESSING_TTL: z.string().default(""),
+    NODE_ENV: z.enum(["development", "production", "test"]),
+    VERCEL_URL: z.string().optional(),
+    PORT: z.coerce.number().optional(),
   },
   experimental__runtimeEnv: process.env,
 });

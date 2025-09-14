@@ -11,6 +11,7 @@ import type { TRPCErrorResponse } from "@trpc/server/rpc";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
+import { env } from "@/env/server";
 import { type AppRouter, appRouter } from "@/server/";
 import { createTRPCContext } from "@/server/trpc";
 import { transformer } from "./shared";
@@ -33,7 +34,7 @@ export const api = createTRPCProxyClient<AppRouter>({
   links: [
     loggerLink({
       enabled: (op) =>
-        process.env.NODE_ENV === "development" ||
+        env.NODE_ENV === "development" ||
         (op.direction === "down" && op.result instanceof Error),
     }),
     () =>
