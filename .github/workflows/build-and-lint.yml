@@ -91,4 +91,6 @@ jobs:
             ${{ runner.os }}-node-modules-
 
       - name: Build
+        env:
+          SKIP_ENV_VALIDATION: "1"
         run: npm run build

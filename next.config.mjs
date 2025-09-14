@@ -1,11 +1,25 @@
 import { fileURLToPath } from "node:url";
 import createJiti from "jiti";
-const jiti = createJiti(fileURLToPath(import.meta.url));
+import {
+  PHASE_DEVELOPMENT_SERVER,
+  PHASE_PRODUCTION_BUILD,
+} from "next/constants.js";
 
-jiti("./src/env/server.ts");
-jiti("./src/env/client.ts");
+/** @type {import('next').NextConfig | ((phase: string) => import('next').NextConfig)} */
+export default function nextConfig(phase) {
+  const jiti = createJiti(fileURLToPath(import.meta.url));
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+  const skipValidation = process.env.SKIP_ENV_VALIDATION === "1";
 
-export default nextConfig;
+  if (!skipValidation) {
+    if (
+      phase === PHASE_DEVELOPMENT_SERVER ||
+      phase === PHASE_PRODUCTION_BUILD
+    ) {
+      jiti("./src/env/server.ts");
+      jiti("./src/env/client.ts");
+    }
+  }
+
+  return {};
+}
