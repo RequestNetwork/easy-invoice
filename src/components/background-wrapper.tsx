@@ -1,5 +1,6 @@
 "use client";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 interface BackgroundWrapperProps {
@@ -26,6 +27,11 @@ export function BackgroundWrapper({
   },
 }: BackgroundWrapperProps) {
   const { theme } = useTheme();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Convert Tailwind color names to CSS variables or hex values
   const getTailwindColor = (colorName: string): string => {
@@ -60,10 +66,17 @@ export function BackgroundWrapper({
 
   const isDark = theme === "dark";
 
+  // While not mounted, avoid rendering theme-dependent decorations to prevent flash
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen relative overflow-hidden bg-background">
+        <div className="relative min-h-screen flex flex-col">{children}</div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`min-h-screen relative overflow-hidden ${isDark ? "bg-[#0A0A0A]" : "bg-[#FAFAFA]"}`}
-    >
+    <div className="min-h-screen relative overflow-hidden bg-background">
       {/* Decorative elements - only show in light mode */}
       {!isDark && (
         <>
@@ -91,8 +104,8 @@ export function BackgroundWrapper({
         className="absolute inset-0"
         style={{
           backgroundImage: isDark
-            ? "radial-gradient(circle at 1px 1px, #1f1f1f 1px, transparent 0)"
-            : "radial-gradient(circle at 1px 1px, #e5e5e5 1px, transparent 0)",
+            ? "radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)"
+            : "radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)",
           backgroundSize: "40px 40px",
         }}
       />

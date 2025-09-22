@@ -81,13 +81,13 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 bg-background text-foreground hover:bg-muted dark:bg-foreground dark:text-background dark:hover:bg-muted"
+                      className="h-8 w-8 p-0 hover:bg-muted"
                       title="Delete link"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="bg-background text-foreground dark:bg-foreground dark:text-background">
+                  <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>
                         Delete Invoice Me Link
@@ -98,9 +98,7 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel className="bg-background text-foreground dark:bg-foreground dark:text-background">
-                        Cancel
-                      </AlertDialogCancel>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={async () => {
                           try {
