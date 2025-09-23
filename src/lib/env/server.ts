@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isBuildTime } from "./helpers";
 
 const serverEnvSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
@@ -21,7 +22,33 @@ const serverEnvSchema = z.object({
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
+function createDummyServerEnv(): ServerEnv {
+  return {
+    DATABASE_URL: "postgresql://build:build@localhost:5432/build",
+    GOOGLE_CLIENT_ID: "build-google-client-id",
+    GOOGLE_CLIENT_SECRET: "build-google-client-secret",
+    REQUEST_API_URL: "https://build.api.request.network",
+    REQUEST_API_KEY: "build-request-api-key",
+    WEBHOOK_SECRET: "build-webhook-secret",
+    GOOGLE_REDIRECT_URI: "https://build.example.com/callback",
+    ENCRYPTION_KEY: "build-encryption-key",
+    CURRENT_ENCRYPTION_VERSION: "1",
+    FEE_PERCENTAGE_FOR_PAYMENT: "0",
+    FEE_ADDRESS_FOR_PAYMENT: "0x0000000000000000000000000000000000000000",
+    REDIS_URL: "redis://build:6379",
+    INVOICE_PROCESSING_TTL: "3600",
+    VERCEL_URL: "build.vercel.app",
+  };
+}
+
 export function validateServerEnv(): ServerEnv {
+  if (isBuildTime()) {
+    console.warn(
+      "⚠️ Skipping server environment variable validation at build time.",
+    );
+    return createDummyServerEnv();
+  }
+
   const env = {
     DATABASE_URL: process.env.DATABASE_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,

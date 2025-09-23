@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isBuildTime } from "./helpers";
 
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_REOWN_PROJECT_ID: z
@@ -12,7 +13,25 @@ const clientEnvSchema = z.object({
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
 
+function createDummyClientEnv(): ClientEnv {
+  return {
+    NEXT_PUBLIC_REOWN_PROJECT_ID: "dummy-reown-project-id",
+    NEXT_PUBLIC_GTM_ID: "GTM-XXXXXXX",
+    NEXT_PUBLIC_DEMO_MEETING: "https://example.com/demo-meeting",
+    NEXT_PUBLIC_API_TERMS_CONDITIONS: "https://example.com/terms",
+    NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS:
+      "https://trusted-origin1.com,https://trusted-origin2.com",
+  };
+}
+
 export function validateClientEnv(): ClientEnv {
+  if (isBuildTime()) {
+    console.warn(
+      "⚠️ Skipping client environment variable validation at build time.",
+    );
+    return createDummyClientEnv();
+  }
+
   const env = {
     NEXT_PUBLIC_REOWN_PROJECT_ID: process.env.NEXT_PUBLIC_REOWN_PROJECT_ID,
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,

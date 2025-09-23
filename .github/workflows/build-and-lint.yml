@@ -71,6 +71,8 @@ jobs:
     name: Build
     needs: install
     runs-on: ubuntu-latest
+    env:
+      SKIP_ENV_VALIDATION: 'true' 
     steps:
       - uses: actions/checkout@v4
 
