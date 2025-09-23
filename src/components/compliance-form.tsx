@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { COMPLIANCE_COUNTRIES } from "@/lib/constants/compliance";
+import { clientEnv } from "@/lib/env/client";
 import {
   BeneficiaryType,
   type ComplianceFormValues,
@@ -67,8 +68,8 @@ export function ComplianceForm({ user }: { user: User }) {
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const TRUSTED_ORIGINS = useMemo(() => {
-    const origins = process.env.NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS
-      ? process.env.NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS.split(",")
+    const origins = clientEnv.NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS
+      ? clientEnv.NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS.split(",")
       : ["https://request.network", "https://core-api-staging.pay.so"];
 
     // Add localhost in development

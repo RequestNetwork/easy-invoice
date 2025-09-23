@@ -1,10 +1,11 @@
 import Redis from "ioredis";
+import { serverEnv } from "../env/server";
 
 let redis: Redis | null = null;
 
 export function getRedis(): Redis {
   if (!redis) {
-    redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
+    redis = new Redis(serverEnv.REDIS_URL || "redis://localhost:6379", {
       lazyConnect: true,
     });
 

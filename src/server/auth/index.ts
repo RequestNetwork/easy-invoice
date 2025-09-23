@@ -1,3 +1,4 @@
+import { serverEnv } from "@/lib/env/server";
 import { db } from "@/server/db";
 import {
   type Session,
@@ -107,7 +108,7 @@ export type SessionValidationResult =
   | { session: null; user: null };
 
 export const google = new Google(
-  process.env.GOOGLE_CLIENT_ID as string,
-  process.env.GOOGLE_CLIENT_SECRET as string,
-  process.env.GOOGLE_REDIRECT_URI as string,
+  serverEnv.GOOGLE_CLIENT_ID as string,
+  serverEnv.GOOGLE_CLIENT_SECRET as string,
+  serverEnv.GOOGLE_REDIRECT_URI as string,
 );

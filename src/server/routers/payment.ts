@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { serverEnv } from "@/lib/env/server";
 import { toTRPCError } from "@/lib/errors";
 import { batchPaymentApiSchema, paymentApiSchema } from "@/lib/schemas/payment";
 import { TRPCError } from "@trpc/server";
@@ -19,8 +20,8 @@ export const paymentRouter = router({
           });
         }
 
-        const feePercentage = process.env.FEE_PERCENTAGE_FOR_PAYMENT;
-        const feeAddress = process.env.FEE_ADDRESS_FOR_PAYMENT;
+        const feePercentage = serverEnv.FEE_PERCENTAGE_FOR_PAYMENT;
+        const feeAddress = serverEnv.FEE_ADDRESS_FOR_PAYMENT;
 
         const response = await apiClient.post("v2/payouts", {
           amount: input.amount.toString(),
@@ -64,8 +65,8 @@ export const paymentRouter = router({
                 payee: payout.payee,
                 invoiceCurrency: payout.invoiceCurrency,
                 paymentCurrency: payout.paymentCurrency,
-                feePercentage: process.env.FEE_PERCENTAGE_FOR_PAYMENT,
-                feeAddress: process.env.FEE_ADDRESS_FOR_PAYMENT,
+                feePercentage: serverEnv.FEE_PERCENTAGE_FOR_PAYMENT,
+                feeAddress: serverEnv.FEE_ADDRESS_FOR_PAYMENT,
               }))
             : undefined,
           requestIds: input.requestIds,

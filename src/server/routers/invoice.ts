@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { serverEnv } from "@/lib/env/server";
 import { toTRPCError } from "@/lib/errors";
 import { getRedis } from "@/lib/redis";
 import { invoiceFormSchema } from "@/lib/schemas/invoice";
@@ -374,11 +375,11 @@ export const invoiceRouter = router({
         params.append("token", input.token);
       }
 
-      if (process.env.FEE_PERCENTAGE_FOR_PAYMENT) {
-        params.append("feePercentage", process.env.FEE_PERCENTAGE_FOR_PAYMENT);
+      if (serverEnv.FEE_PERCENTAGE_FOR_PAYMENT) {
+        params.append("feePercentage", serverEnv.FEE_PERCENTAGE_FOR_PAYMENT);
       }
-      if (process.env.FEE_ADDRESS_FOR_PAYMENT) {
-        params.append("feeAddress", process.env.FEE_ADDRESS_FOR_PAYMENT);
+      if (serverEnv.FEE_ADDRESS_FOR_PAYMENT) {
+        params.append("feeAddress", serverEnv.FEE_ADDRESS_FOR_PAYMENT);
       }
 
       const paymentEndpoint = `/v2/request/${invoice.requestId}/pay?${params.toString()}`;
@@ -448,7 +449,7 @@ export const invoiceRouter = router({
       const { requestId, walletAddress } = input;
 
       const response = await apiClient.get(
-        `/v2/request/${requestId}/routes?wallet=${walletAddress}&feePercentage=${process.env.FEE_PERCENTAGE_FOR_PAYMENT}&feeAddress=${process.env.FEE_ADDRESS_FOR_PAYMENT}`,
+        `/v2/request/${requestId}/routes?wallet=${walletAddress}&feePercentage=${serverEnv.FEE_PERCENTAGE_FOR_PAYMENT}&feeAddress=${serverEnv.FEE_ADDRESS_FOR_PAYMENT}`,
       );
 
       if (response.status !== 200) {
@@ -505,7 +506,7 @@ export const invoiceRouter = router({
 
         await redis.setex(
           `processing:${invoice.id}`,
-          Number(process.env.INVOICE_PROCESSING_TTL) || 60,
+          Number(serverEnv.INVOICE_PROCESSING_TTL) || 60,
           "true",
         );
       } catch (error) {

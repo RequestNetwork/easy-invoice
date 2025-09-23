@@ -1,5 +1,6 @@
 "use client";
 
+import { clientEnv } from "@/lib/env/client";
 import type { User } from "@/server/db/schema";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -7,7 +8,7 @@ import { Button } from "./ui/button";
 import { UserMenu } from "./user-menu";
 
 export function Header({ user }: { user?: User | undefined }) {
-  const demoMeetingUrl = process.env.NEXT_PUBLIC_DEMO_MEETING;
+  const demoMeetingUrl = clientEnv.NEXT_PUBLIC_DEMO_MEETING;
   const pathname = usePathname();
 
   // Don't show nav items on invoice payment pages

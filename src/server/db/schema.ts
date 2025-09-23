@@ -1,4 +1,5 @@
 import { type EncryptionVersion, getEncryptionKey } from "@/lib/encryption";
+import { serverEnv } from "@/lib/env/server";
 import CryptoJS from "crypto-js";
 import { type InferSelectModel, relations } from "drizzle-orm";
 import {
@@ -14,7 +15,7 @@ import {
 
 export const createTable = pgTableCreator((name) => `easyinvoice_${name}`);
 
-const encryptionKey = process.env.ENCRYPTION_KEY as string;
+const encryptionKey = serverEnv.ENCRYPTION_KEY as string;
 
 // Define enum types for status fields
 export const agreementStatusEnum = pgEnum("agreement_status", [
@@ -100,8 +101,8 @@ const encryptedText = customType<{ data: string }>({
     return CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
   },
   toDriver(value: string) {
-    const currentVersion = process.env
-      .CURRENT_ENCRYPTION_VERSION as EncryptionVersion;
+    const currentVersion =
+      serverEnv.CURRENT_ENCRYPTION_VERSION as EncryptionVersion;
     const encrypted = CryptoJS.AES.encrypt(value, encryptionKey).toString();
     return `${currentVersion}:${encrypted}`;
   },

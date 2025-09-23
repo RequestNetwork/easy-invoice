@@ -1,5 +1,6 @@
 "use client";
 
+import { clientEnv } from "@/lib/env/client";
 import { Ethers5Adapter } from "@reown/appkit-adapter-ethers5";
 import {
   arbitrum,
@@ -18,7 +19,7 @@ const metadata = {
   icons: ["./assets/logo.svg"],
 };
 
-const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
+const projectId = clientEnv.NEXT_PUBLIC_REOWN_PROJECT_ID;
 
 if (!projectId) {
   throw new Error("NEXT_PUBLIC_REOWN_PROJECT_ID is not set");

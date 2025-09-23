@@ -2,6 +2,7 @@ import { AppKit } from "@/components/app-kit";
 import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
+import { clientEnv } from "@/lib/env/client";
 import { TRPCReactProvider } from "@/trpc/react";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
@@ -33,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
+      <GoogleTagManager gtmId={clientEnv.NEXT_PUBLIC_GTM_ID} />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
