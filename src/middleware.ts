@@ -3,15 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateServerEnv } from "./lib/env/server";
 
-try {
-  validateServerEnv();
-} catch (error) {
-  console.error(
-    "🚨 Server startup failed - invalid environment variables",
-    error,
-  );
-  process.exit(1);
-}
+validateServerEnv();
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   if (request.method === "GET") {
