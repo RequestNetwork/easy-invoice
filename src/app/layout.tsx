@@ -34,10 +34,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

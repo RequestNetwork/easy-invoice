@@ -64,48 +64,41 @@ export function BackgroundWrapper({
     return colors[colorName] || "#f4f4f5"; // Default to zinc-100 if color not found
   };
 
-  const isDark = theme === "dark";
-
-  // While not mounted, avoid rendering theme-dependent decorations to prevent flash
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen relative overflow-hidden bg-background">
-        <div className="relative min-h-screen flex flex-col">{children}</div>
-      </div>
-    );
-  }
+  // Only trust theme after mount to keep SSR/CSR output consistent
+  const isDark = isMounted && theme === "dark";
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
-      {/* Decorative elements - only show in light mode */}
-      {!isDark && (
-        <>
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/2">
-            <div
-              className="w-full h-full rounded-full opacity-30 blur-3xl"
-              style={{
-                background: `linear-gradient(to bottom right, ${getTailwindColor(topGradient.from)}, ${getTailwindColor(topGradient.to)})`,
-              }}
-            />
-          </div>
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] translate-y-1/2 -translate-x-1/2">
-            <div
-              className="w-full h-full rounded-full opacity-30 blur-3xl"
-              style={{
-                background: `linear-gradient(to top right, ${getTailwindColor(bottomGradient.from)}, ${getTailwindColor(bottomGradient.to)})`,
-              }}
-            />
-          </div>
-        </>
-      )}
+      {/* Decorative elements: keep DOM shape stable; toggle visibility */}
+      <div
+        className="absolute top-0 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/2"
+        style={{ display: isDark ? "none" : "block" }}
+      >
+        <div
+          className="w-full h-full rounded-full opacity-30 blur-3xl"
+          style={{
+            background: `linear-gradient(to bottom right, ${getTailwindColor(topGradient.from)}, ${getTailwindColor(topGradient.to)})`,
+          }}
+        />
+      </div>
+      <div
+        className="absolute bottom-0 left-0 w-[600px] h-[600px] translate-y-1/2 -translate-x-1/2"
+        style={{ display: isDark ? "none" : "block" }}
+      >
+        <div
+          className="w-full h-full rounded-full opacity-30 blur-3xl"
+          style={{
+            background: `linear-gradient(to top right, ${getTailwindColor(bottomGradient.from)}, ${getTailwindColor(bottomGradient.to)})`,
+          }}
+        />
+      </div>
 
       {/* Dot pattern background */}
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: isDark
-            ? "radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)"
-            : "radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)",
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)",
           backgroundSize: "40px 40px",
         }}
       />
