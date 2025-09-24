@@ -26,7 +26,7 @@ export function BackgroundWrapper({
     to: "zinc-200",
   },
 }: BackgroundWrapperProps) {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -65,14 +65,14 @@ export function BackgroundWrapper({
   };
 
   // Only trust theme after mount to keep SSR/CSR output consistent
-  const isDark = isMounted && theme === "dark";
+  const isDark = isMounted && resolvedTheme === "dark";
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
       {/* Decorative elements: keep DOM shape stable; toggle visibility */}
       <div
         className="absolute top-0 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/2"
-        style={{ display: isDark ? "none" : "block" }}
+        style={{ display: isMounted && !isDark ? "block" : "none" }}
       >
         <div
           className="w-full h-full rounded-full opacity-30 blur-3xl"
@@ -83,7 +83,7 @@ export function BackgroundWrapper({
       </div>
       <div
         className="absolute bottom-0 left-0 w-[600px] h-[600px] translate-y-1/2 -translate-x-1/2"
-        style={{ display: isDark ? "none" : "block" }}
+        style={{ display: isMounted && !isDark ? "block" : "none" }}
       >
         <div
           className="w-full h-full rounded-full opacity-30 blur-3xl"
