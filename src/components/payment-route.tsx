@@ -162,10 +162,11 @@ export function PaymentRoute({
                     tooltipTrigger={
                       <button
                         type="button"
-                        className="text-zinc-400 hover:text-zinc-600 transition-colors"
+                        aria-label="Show fee breakdown"
+                        className="text-zinc-400 hover:text-zinc-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-zinc-400 rounded"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Info className="w-3 h-3" />
+                        <Info className="w-3 h-3" aria-hidden="true" />
                       </button>
                     }
                     tooltipContent={formatFeeBreakdown()}
