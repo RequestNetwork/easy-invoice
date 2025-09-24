@@ -9,6 +9,18 @@ export interface PaymentRoute {
   token: string;
   isCryptoToFiat?: boolean;
   platformFee?: number;
+  feeBreakdown?: {
+    type: "gas" | "crosschain" | "platform";
+    stage: "sending" | "overall";
+    provider: string;
+    amount: string;
+    amountFormatted: string;
+    amountInGwei?: string | null;
+    currency: string;
+    network: string;
+    rateProvider?: string;
+    receiverAddress?: string;
+  }[];
 }
 
 export type SubscriptionWithDetails = RecurringPayment & {

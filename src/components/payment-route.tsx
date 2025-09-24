@@ -1,5 +1,6 @@
+import { Tooltip } from "@/components/ui/tooltip";
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
-import { ArrowRight, Globe, Zap } from "lucide-react";
+import { ArrowRight, Globe, Info, Zap } from "lucide-react";
 import Image from "next/image";
 
 interface RouteTypeInfo {
@@ -71,6 +72,41 @@ export function PaymentRoute({
 
   const { bgColor, textColor, icon } = getBadgeStyles();
 
+  // Format fee breakdown for tooltip
+  const formatFeeBreakdown = () => {
+    if (!route.feeBreakdown || route.feeBreakdown.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-2 max-w-xs">
+        <div className="font-medium text-white">Fee Breakdown</div>
+        {route.feeBreakdown.map((fee) => (
+          <div
+            key={`${fee.type}-${fee.provider}-${fee.stage}`}
+            className="flex justify-between items-start text-xs"
+          >
+            <div className="flex-1">
+              <div className="capitalize font-medium">
+                {fee.type === "gas"
+                  ? "Gas Fee"
+                  : fee.type === "crosschain"
+                    ? "Bridge Fee"
+                    : "Platform Fee"}
+              </div>
+              <div className="text-zinc-300">{fee.provider}</div>
+            </div>
+            <div className="text-right ml-2">
+              <div className="font-medium">
+                {fee.amountFormatted} {fee.currency}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <button
       type="button"
@@ -117,9 +153,25 @@ export function PaymentRoute({
             {route.fee === 0 ? (
               "No fee"
             ) : (
-              <span className="text-amber-700">
-                {route.fee} {isDirectPayment ? nativeToken : route.token} fee
-              </span>
+              <div className="flex items-center gap-1 justify-end">
+                <span className="text-amber-700">
+                  {route.fee} {isDirectPayment ? nativeToken : route.token} fee
+                </span>
+                {route.feeBreakdown && route.feeBreakdown.length > 0 && (
+                  <Tooltip
+                    tooltipTrigger={
+                      <button
+                        type="button"
+                        className="text-zinc-400 hover:text-zinc-600 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Info className="w-3 h-3" />
+                      </button>
+                    }
+                    tooltipContent={formatFeeBreakdown()}
+                  />
+                )}
+              </div>
             )}
           </div>
           <div className="text-sm text-zinc-600">
