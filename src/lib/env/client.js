@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isBuildTime } from "./helpers";
+import { shouldSkipValidation } from "./helpers.js";
 
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_REOWN_PROJECT_ID: z
@@ -11,13 +11,9 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS: z.string().optional(),
 });
 
-export type ClientEnv = z.infer<typeof clientEnvSchema>;
-
 export function validateClientEnv() {
-  if (isBuildTime()) {
-    console.warn(
-      "⚠️ Skipping client environment variable validation at build time.",
-    );
+  if (shouldSkipValidation()) {
+    console.warn("⚠️ Skipping client environment variable validation.");
     return;
   }
 
@@ -41,5 +37,3 @@ export function validateClientEnv() {
     throw new Error("Invalid client environment variables");
   }
 }
-
-export const clientEnv = validateClientEnv();

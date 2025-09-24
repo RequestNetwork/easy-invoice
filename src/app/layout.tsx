@@ -9,9 +9,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import "./globals.css";
-import { validateClientEnv } from "@/lib/env/client";
-
-validateClientEnv();
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

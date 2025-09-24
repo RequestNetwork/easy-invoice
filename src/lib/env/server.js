@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isBuildTime } from "./helpers";
+import { shouldSkipValidation } from "./helpers.js";
 
 const serverEnvSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
@@ -17,16 +17,11 @@ const serverEnvSchema = z.object({
   FEE_ADDRESS_FOR_PAYMENT: z.string().optional(),
   REDIS_URL: z.string().url().optional(),
   INVOICE_PROCESSING_TTL: z.string().optional(),
-  VERCEL_URL: z.string().optional(),
 });
 
-export type ServerEnv = z.infer<typeof serverEnvSchema>;
-
 export function validateServerEnv() {
-  if (isBuildTime()) {
-    console.warn(
-      "⚠️ Skipping server environment variable validation at build time.",
-    );
+  if (shouldSkipValidation()) {
+    console.warn("⚠️ Skipping server environment variable validation.");
     return;
   }
 
@@ -56,5 +51,3 @@ export function validateServerEnv() {
     throw new Error("Invalid server environment variables");
   }
 }
-
-export const serverEnv = validateServerEnv();

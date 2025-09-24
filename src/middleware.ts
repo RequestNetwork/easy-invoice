@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 
 import type { NextRequest } from "next/server";
-import { validateServerEnv } from "./lib/env/server";
-
-validateServerEnv();
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   if (request.method === "GET") {
