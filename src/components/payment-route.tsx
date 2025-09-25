@@ -91,10 +91,9 @@ export function PaymentRoute({
                 {fee.type === "gas"
                   ? "Gas Fee"
                   : fee.type === "crosschain"
-                    ? "Bridge Fee"
+                    ? "Crosschain Fee"
                     : "Platform Fee"}
               </div>
-              <div className="text-zinc-300">{fee.provider}</div>
             </div>
             <div className="text-right ml-2">
               <div className="font-medium">
