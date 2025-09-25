@@ -13,10 +13,18 @@ const serverEnvSchema = z.object({
     .url("GOOGLE_REDIRECT_URI must be a valid URL"),
   ENCRYPTION_KEY: z.string().optional(),
   CURRENT_ENCRYPTION_VERSION: z.string().optional(),
-  FEE_PERCENTAGE_FOR_PAYMENT: z.string().optional(),
-  FEE_ADDRESS_FOR_PAYMENT: z.string().optional(),
-  REDIS_URL: z.string().url().optional(),
-  INVOICE_PROCESSING_TTL: z.string().optional(),
+  FEE_PERCENTAGE_FOR_PAYMENT: z.coerce.string().min(1).max(100).optional(),
+  FEE_ADDRESS_FOR_PAYMENT: z
+    .string()
+    .trim()
+    .min(1, "FEE_ADDRESS_FOR_PAYMENT cannot be empty")
+    .optional(),
+  REDIS_URL: z.string().trim().url().optional(),
+  INVOICE_PROCESSING_TTL: z.coerce
+    .number()
+    .int()
+    .positive("INVOICE_PROCESSING_TTL must be a positive integer")
+    .optional(),
 });
 
 export function validateServerEnv() {
