@@ -11,8 +11,12 @@ const serverEnvSchema = z.object({
   GOOGLE_REDIRECT_URI: z
     .string()
     .url("GOOGLE_REDIRECT_URI must be a valid URL"),
-  ENCRYPTION_KEY: z.string().optional(),
-  CURRENT_ENCRYPTION_VERSION: z.string().optional(),
+  ENCRYPTION_KEY: z.string().min(1, "ENCRYPTION_KEY is required"),
+  CURRENT_ENCRYPTION_VERSION: z.union([z.literal("v1")], {
+    errorMap: () => ({
+      message: 'CURRENT_ENCRYPTION_VERSION must be "v1"',
+    }),
+  }),
   FEE_PERCENTAGE_FOR_PAYMENT: z.coerce.string().min(1).max(100).optional(),
   FEE_ADDRESS_FOR_PAYMENT: z
     .string()
@@ -23,8 +27,7 @@ const serverEnvSchema = z.object({
   INVOICE_PROCESSING_TTL: z.coerce
     .number()
     .int()
-    .positive("INVOICE_PROCESSING_TTL must be a positive integer")
-    .optional(),
+    .positive("INVOICE_PROCESSING_TTL must be a positive integer"),
 });
 
 export function validateServerEnv() {
