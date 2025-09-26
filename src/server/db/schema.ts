@@ -299,6 +299,21 @@ export const subscriptionPlanTable = createTable("subscription_plans", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const clientIdTable = createTable("client_id", {
+  id: text().primaryKey().notNull(),
+  clientId: text().notNull(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  label: text().notNull(),
+  domain: text().notNull(),
+  feeAddress: text(),
+  feePercentage: text(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relationships
 
 export const userRelations = relations(userTable, ({ many }) => ({
@@ -358,6 +373,13 @@ export const subscriptionPlanRelations = relations(
   }),
 );
 
+export const clientIdRelations = relations(clientIdTable, ({ one }) => ({
+  user: one(userTable, {
+    fields: [clientIdTable.userId],
+    references: [userTable.id],
+  }),
+}));
+
 export const paymentDetailsRelations = relations(
   paymentDetailsTable,
   ({ one, many }) => ({
@@ -393,3 +415,4 @@ export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable
 >;
 export type RecurringPayment = InferSelectModel<typeof recurringPaymentTable>;
+export type ClientId = InferSelectModel<typeof clientIdTable>;
