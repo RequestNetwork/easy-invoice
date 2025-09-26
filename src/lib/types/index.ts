@@ -14,7 +14,7 @@ export interface PaymentRoute {
     stage: "sending" | "overall";
     provider: string;
     amount: string;
-    amountFormatted: string;
+    amountInUSD: string;
     amountInGwei?: string | null;
     currency: string;
     network: string;
