@@ -27,7 +27,6 @@ export function PaymentRoute({
   onClick,
   variant = "default",
   routeType,
-  platformFee,
 }: PaymentRouteProps) {
   const isDirectPayment =
     routeType?.type === "direct" ||
@@ -177,13 +176,6 @@ export function PaymentRoute({
           <div className="text-sm text-zinc-600">
             {typeof route.speed === "number" ? `~${route.speed}s` : "Fast"}
           </div>
-          {platformFee?.percentage && platformFee?.percentage > 0 && (
-            <div className="text-sm text-zinc-600 mt-1">
-              <span className="text-purple-600">
-                {platformFee?.percentage}% {route.token} platform fee
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </button>
