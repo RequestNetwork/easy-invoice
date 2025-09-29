@@ -6,7 +6,6 @@ export const clientIdApiSchema = z.object({
   domain: z.string().url(),
   feeAddress: z
     .string()
-    .min(1, "Fee address is required")
     .refine(isEthereumAddress, "Invalid Ethereum address format")
     .optional(),
   feePercentage: z.coerce
