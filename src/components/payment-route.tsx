@@ -96,7 +96,7 @@ export function PaymentRoute({
             </div>
             <div className="text-right ml-2">
               <div className="font-medium">
-                {fee.amountInUSD} {fee.currency}
+                {fee.amount} {fee.currency}
               </div>
             </div>
           </div>
