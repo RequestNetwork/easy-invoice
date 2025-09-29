@@ -28,8 +28,12 @@ export const clientIdRouter = router({
         const response = await apiClient.post("v2/client-ids", {
           label: input.label,
           allowedDomains: [input.domain],
-          feeAddress: input.feeAddress,
-          feePercentage: input.feePercentage,
+          ...(input.feeAddress && input.feePercentage
+            ? {
+                feeAddress: input.feeAddress,
+                feePercentage: input.feePercentage,
+              }
+            : {}),
         });
 
         if (!response.data.clientId) {
