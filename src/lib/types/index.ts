@@ -3,6 +3,7 @@ import type { RecurringPayment } from "@/server/db/schema";
 export interface PaymentRoute {
   id: string;
   fee: number;
+  feeInUSD: number;
   speed: number | "FAST";
   price_impact: number;
   chain: string;

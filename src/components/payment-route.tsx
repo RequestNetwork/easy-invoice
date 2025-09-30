@@ -34,8 +34,6 @@ export function PaymentRoute({
   const isGasFreePayment = routeType?.type === "same-chain-erc20";
   const isCryptoToFiat = routeType?.type === "crypto-to-fiat";
 
-  const nativeToken = route.chain === "POLYGON" ? "POL" : "ETH";
-
   // Get the appropriate badge color and icon based on route type
   const getBadgeStyles = () => {
     if (isCryptoToFiat) {
@@ -95,9 +93,7 @@ export function PaymentRoute({
               </div>
             </div>
             <div className="text-right ml-2">
-              <div className="font-medium">
-                {fee.amount} {fee.currency}
-              </div>
+              <div className="font-medium">{fee.amountInUSD} USD</div>
             </div>
           </div>
         ))}
@@ -152,9 +148,7 @@ export function PaymentRoute({
               "No fee"
             ) : (
               <div className="flex items-center gap-1 justify-end">
-                <span className="text-amber-700">
-                  {route.fee} {isDirectPayment ? nativeToken : route.token} fee
-                </span>
+                <span className="text-amber-700">{route.feeInUSD} USD fee</span>
                 {route.feeBreakdown && route.feeBreakdown.length > 0 && (
                   <Tooltip
                     tooltipTrigger={
