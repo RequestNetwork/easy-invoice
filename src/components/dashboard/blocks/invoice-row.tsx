@@ -62,13 +62,13 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
 
   return (
     <>
-      <TableRow className="hover:bg-zinc-50/50">
+      <TableRow className="hover:bg-muted/50">
         {children && <TableCell>{children}</TableCell>}
         <TableCell className="font-medium">
           <div className="flex flex-col">
             <span>{invoice.invoiceNumber}</span>
             {invoice.recurrence && (
-              <span className="text-xs text-zinc-500 flex items-center gap-1">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
                 ↻ {invoice.recurrence?.frequency?.toLowerCase()}
                 {invoice.isRecurrenceStopped && (
                   <Badge variant="outline" className="ml-1 text-xs py-0 px-1">
@@ -84,7 +84,7 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
             <span>
               {type === "sent" ? invoice.clientName : invoice.creatorName}
             </span>
-            <code className="text-xs text-zinc-500">
+            <code className="text-xs text-muted-foreground">
               {type === "sent" ? invoice.clientEmail : invoice.creatorEmail}
             </code>
           </div>
@@ -93,7 +93,7 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
           <div className="flex flex-col">
             <span>${Number(invoice.amount).toLocaleString()}</span>
             {invoice?.recurrence?.startDate && (
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-muted-foreground">
                 from{" "}
                 {format(
                   new Date(invoice?.recurrence?.startDate),
@@ -116,9 +116,9 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
           <div className="flex items-center space-x-2">
             <Link
               href={`/invoices/${invoice.id}`}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-zinc-200 bg-white hover:bg-zinc-50 transition-colors"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border bg-card hover:bg-muted transition-colors"
             >
-              <Eye className="h-4 w-4 text-zinc-600" />
+              <Eye className="h-4 w-4 text-muted-foreground" />
               <span className="sr-only">View</span>
             </Link>
 
@@ -132,7 +132,7 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
                   disabled={stopRecurrenceMutation.isLoading}
                   className="h-8 w-8"
                 >
-                  <Ban className="h-4 w-4 text-zinc-600" />
+                  <Ban className="h-4 w-4 text-muted-foreground" />
                   <span className="sr-only">
                     {stopRecurrenceMutation.isLoading
                       ? "Stopping..."

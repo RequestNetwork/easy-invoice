@@ -26,8 +26,8 @@ export function SubscriptionPlansList({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center w-full h-40">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-600" />
-        <span className="ml-2 text-zinc-600">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">
           Loading subscription plans...
         </span>
       </div>
@@ -42,7 +42,7 @@ export function SubscriptionPlansList({
             <SubscriptionPlanLink key={plan.id} plan={plan} />
           ))
         ) : (
-          <div className="text-center py-8 text-zinc-500 self-start w-fit">
+          <div className="text-center py-8 text-muted-foreground self-start w-fit">
             <p>No subscription plans yet</p>
             <p className="text-sm">Create your first plan to get started</p>
           </div>
@@ -51,7 +51,7 @@ export function SubscriptionPlansList({
 
       <Button
         onClick={() => setIsCreateModalOpen(true)}
-        className="bg-black text-white hover:bg-zinc-800 rounded-md px-4 py-2 text-sm font-medium"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium"
       >
         + New Plan
       </Button>

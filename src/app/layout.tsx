@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import "./globals.css";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,20 +33,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppKit>
-          <TooltipProvider>
-            <TRPCReactProvider cookies={cookies().toString()}>
-              <BackgroundWrapper>{children}</BackgroundWrapper>
-            </TRPCReactProvider>
-            <Toaster />
-          </TooltipProvider>
-        </AppKit>
-        <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          enableColorScheme
+          disableTransitionOnChange
+        >
+          <AppKit>
+            <TooltipProvider>
+              <TRPCReactProvider cookies={cookies().toString()}>
+                <BackgroundWrapper>{children}</BackgroundWrapper>
+              </TRPCReactProvider>
+              <Toaster />
+            </TooltipProvider>
+          </AppKit>
+          <VersionDisplay githubRelease="https://github.com/RequestNetwork/easy-invoice/releases" />
+        </ThemeProvider>
       </body>
     </html>
   );

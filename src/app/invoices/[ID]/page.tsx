@@ -52,13 +52,13 @@ export default async function PaymentPage({
           <PaymentSection serverInvoice={invoice} />
 
           {/* Invoice Preview */}
-          <Card className="w-full bg-white shadow-sm border-0">
+          <Card className="w-full shadow-sm border-0">
             <CardContent className="p-8">
               {/* Header Section */}
               <div className="mb-12">
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-4">
-                    <div className="text-xs text-neutral-500 mb-1">
+                    <div className="text-xs text-muted-foreground mb-1">
                       INVOICE NO
                     </div>
                     <div className="text-sm font-medium">
@@ -66,13 +66,15 @@ export default async function PaymentPage({
                     </div>
                   </div>
                   <div className="col-span-4">
-                    <div className="text-xs text-neutral-500 mb-1">ISSUED</div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      ISSUED
+                    </div>
                     <div className="text-sm">
                       {formatDate(invoice.issuedDate)}
                     </div>
                   </div>
                   <div className="col-span-4">
-                    <div className="text-xs text-neutral-500 mb-1">
+                    <div className="text-xs text-muted-foreground mb-1">
                       DUE DATE
                     </div>
                     <div className="text-sm">{formatDate(invoice.dueDate)}</div>
@@ -80,7 +82,7 @@ export default async function PaymentPage({
                 </div>
                 {invoice.recurrence && (
                   <div className="mt-4">
-                    <div className="text-xs text-neutral-500 mb-1">
+                    <div className="text-xs text-muted-foreground mb-1">
                       RECURRING
                     </div>
                     <div className="text-sm flex items-center gap-1">
@@ -108,23 +110,23 @@ export default async function PaymentPage({
               {/* From/To Section */}
               <div className="grid grid-cols-2 gap-16 mb-12">
                 <div>
-                  <div className="text-xs text-neutral-500 mb-3">FROM</div>
+                  <div className="text-xs text-muted-foreground mb-3">FROM</div>
                   <div className="space-y-1">
                     <div className="text-sm">{invoice.creatorName}</div>
-                    <div className="text-sm text-neutral-600">
+                    <div className="text-sm text-muted-foreground">
                       {invoice.creatorEmail}
                     </div>
                     <div className="text-sm mt-4">PAYABLE TO:</div>
-                    <div className="text-sm text-neutral-600 font-mono break-all">
+                    <div className="text-sm text-muted-foreground font-mono break-all">
                       {invoice.payee}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-neutral-500 mb-3">TO</div>
+                  <div className="text-xs text-muted-foreground mb-3">TO</div>
                   <div className="space-y-1">
                     <div className="text-sm">{invoice.clientName}</div>
-                    <div className="text-sm text-neutral-600">
+                    <div className="text-sm text-muted-foreground">
                       {invoice.clientEmail}
                     </div>
                   </div>
@@ -136,21 +138,21 @@ export default async function PaymentPage({
                 <table className="w-full">
                   <thead>
                     <tr>
-                      <th className="text-xs text-neutral-500 text-left pb-3">
+                      <th className="text-xs text-muted-foreground text-left pb-3">
                         DESCRIPTION
                       </th>
-                      <th className="text-xs text-neutral-500 text-right pb-3">
+                      <th className="text-xs text-muted-foreground text-right pb-3">
                         QTY
                       </th>
-                      <th className="text-xs text-neutral-500 text-right pb-3">
+                      <th className="text-xs text-muted-foreground text-right pb-3">
                         PRICE
                       </th>
-                      <th className="text-xs text-neutral-500 text-right pb-3">
+                      <th className="text-xs text-muted-foreground text-right pb-3">
                         AMOUNT
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="border-y border-neutral-200">
+                  <tbody className="border-y border-border">
                     {(invoice.items as InvoiceItem[]).map((item, index) => (
                       <tr key={`invoice-item-${item.description}-${index}`}>
                         <td className="py-3">
@@ -174,18 +176,20 @@ export default async function PaymentPage({
                 <div className="flex justify-end mt-6">
                   <div className="w-48">
                     <div className="flex justify-between py-2">
-                      <span className="text-sm text-neutral-600">Subtotal</span>
+                      <span className="text-sm text-muted-foreground">
+                        Subtotal
+                      </span>
                       <span className="text-sm">
                         {Number(invoice.amount).toString()}
                       </span>
                     </div>
-                    <div className="flex justify-between py-2 border-t border-neutral-200">
+                    <div className="flex justify-between py-2 border-t border-border">
                       <span className="text-sm font-medium">Total</span>
                       <div>
                         <div className="text-sm text-right font-medium">
                           {Number(invoice.amount).toString()}
                         </div>
-                        <div className="text-xs text-neutral-500">
+                        <div className="text-xs text-muted-foreground">
                           {formatCurrencyLabel(invoice.invoiceCurrency)}
                         </div>
                       </div>
@@ -197,7 +201,7 @@ export default async function PaymentPage({
               {/* Payment Details and Notes Section */}
               <div className="grid grid-cols-2 gap-16">
                 <div>
-                  <div className="text-xs text-neutral-500 mb-1">
+                  <div className="text-xs text-muted-foreground mb-1">
                     PAYABLE IN
                   </div>
                   <div className="text-sm">
@@ -206,7 +210,7 @@ export default async function PaymentPage({
                 </div>
                 {paymentDetailsData?.paymentDetails ? (
                   <div>
-                    <div className="text-xs text-neutral-500 mb-1">
+                    <div className="text-xs text-muted-foreground mb-1">
                       BANK ACCOUNT DETAILS
                     </div>
                     {paymentDetailsData.paymentDetails.accountName && (
@@ -245,10 +249,10 @@ export default async function PaymentPage({
                   </div>
                 ) : (
                   <div>
-                    <div className="text-xs text-neutral-500 mb-1">
+                    <div className="text-xs text-muted-foreground mb-1">
                       BANK ACCOUNT DETAILS
                     </div>
-                    <div className="text-sm text-neutral-500">
+                    <div className="text-sm text-muted-foreground">
                       {!invoice.paymentDetailsId
                         ? "No payment details available"
                         : "Unable to load payment details"}
@@ -257,8 +261,10 @@ export default async function PaymentPage({
                 )}
                 {invoice.notes && (
                   <div>
-                    <div className="text-xs text-neutral-500 mb-1">NOTES</div>
-                    <div className="text-sm text-neutral-600 whitespace-pre-wrap break-words max-w-[300px]">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      NOTES
+                    </div>
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words max-w-[300px]">
                       {invoice.notes}
                     </div>
                   </div>

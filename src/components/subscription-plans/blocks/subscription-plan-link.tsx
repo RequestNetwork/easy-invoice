@@ -118,13 +118,13 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
   const isProcessing = isDeletingPlan || isCancellingPayment;
 
   return (
-    <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden bg-card border border-border text-card-foreground hover:shadow-md transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-4">
-              <h3 className="font-bold text-zinc-900">{plan.label}</h3>
-              <div className="flex items-center gap-3 text-sm text-zinc-600">
+              <h3 className="font-bold text-foreground">{plan.label}</h3>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
                   <span>{totalNumberOfSubscribers} subscriber(s)</span>
@@ -137,14 +137,14 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 </div>
               </div>
             </div>
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-muted-foreground">
               {displayCurrency} {displayAmount} · {plan.recurrenceFrequency} ·{" "}
               {plan.totalNumberOfPayments} payments ·{" "}
               {plan.trialDays > 0
                 ? `${plan.trialDays} day${plan.trialDays > 1 ? "s" : ""} trial`
                 : "No trial"}{" "}
             </p>
-            <code className="text-xs text-zinc-600 bg-zinc-50 px-3 py-1.5 rounded-md truncate flex-1">
+            <code className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-md truncate flex-1">
               {linkUrl}
             </code>
           </div>
@@ -153,21 +153,21 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
               variant="ghost"
               size="sm"
               onClick={() => copyLink(linkUrl)}
-              className="h-8 w-8 p-0 hover:bg-zinc-100"
+              className="h-8 w-8 p-0 hover:bg-muted"
               title="Copy link"
               disabled={isProcessing}
             >
-              <Copy className="h-4 w-4 text-zinc-600" />
+              <Copy className="h-4 w-4 text-muted-foreground" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="h-8 w-8 p-0 hover:bg-zinc-100"
+              className="h-8 w-8 p-0 hover:bg-muted"
               title="Open link"
             >
               <Link href={linkUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 text-zinc-600" />
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </Link>
             </Button>
             <AlertDialog
@@ -178,7 +178,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-red-50"
+                  className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-950"
                   title="Deactivate subscription plan"
                   disabled={isProcessing}
                 >
@@ -212,7 +212,7 @@ export function SubscriptionPlanLink({ plan }: SubscriptionPlanLinkProps) {
                   <AlertDialogAction
                     onClick={handleDeletePlan}
                     disabled={isProcessing}
-                    className="bg-red-600 hover:bg-red-700"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     {isProcessing ? "Deactivating..." : "Deactivate Plan"}
                   </AlertDialogAction>

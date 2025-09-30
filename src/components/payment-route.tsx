@@ -38,31 +38,31 @@ export function PaymentRoute({
   const getBadgeStyles = () => {
     if (isCryptoToFiat) {
       return {
-        bgColor: "bg-amber-100",
-        textColor: "text-amber-700",
+        bgColor: "bg-warning/10",
+        textColor: "text-warning-foreground",
         icon: <ArrowRight className="w-3 h-3 mr-1" />,
       };
     }
 
     if (isDirectPayment) {
       return {
-        bgColor: "bg-blue-100",
-        textColor: "text-blue-700",
+        bgColor: "bg-primary/10",
+        textColor: "text-primary-foreground",
         icon: <ArrowRight className="w-3 h-3 mr-1" />,
       };
     }
 
     if (isGasFreePayment) {
       return {
-        bgColor: "bg-green-100",
-        textColor: "text-green-700",
+        bgColor: "bg-success/10",
+        textColor: "text-success-foreground",
         icon: <Zap className="w-3 h-3 mr-1" />,
       };
     }
 
     return {
-      bgColor: "bg-purple-100",
-      textColor: "text-purple-700",
+      bgColor: "bg-muted",
+      textColor: "text-muted-foreground",
       icon: <Globe className="w-3 h-3 mr-1" />,
     };
   };
@@ -109,10 +109,10 @@ export function PaymentRoute({
       onClick={onClick}
       className={`w-full p-4 border rounded-lg transition-colors ${
         variant === "selected"
-          ? "border-2 border-black bg-zinc-50"
+          ? "border-2 border-primary bg-card"
           : isSelected
-            ? "bg-zinc-50 border-black"
-            : "bg-white hover:border-zinc-400"
+            ? "bg-card border-primary"
+            : "bg-background hover:border-border"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -139,7 +139,7 @@ export function PaymentRoute({
                   (isDirectPayment ? "Direct Payment" : "via Paygrid")}
               </span>
             </div>
-            <div className="text-sm text-zinc-600">
+            <div className="text-sm text-muted-foreground">
               {routeType?.description || `via ${route.token}`}
             </div>
           </div>
@@ -171,7 +171,7 @@ export function PaymentRoute({
               </div>
             )}
           </div>
-          <div className="text-sm text-zinc-600">
+          <div className="text-sm text-muted-foreground">
             {typeof route.speed === "number" ? `~${route.speed}s` : "Fast"}
           </div>
         </div>

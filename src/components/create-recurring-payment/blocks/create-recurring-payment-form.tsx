@@ -197,7 +197,7 @@ export function CreateRecurringPaymentForm() {
                     />
                   </FormControl>
                   <FormMessage />
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     Minimum 2, maximum 256 executions
                   </p>
                 </FormItem>
@@ -283,7 +283,7 @@ export function CreateRecurringPaymentForm() {
           <button
             type="button"
             onClick={() => open()}
-            className="flex items-center text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+            className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             disabled={isProcessing}
           >
             <span className="font-mono mr-2">

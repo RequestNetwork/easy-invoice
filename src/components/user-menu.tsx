@@ -32,26 +32,26 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-10 w-10 rounded-full border border-neutral-200 bg-white"
+          className="relative h-10 w-10 rounded-full border border-neutral-200 bg-background"
         >
           <div className="flex h-full w-full items-center justify-center rounded-full">
-            <span className="text-sm font-medium text-neutral-900">
+            <span className="text-sm font-medium text-foreground">
               {user.name?.[0]?.toUpperCase() ?? "U"}
             </span>
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium text-neutral-900">
+            <p className="text-sm font-medium text-foreground">
               {user.name ?? "User"}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-row items-center justify-between gap-2">
-            <p className="text-sm font-medium text-neutral-900">
+            <p className="text-sm font-medium text-foreground">
               {truncateEmail(user.email ?? "")}
             </p>
             <Button
@@ -69,7 +69,7 @@ export function UserMenu({ user }: UserMenuProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => logout.mutate()}
-          className="text-sm text-neutral-700 cursor-pointer hover:text-neutral-900"
+          className="text-sm text-muted-foreground cursor-pointer hover:text-foreground"
         >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>

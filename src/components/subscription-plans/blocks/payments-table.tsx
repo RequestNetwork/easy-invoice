@@ -65,7 +65,7 @@ const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
   const displayAmount = utils.formatUnits(paymentAmount, 18);
 
   return (
-    <TableRow className="hover:bg-zinc-50/50">
+    <TableRow className="hover:bg-muted/50">
       <TableCell>
         {format(new Date(payment.createdAt), "do MMM yyyy")}
       </TableCell>
@@ -79,7 +79,7 @@ const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
       <TableCell>
         <div className="flex flex-col items-start gap-1">
           <span className="text-sm font-bold">{payment.paymentNumber}</span>
-          <span className="text-xs text-zinc-500">
+          <span className="text-xs text-muted-foreground">
             of {payment.totalNumberOfPayments}
           </span>
         </div>
@@ -93,13 +93,13 @@ const PaymentRow = ({ payment }: { payment: SubscriptionPayment }) => {
             href={payment.requestScanUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+            className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
           >
             <span className="text-sm">View Request</span>
             <ExternalLink className="h-3 w-3" />
           </a>
         ) : (
-          <span className="text-zinc-400 text-sm">N/A</span>
+          <span className="text-muted-foreground text-sm">N/A</span>
         )}
       </TableCell>
     </TableRow>
@@ -131,11 +131,11 @@ export function PaymentsTable({
           <StatCard
             title="Total Payments"
             value="--"
-            icon={<Receipt className="h-4 w-4 text-zinc-600" />}
+            icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
           />
           <MultiCurrencyStatCard
             title="Total Revenue"
-            icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
             values={[]}
           />
         </div>
@@ -176,19 +176,19 @@ export function PaymentsTable({
         <StatCard
           title="Total Payments"
           value={filteredPayments.length}
-          icon={<Receipt className="h-4 w-4 text-zinc-600" />}
+          icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
         />
         <MultiCurrencyStatCard
           title="Total Revenue"
-          icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           values={revenueValues}
         />
       </div>
 
       <div className="flex items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-zinc-600" />
-          <span className="text-sm font-medium text-zinc-700">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">
             Filter by plan:
           </span>
         </div>
@@ -207,7 +207,7 @@ export function PaymentsTable({
         </Select>
       </div>
 
-      <Card className="border border-zinc-100">
+      <Card className="border border-border">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -218,7 +218,9 @@ export function PaymentsTable({
                 <TableRow>
                   <TableCell colSpan={7} className="p-0">
                     <EmptyState
-                      icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
+                      icon={
+                        <CreditCard className="h-6 w-6 text-muted-foreground" />
+                      }
                       title="No payments"
                       subtitle={
                         activePlan
