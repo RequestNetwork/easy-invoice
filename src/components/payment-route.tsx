@@ -77,7 +77,7 @@ export function PaymentRoute({
 
     return (
       <div className="space-y-2 max-w-xs">
-        <div className="font-medium text-white">Fee Breakdown</div>
+        <div className="font-medium text-popover-foreground">Fee Breakdown</div>
         {route.feeBreakdown.map((fee) => (
           <div
             key={`${fee.type}-${fee.provider}-${fee.stage}`}
