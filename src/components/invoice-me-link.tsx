@@ -42,13 +42,13 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
   };
 
   return (
-    <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-2 flex-1 min-w-0">
-            <h3 className="font-medium text-zinc-900">{link.label}</h3>
+            <h3 className="font-medium text-foreground">{link.label}</h3>
             <div className="flex items-center gap-3 max-w-full">
-              <code className="text-xs text-zinc-600 bg-zinc-50 px-3 py-1.5 rounded-md truncate flex-1">
+              <code className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md truncate flex-1">
                 {linkUrl}
               </code>
               <div className="flex items-center gap-1 shrink-0">
@@ -56,16 +56,16 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => copyLink(linkUrl)}
-                  className="h-8 w-8 p-0 hover:bg-zinc-100"
+                  className="h-8 w-8 p-0 hover:bg-muted"
                   title="Copy link"
                 >
-                  <Copy className="h-4 w-4 text-zinc-600" />
+                  <Copy className="h-4 w-4 text-muted-foreground" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   asChild
-                  className="h-8 w-8 p-0 hover:bg-zinc-100"
+                  className="h-8 w-8 p-0 hover:bg-muted"
                   title="Open link"
                 >
                   <Link
@@ -73,7 +73,7 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="h-4 w-4 text-zinc-600" />
+                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
                   </Link>
                 </Button>
                 <AlertDialog>
@@ -81,10 +81,10 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 hover:bg-red-50"
+                      className="h-8 w-8 p-0 hover:bg-muted"
                       title="Delete link"
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -112,7 +112,7 @@ export function InvoiceMeLink({ link, origin }: InvoiceMeLinkProps) {
                             });
                           }
                         }}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         Delete
                       </AlertDialogAction>

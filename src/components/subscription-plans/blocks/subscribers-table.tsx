@@ -84,7 +84,7 @@ const SubscriberRow = ({
   const displayAmount = utils.formatUnits(totalAmount, 18);
 
   return (
-    <TableRow className="hover:bg-zinc-50/50">
+    <TableRow className="hover:bg-muted/50">
       <TableCell>
         {subscription.createdAt
           ? format(new Date(subscription.createdAt), "do MMM yyyy")
@@ -110,7 +110,7 @@ const SubscriberRow = ({
           <span className="text-sm font-bold">
             {subscription.totalNumberOfPayments}
           </span>
-          <span className="text-xs text-zinc-500">scheduled</span>
+          <span className="text-xs text-muted-foreground">scheduled</span>
         </div>
       </TableCell>
       <TableCell>
@@ -118,7 +118,7 @@ const SubscriberRow = ({
           <span className="text-sm font-bold">
             {subscription.currentNumberOfPayments}
           </span>
-          <span className="text-xs text-zinc-500">completed</span>
+          <span className="text-xs text-muted-foreground">completed</span>
         </div>
       </TableCell>
       <TableCell>
@@ -155,11 +155,11 @@ export function SubscribersTable({
           <StatCard
             title="Active Subscriptions"
             value="--"
-            icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
+            icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
           />
           <MultiCurrencyStatCard
             title="Total Revenue"
-            icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
             values={[]}
           />
         </div>
@@ -200,19 +200,19 @@ export function SubscribersTable({
         <StatCard
           title="Active Subscriptions"
           value={activeSubscribers}
-          icon={<CreditCard className="h-4 w-4 text-zinc-600" />}
+          icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
         />
         <MultiCurrencyStatCard
           title="Total Revenue"
-          icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           values={revenueValues}
         />
       </div>
 
       <div className="flex items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-zinc-600" />
-          <span className="text-sm font-medium text-zinc-700">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">
             Filter by plan:
           </span>
         </div>
@@ -236,7 +236,7 @@ export function SubscribersTable({
         </Select>
       </div>
 
-      <Card className="border border-zinc-100">
+      <Card className="border border-border">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -247,7 +247,9 @@ export function SubscribersTable({
                 <TableRow>
                   <TableCell colSpan={10} className="p-0">
                     <EmptyState
-                      icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
+                      icon={
+                        <CreditCard className="h-6 w-6 text-muted-foreground" />
+                      }
                       title="No subscribers"
                       subtitle={
                         activePlan

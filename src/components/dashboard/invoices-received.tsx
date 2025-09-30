@@ -40,7 +40,7 @@ const RETRIEVE_ALL_INVOICES_POLLING_INTERVAL = 3000;
 
 const TableColumns = () => (
   <TableRow className="hover:bg-transparent border-none">
-    <TableHeadCell className="text-zinc-500 font-medium w-[1%]">
+    <TableHeadCell className="text-muted-foreground font-medium w-[1%]">
       Select
     </TableHeadCell>
     <TableHeadCell>Invoice #</TableHeadCell>
@@ -49,7 +49,7 @@ const TableColumns = () => (
     <TableHeadCell>Currency</TableHeadCell>
     <TableHeadCell>Due Date</TableHeadCell>
     <TableHeadCell>Status</TableHeadCell>
-    <TableHeadCell className="text-zinc-500 font-medium w-[1%]">
+    <TableHeadCell className="text-muted-foreground font-medium w-[1%]">
       Actions
     </TableHeadCell>
   </TableRow>
@@ -183,14 +183,14 @@ export const InvoicesReceived = ({
   return (
     <div className="space-y-6">
       {selectedInvoices.length > 0 && (
-        <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4">
+        <div className="bg-muted border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">
                 {selectedInvoices.length} invoice
                 {selectedInvoices.length > 1 ? "s" : ""} selected
               </p>
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-muted-foreground">
                 Total: $
                 {selectedInvoices
                   .reduce((sum, invoice) => sum + Number(invoice.amount), 0)
@@ -200,7 +200,7 @@ export const InvoicesReceived = ({
             <Button
               onClick={handleBatchPayInvoices}
               disabled={isPayingInvoices}
-              className="bg-black hover:bg-zinc-800 text-white"
+              className="bg-primary hover:bg-primary/80 text-primary-foreground"
             >
               {isPayingInvoices ? "Paying..." : "Pay Selected"}
             </Button>
@@ -212,21 +212,21 @@ export const InvoicesReceived = ({
         <StatCard
           title="Total Invoices"
           value={invoices?.length || 0}
-          icon={<FileText className="h-4 w-4 text-zinc-600" />}
+          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Outstanding Invoices"
           value={outstanding}
-          icon={<AlertCircle className="h-4 w-4 text-zinc-600" />}
+          icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}
         />
         <MultiCurrencyStatCard
           title="Total Due"
-          icon={<DollarSign className="h-4 w-4 text-zinc-600" />}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           values={totalValues}
         />
       </div>
 
-      <Card className="border border-zinc-100">
+      <Card className="border border-border">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -237,7 +237,9 @@ export const InvoicesReceived = ({
                 <TableRow>
                   <TableCell colSpan={8} className="p-0">
                     <EmptyState
-                      icon={<DollarSign className="h-6 w-6 text-zinc-600" />}
+                      icon={
+                        <DollarSign className="h-6 w-6 text-muted-foreground" />
+                      }
                       title="No invoices to pay"
                       subtitle="When someone creates an invoice for you, it will appear here"
                     />

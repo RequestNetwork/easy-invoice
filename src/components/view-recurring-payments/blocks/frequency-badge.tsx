@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import type { RecurrenceFrequencyType } from "@/server/db/schema";
 
 const BADGE_FREQUENCY_COLOR: Record<RecurrenceFrequencyType, string> = {
-  DAILY: "bg-blue-100 text-blue-800 border-blue-200",
-  WEEKLY: "bg-green-100 text-green-800 border-green-200",
-  MONTHLY: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  YEARLY: "bg-red-100 text-red-800 border-red-200",
+  DAILY: "bg-primary/10 text-primary-foreground border-primary",
+  WEEKLY: "bg-success/10 text-success-foreground border-success",
+  MONTHLY: "bg-warning/10 text-warning-foreground border-warning",
+  YEARLY: "bg-destructive/10 text-destructive-foreground border-destructive",
 };
 
 interface FrequencyBadgeProps {

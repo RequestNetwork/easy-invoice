@@ -14,11 +14,11 @@ export function Tooltip({ tooltipTrigger, tooltipContent }: TooltipProps) {
       <RadixTooltip.Trigger asChild>{tooltipTrigger}</RadixTooltip.Trigger>
       <RadixTooltip.Portal>
         <RadixTooltip.Content
-          className="bg-zinc-900 text-white text-xs px-2 py-1 rounded shadow-lg z-50"
+          className="bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-lg z-50"
           sideOffset={5}
         >
           {tooltipContent}
-          <RadixTooltip.Arrow className="fill-zinc-900" />
+          <RadixTooltip.Arrow className="fill-popover" />
         </RadixTooltip.Content>
       </RadixTooltip.Portal>
     </RadixTooltip.Root>

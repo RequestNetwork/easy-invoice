@@ -15,7 +15,7 @@ export function CompletedPayments({ payments }: CompletedPaymentsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!payments || payments.length === 0) {
-    return <div className="text-xs text-zinc-500">No payments yet</div>;
+    return <div className="text-xs text-muted-foreground">No payments yet</div>;
   }
 
   const visiblePayments = isExpanded ? payments : payments.slice(0, 2);

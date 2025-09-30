@@ -415,21 +415,21 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Secure Payment Section */}
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h3 className="font-semibold text-green-800 mb-2">Secure Payment</h3>
-          <p className="text-sm text-green-700">
+        <div className="p-4 bg-success/10 border border-success rounded-lg">
+          <h3 className="font-semibold text-success mb-2">Secure Payment</h3>
+          <p className="text-sm text-success-foreground">
             This payment is secured using Request Network. Your transaction will
             be processed safely and transparently.
           </p>
         </div>
 
         {MAINNET_CURRENCIES.includes(invoice.invoiceCurrency as any) && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+          <div className="p-4 bg-warning/10 border border-warning rounded-lg">
+            <h3 className="font-semibold text-warning mb-2 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               Real Cryptocurrency Warning
             </h3>
-            <p className="text-sm text-amber-700">
+            <p className="text-sm text-warning-foreground">
               This invoice uses{" "}
               <span className="font-bold">
                 {formatCurrencyLabel(invoice.invoiceCurrency)}
@@ -450,10 +450,10 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
               {Number(invoice.amount).toString()}
             </div>
             {showCurrencyConversion && (
-              <div className="text-sm text-zinc-600">
+              <div className="text-sm text-muted-foreground">
                 Payment will be processed in{" "}
                 {formatCurrencyLabel(invoice.paymentCurrency)}
-                <div className="mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700">
+                <div className="mt-1 p-2 bg-muted border border-border rounded text-muted-foreground">
                   Note: The final amount in{" "}
                   {formatCurrencyLabel(invoice.paymentCurrency)} will be
                   calculated at the current exchange rate when payment is
@@ -466,7 +466,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
 
         <div className="space-y-2">
           <Label>Recipient Address</Label>
-          <div className="font-mono bg-zinc-100 p-2 rounded">
+          <div className="font-mono bg-muted p-2 rounded">
             {invoice.payee}
             {selectedRoute?.isCryptoToFiat && (
               <div className="mt-2 text-sm text-amber-700">
@@ -485,15 +485,17 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
               <div className="flex items-center space-x-4">
                 <div
                   className={`flex items-center ${
-                    currentStep >= 1 ? "text-black" : "text-zinc-300"
+                    currentStep >= 1
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full border-2 flex items-center justify-center
                   ${
                     currentStep >= 1
-                      ? "border-black bg-zinc-50"
-                      : "border-zinc-300"
+                      ? "border-foreground bg-muted"
+                      : "border-muted"
                   }`}
                   >
                     <Wallet className="w-4 h-4" />
@@ -502,20 +504,22 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                 </div>
                 <div
                   className={`w-16 h-0.5 ${
-                    currentStep >= 2 ? "bg-black" : "bg-zinc-300"
+                    currentStep >= 2 ? "bg-foreground" : "bg-muted"
                   }`}
                 />
                 <div
                   className={`flex items-center ${
-                    currentStep >= 2 ? "text-black" : "text-zinc-300"
+                    currentStep >= 2
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full border-2 flex items-center justify-center
                   ${
                     currentStep >= 2
-                      ? "border-black bg-zinc-50"
-                      : "border-zinc-300"
+                      ? "border-foreground bg-muted"
+                      : "border-muted"
                   }`}
                   >
                     <CheckCircle className="w-4 h-4" />
@@ -529,7 +533,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
             <div className="space-y-4">
               {currentStep === 1 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-zinc-600 text-center">
+                  <p className="text-sm text-muted-foreground text-center">
                     Connect your wallet to proceed with the payment
                   </p>
                   <Button
@@ -563,11 +567,11 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                         Disconnect
                       </Button>
                     </div>
-                    <div className="font-mono bg-zinc-100 p-2 rounded">
+                    <div className="font-mono bg-muted p-2 rounded">
                       {address}
                     </div>
                   </div>
-                  <p className="text-sm text-zinc-600">
+                  <p className="text-sm text-muted-foreground">
                     Please confirm the payment amount and recipient address
                     before proceeding.
                     {showCurrencyConversion &&
@@ -594,13 +598,13 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                     {isLoadingPaymentRoutes ? (
                       <div className="p-8 border border-dashed rounded-lg">
                         <div className="text-center">
-                          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 mb-4">
-                            <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
+                          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+                            <Loader2 className="w-6 h-6 text-muted animate-spin" />
                           </div>
-                          <h3 className="text-sm font-medium text-zinc-900 mb-1">
+                          <h3 className="text-sm font-medium text-foreground mb-1">
                             Loading Payment Routes
                           </h3>
-                          <p className="text-sm text-zinc-500">
+                          <p className="text-sm text-muted">
                             Finding the best payment routes for your wallet
                           </p>
                         </div>
@@ -608,13 +612,13 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                     ) : !paymentRoutes || paymentRoutes.length === 0 ? (
                       <div className="p-8 border border-dashed rounded-lg">
                         <div className="text-center">
-                          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 mb-4">
-                            <AlertCircle className="w-6 h-6 text-zinc-600" />
+                          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+                            <AlertCircle className="w-6 h-6 text-muted" />
                           </div>
-                          <h3 className="text-sm font-medium text-zinc-900 mb-1">
+                          <h3 className="text-sm font-medium text-foreground mb-1">
                             No Payment Routes Available
                           </h3>
-                          <p className="text-sm text-zinc-500">
+                          <p className="text-sm text-muted">
                             There are currently no available payment routes for
                             this transaction.
                           </p>
@@ -639,7 +643,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                         {/* Route Options - Only show if there are multiple routes */}
                         {showRoutes && paymentRoutes.length > 1 && (
                           <div className="mt-4 space-y-2">
-                            <div className="text-sm text-zinc-500 mb-3">
+                            <div className="text-sm text-muted mb-3">
                               Available Payment Routes
                             </div>
                             {paymentRoutes.map((route: PaymentRouteType) => (
@@ -661,7 +665,7 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
                   {/* Payment button should be disabled if there are no routes */}
                   <Button
                     onClick={handlePayment}
-                    className="w-full bg-black hover:bg-zinc-800 text-white"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                     disabled={paymentProgress !== "idle" || !hasRoutes}
                   >
                     {!hasRoutes ? (
