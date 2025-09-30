@@ -94,7 +94,7 @@ export function PaymentRoute({
             </div>
             <div className="text-right ml-2">
               <div className="font-medium">
-                {Number(fee.amountInUSD).toFixed(2)} USD
+                {Number(fee.amountInUSD).toFixed(6)} USD
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@ export function PaymentRoute({
             ) : (
               <div className="flex items-center gap-1 justify-end">
                 <span className="text-amber-700">
-                  {Number(route?.feeInUSD)?.toFixed(2)} USD fee
+                  {Number(route?.feeInUSD)?.toFixed(6)} USD fee
                 </span>
                 {route.feeBreakdown && route.feeBreakdown.length > 0 && (
                   <Tooltip
