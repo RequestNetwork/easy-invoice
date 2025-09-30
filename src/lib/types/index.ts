@@ -3,12 +3,25 @@ import type { RecurringPayment } from "@/server/db/schema";
 export interface PaymentRoute {
   id: string;
   fee: number;
+  feeInUSD: number;
   speed: number | "FAST";
   price_impact: number;
   chain: string;
   token: string;
   isCryptoToFiat?: boolean;
   platformFee?: number;
+  feeBreakdown?: {
+    type: "gas" | "crosschain" | "platform";
+    stage: "sending" | "overall";
+    provider: string;
+    amount: string;
+    amountInUSD: string;
+    amountInGwei?: string | null;
+    currency: string;
+    network: string;
+    rateProvider?: string;
+    receiverAddress?: string;
+  }[];
 }
 
 export type SubscriptionWithDetails = RecurringPayment & {

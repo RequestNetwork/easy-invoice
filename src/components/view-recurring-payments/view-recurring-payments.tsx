@@ -147,7 +147,9 @@ export function ViewRecurringPayments({
 
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <p className="text-muted-foreground">No recurring payouts found</p>
+              <p className="text-muted-foreground">
+                No recurring payouts found
+              </p>
               <p className="text-muted-foreground text-sm">
                 Your recurring payouts will appear here
               </p>
