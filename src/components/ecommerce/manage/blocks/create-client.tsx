@@ -40,17 +40,17 @@ export function CreateEcommerceClient() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Create Client ID
+          Create Ecommerce Client
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Client ID</DialogTitle>
+          <DialogTitle>Create New Ecommerce Client</DialogTitle>
         </DialogHeader>
         <EcommerceClientForm
           onSubmit={handleSubmit}
           isLoading={isLoading}
-          submitButtonText="Create Client ID"
+          submitButtonText="Create Client"
           onCancel={() => setIsOpen(false)}
         />
       </DialogContent>

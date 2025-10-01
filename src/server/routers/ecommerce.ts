@@ -40,15 +40,15 @@ export const ecommerceRouter = router({
             : {}),
         });
 
-        if (!response.data.ecommerceClient) {
-          throw new Error("Failed to create client ID via external API.");
+        if (!response.data.clientId) {
+          throw new Error("Failed to create client on external API.");
         }
 
         await db.insert(ecommerceClientTable).values({
           id: ulid(),
           userId: user.id,
           domain: input.domain,
-          externalId: response.data.ecommerceClient.id,
+          externalId: response.data.id,
           rnClientId: response.data.clientId,
           label: input.label,
           feeAddress: input.feeAddress,

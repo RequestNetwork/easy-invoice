@@ -30,7 +30,11 @@ const baseEcommerceClientApiSchema = z.object({
   domain: z.string().url(),
   feeAddress: z
     .string()
-    .refine(isEthereumAddress, "Invalid Ethereum address format")
+    .refine((value) => {
+      if (value === undefined || value === "") return true;
+
+      return isEthereumAddress(value);
+    }, "Invalid Ethereum address format")
     .optional(),
   feePercentage: z.coerce
     .number()

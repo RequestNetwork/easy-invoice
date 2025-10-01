@@ -14,9 +14,6 @@ interface EcommerceManageProps {
 export function EcommerceManage({
   initialEcommerceClients,
 }: EcommerceManageProps) {
-  const shouldCreateDefault =
-    initialEcommerceClients.length === 0 ||
-    !initialEcommerceClients.some((c) => c.domain === DEFAULT_CLIENT_ID_DOMAIN);
   const { data, error, refetch, isRefetching } = api.ecommerce.getAll.useQuery(
     undefined,
     {
@@ -24,6 +21,9 @@ export function EcommerceManage({
       refetchOnMount: true,
     },
   );
+  const shouldCreateDefault =
+    data.length === 0 ||
+    !data.some((c) => c.domain === DEFAULT_CLIENT_ID_DOMAIN);
 
   if (error) {
     return (

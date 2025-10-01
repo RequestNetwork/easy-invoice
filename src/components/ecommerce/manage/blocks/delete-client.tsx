@@ -51,15 +51,15 @@ export function DeleteEcommerceClient({
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Client ID</AlertDialogTitle>
+          <AlertDialogTitle>Delete Ecommerce Client</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             <p>
-              Are you sure you want to delete the client ID "
+              Are you sure you want to delete the client "
               {ecommerceClient.label}"?
             </p>
             <p className="font-medium text-red-600">
-              ⚠️ This action cannot be undone. The client ID will be permanently
-              removed and any integrations using it will stop working.
+              ⚠️ This action cannot be undone. The client will be permanently
+              removed and any integrations using it's ID will stop working.
             </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
