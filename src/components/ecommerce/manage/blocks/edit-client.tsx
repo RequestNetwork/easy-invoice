@@ -50,7 +50,7 @@ export function EditEcommerceClient({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Client ID</DialogTitle>
+          <DialogTitle>Edit Ecommerce Client</DialogTitle>
         </DialogHeader>
         <EcommerceClientForm
           onSubmit={handleSubmit}
@@ -63,7 +63,7 @@ export function EditEcommerceClient({
               ? Number(ecommerceClient.feePercentage)
               : undefined,
           }}
-          submitButtonText="Update Client ID"
+          submitButtonText="Update Client"
           onCancel={() => setIsOpen(false)}
         />
       </DialogContent>
