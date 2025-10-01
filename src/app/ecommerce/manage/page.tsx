@@ -10,7 +10,7 @@ export default async function ManagePage() {
     redirect("/");
   }
 
-  const clientIds = await api.clientId.getAll.query();
+  const ecommerceClients = await api.ecommerce.getAll.query();
 
-  return <EcommerceManage initialClientIds={clientIds} />;
+  return <EcommerceManage initialEcommerceClients={ecommerceClients} />;
 }
