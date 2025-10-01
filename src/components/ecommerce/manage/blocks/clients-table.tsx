@@ -1,6 +1,7 @@
 "use client";
 
 import { ShortAddress } from "@/components/short-address";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -18,63 +19,96 @@ import {
   TableRow,
 } from "@/components/ui/table/table";
 import { TableHeadCell } from "@/components/ui/table/table-head-cell";
-import type { ClientId } from "@/server/db/schema";
+import { DEFAULT_CLIENT_ID_DOMAIN } from "@/lib/constants/ecommerce";
+import type { EcommerceClient } from "@/server/db/schema";
 import { format } from "date-fns";
 import { CreditCard, Filter } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { DeleteEcommerceClient } from "./delete-client";
+import { EditEcommerceClient } from "./edit-client";
 
-interface ClientIdsTableProps {
-  clientIds: ClientId[];
+interface EcommerceClientsTableProps {
+  ecommerceClients: EcommerceClient[];
 }
 
-const ClientIdTableColumns = () => (
+const EcommerceClientTableColumns = () => (
   <TableRow className="hover:bg-transparent border-none">
     <TableHeadCell>Created Date</TableHeadCell>
     <TableHeadCell>Label</TableHeadCell>
     <TableHeadCell>Domain</TableHeadCell>
-    <TableHeadCell>Client ID</TableHeadCell>
+    <TableHeadCell>RN Client ID</TableHeadCell>
     <TableHeadCell>Fee Address</TableHeadCell>
     <TableHeadCell>Fee Percentage</TableHeadCell>
+    <TableHeadCell className="text-right">Actions</TableHeadCell>
   </TableRow>
 );
 
-const ClientIdRow = ({ clientId }: { clientId: ClientId }) => {
+const EcommerceClientRow = ({
+  ecommerceClient,
+}: { ecommerceClient: EcommerceClient }) => {
+  const canShowActions = ecommerceClient.domain !== DEFAULT_CLIENT_ID_DOMAIN;
+
   return (
     <TableRow className="hover:bg-zinc-50/50">
       <TableCell>
-        {clientId.createdAt
-          ? format(new Date(clientId.createdAt), "do MMM yyyy")
+        {ecommerceClient.createdAt
+          ? format(new Date(ecommerceClient.createdAt), "do MMM yyyy")
           : "N/A"}
       </TableCell>
-      <TableCell className="font-medium">{clientId.label}</TableCell>
-      <TableCell>{clientId.domain}</TableCell>
+      <TableCell className="font-medium">{ecommerceClient.label}</TableCell>
+      <TableCell>{ecommerceClient.domain}</TableCell>
       <TableCell>
-        <ShortAddress address={clientId.clientId} />
+        <ShortAddress address={ecommerceClient.rnClientId} />
       </TableCell>
       <TableCell>
-        {clientId.feeAddress ? (
-          <ShortAddress address={clientId.feeAddress} />
+        {ecommerceClient.feeAddress ? (
+          <ShortAddress address={ecommerceClient.feeAddress} />
         ) : (
           <span className="text-zinc-500">-</span>
         )}
       </TableCell>
       <TableCell>
-        {clientId.feePercentage ? (
-          <span>{clientId.feePercentage}%</span>
+        {ecommerceClient.feePercentage ? (
+          <span>{ecommerceClient.feePercentage}%</span>
         ) : (
           <span className="text-zinc-500">-</span>
         )}
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1">
+          {canShowActions && (
+            <>
+              <EditEcommerceClient ecommerceClient={ecommerceClient}>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </EditEcommerceClient>
+              <DeleteEcommerceClient ecommerceClient={ecommerceClient}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              </DeleteEcommerceClient>
+            </>
+          )}
+        </div>
       </TableCell>
     </TableRow>
   );
 };
 
-export function ClientIdsTable({ clientIds }: ClientIdsTableProps) {
+export function EcommerceClientsTable({
+  ecommerceClients,
+}: EcommerceClientsTableProps) {
   const [activeClient, setActiveClient] = useState<string | null>(null);
 
-  const filteredClientIds = activeClient
-    ? clientIds.filter(({ clientId }) => clientId === activeClient)
-    : clientIds;
+  const filteredEcommerceClients = activeClient
+    ? ecommerceClients.filter(({ id }) => id === activeClient)
+    : ecommerceClients;
 
   return (
     <div className="space-y-6 w-full">
@@ -96,8 +130,8 @@ export function ClientIdsTable({ clientIds }: ClientIdsTableProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Clients</SelectItem>
-            {clientIds.map(({ clientId, label }) => (
-              <SelectItem key={clientId} value={clientId}>
+            {ecommerceClients.map(({ id, label }) => (
+              <SelectItem key={id} value={id}>
                 {label}
               </SelectItem>
             ))}
@@ -109,12 +143,12 @@ export function ClientIdsTable({ clientIds }: ClientIdsTableProps) {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <ClientIdTableColumns />
+              <EcommerceClientTableColumns />
             </TableHeader>
             <TableBody>
-              {filteredClientIds.length === 0 ? (
+              {filteredEcommerceClients.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="p-0">
+                  <TableCell colSpan={7} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No client IDs"
@@ -127,8 +161,11 @@ export function ClientIdsTable({ clientIds }: ClientIdsTableProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredClientIds.map((clientId) => (
-                  <ClientIdRow key={clientId.id} clientId={clientId} />
+                filteredEcommerceClients.map((ecommerceClient) => (
+                  <EcommerceClientRow
+                    key={ecommerceClient.id}
+                    ecommerceClient={ecommerceClient}
+                  />
                 ))
               )}
             </TableBody>

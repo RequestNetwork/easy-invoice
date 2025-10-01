@@ -1,21 +1,26 @@
 "use client";
 import { ErrorState } from "@/components/ui/table/error-state";
-import type { ClientId } from "@/server/db/schema";
+import { DEFAULT_CLIENT_ID_DOMAIN } from "@/lib/constants/ecommerce";
+import type { EcommerceClient } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { ClientIdsTable } from "./blocks/client-ids-table";
-import { CreateClientId } from "./blocks/create-client-id";
-import { CreateDefaultClientId } from "./blocks/create-default-client-id";
+import { EcommerceClientsTable } from "./blocks/clients-table";
+import { CreateEcommerceClient } from "./blocks/create-client";
+import { CreateDefaultEcommerceClient } from "./blocks/create-default-client";
 
 interface EcommerceManageProps {
-  initialClientIds: ClientId[];
+  initialEcommerceClients: EcommerceClient[];
 }
 
-export function EcommerceManage({ initialClientIds }: EcommerceManageProps) {
-  const shouldCreateDefault = initialClientIds.length === 0;
-  const { data, error, refetch, isRefetching } = api.clientId.getAll.useQuery(
+export function EcommerceManage({
+  initialEcommerceClients,
+}: EcommerceManageProps) {
+  const shouldCreateDefault =
+    initialEcommerceClients.length === 0 ||
+    !initialEcommerceClients.some((c) => c.domain === DEFAULT_CLIENT_ID_DOMAIN);
+  const { data, error, refetch, isRefetching } = api.ecommerce.getAll.useQuery(
     undefined,
     {
-      initialData: initialClientIds,
+      initialData: initialEcommerceClients,
       refetchOnMount: true,
     },
   );
@@ -32,8 +37,12 @@ export function EcommerceManage({ initialClientIds }: EcommerceManageProps) {
 
   return (
     <div className="flex flex-col items-start gap-3">
-      {shouldCreateDefault ? <CreateDefaultClientId /> : <CreateClientId />}
-      <ClientIdsTable clientIds={data} />
+      {shouldCreateDefault ? (
+        <CreateDefaultEcommerceClient />
+      ) : (
+        <CreateEcommerceClient />
+      )}
+      <EcommerceClientsTable ecommerceClients={data} />
     </div>
   );
 }

@@ -299,9 +299,10 @@ export const subscriptionPlanTable = createTable("subscription_plans", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const clientIdTable = createTable("client_id", {
+export const ecommerceClientTable = createTable("ecommerce_client", {
   id: text().primaryKey().notNull(),
-  clientId: text().notNull(),
+  externalId: text().notNull(), // the API's id for the client ID
+  rnClientId: text().notNull(), // the request API client ID
   userId: text()
     .notNull()
     .references(() => userTable.id, {
@@ -373,12 +374,15 @@ export const subscriptionPlanRelations = relations(
   }),
 );
 
-export const clientIdRelations = relations(clientIdTable, ({ one }) => ({
-  user: one(userTable, {
-    fields: [clientIdTable.userId],
-    references: [userTable.id],
+export const ecommerceClientRelations = relations(
+  ecommerceClientTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [ecommerceClientTable.userId],
+      references: [userTable.id],
+    }),
   }),
-}));
+);
 
 export const paymentDetailsRelations = relations(
   paymentDetailsTable,
@@ -415,4 +419,4 @@ export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable
 >;
 export type RecurringPayment = InferSelectModel<typeof recurringPaymentTable>;
-export type ClientId = InferSelectModel<typeof clientIdTable>;
+export type EcommerceClient = InferSelectModel<typeof ecommerceClientTable>;
