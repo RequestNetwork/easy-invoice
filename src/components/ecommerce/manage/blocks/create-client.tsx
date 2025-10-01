@@ -47,12 +47,14 @@ export function CreateEcommerceClient() {
         <DialogHeader>
           <DialogTitle>Create New Ecommerce Client</DialogTitle>
         </DialogHeader>
-        <EcommerceClientForm
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          submitButtonText="Create Client"
-          onCancel={() => setIsOpen(false)}
-        />
+        {isOpen && (
+          <EcommerceClientForm
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+            submitButtonText="Create Client"
+            onCancel={() => setIsOpen(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -52,20 +52,21 @@ export function EditEcommerceClient({
         <DialogHeader>
           <DialogTitle>Edit Ecommerce Client</DialogTitle>
         </DialogHeader>
-        <EcommerceClientForm
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          defaultValues={{
-            label: ecommerceClient.label,
-            domain: ecommerceClient.domain,
-            feeAddress: ecommerceClient.feeAddress || undefined,
-            feePercentage: ecommerceClient.feePercentage
-              ? Number(ecommerceClient.feePercentage)
-              : undefined,
-          }}
-          submitButtonText="Update Client"
-          onCancel={() => setIsOpen(false)}
-        />
+        {isOpen && (
+          <EcommerceClientForm
+            key={ecommerceClient.id}
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+            defaultValues={{
+              label: ecommerceClient.label,
+              domain: ecommerceClient.domain,
+              feeAddress: ecommerceClient.feeAddress || undefined,
+              feePercentage: ecommerceClient?.feePercentage ?? undefined,
+            }}
+            submitButtonText="Update Client"
+            onCancel={() => setIsOpen(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

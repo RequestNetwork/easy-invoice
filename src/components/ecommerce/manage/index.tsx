@@ -38,7 +38,13 @@ export function EcommerceManage({
   return (
     <div className="flex flex-col items-start gap-3">
       {shouldCreateDefault ? (
-        <CreateDefaultEcommerceClient />
+        <>
+          <p className="text-sm text-muted-foreground">
+            Create a default client to get started by using Request Network
+            Checkout
+          </p>
+          <CreateDefaultEcommerceClient />
+        </>
       ) : (
         <CreateEcommerceClient />
       )}
