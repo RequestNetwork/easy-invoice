@@ -18,26 +18,22 @@ export const ecommerceRouter = router({
       const { db, user } = ctx;
       try {
         const existingEcommerceClient =
-          await db.query.ecommerceClientTable.findMany({
+          await db.query.ecommerceClientTable.findFirst({
             where: and(
               eq(ecommerceClientTable.userId, user.id),
               eq(ecommerceClientTable.domain, input.domain),
             ),
           });
 
-        if (existingEcommerceClient.length > 0) {
+        if (existingEcommerceClient) {
           throw new Error("Ecommerce client for this domain already exists.");
         }
 
         const response = await apiClient.post("v2/client-ids", {
           label: input.label,
           allowedDomains: [input.domain],
-          ...(input.feeAddress && input.feePercentage
-            ? {
-                feeAddress: input.feeAddress,
-                feePercentage: input.feePercentage,
-              }
-            : {}),
+          feePercentage: input.feePercentage ?? null,
+          feeAddress: input.feeAddress ?? null,
         });
 
         if (!response.data.clientId) {
@@ -51,8 +47,8 @@ export const ecommerceRouter = router({
           externalId: response.data.id,
           rnClientId: response.data.clientId,
           label: input.label,
-          feeAddress: input.feeAddress,
-          feePercentage: input.feePercentage?.toString() ?? undefined,
+          feeAddress: input.feeAddress ?? null,
+          feePercentage: input.feePercentage ?? null,
         });
       } catch (error) {
         throw toTRPCError(error);
@@ -73,7 +69,22 @@ export const ecommerceRouter = router({
           });
 
         if (!existingEcommerceClient) {
-          throw new Error("Client ID for this user doesn't exist.");
+          throw new Error("Client not found or doesn't belong to this user.");
+        }
+
+        if (input.domain !== existingEcommerceClient.domain) {
+          const conflictingClient =
+            await db.query.ecommerceClientTable.findFirst({
+              where: and(
+                eq(ecommerceClientTable.userId, user.id),
+                eq(ecommerceClientTable.domain, input.domain),
+                not(eq(ecommerceClientTable.id, input.id)),
+              ),
+            });
+
+          if (conflictingClient) {
+            throw new Error("Another client already exists for this domain.");
+          }
         }
 
         await apiClient.put(
@@ -81,12 +92,8 @@ export const ecommerceRouter = router({
           {
             label: input.label,
             allowedDomains: [input.domain],
-            ...(input.feeAddress && input.feePercentage
-              ? {
-                  feeAddress: input.feeAddress,
-                  feePercentage: input.feePercentage,
-                }
-              : {}),
+            feePercentage: input.feePercentage ?? null,
+            feeAddress: input.feeAddress ?? null,
           },
         );
 
@@ -95,8 +102,8 @@ export const ecommerceRouter = router({
           .set({
             label: input.label,
             domain: input.domain,
-            feeAddress: input.feeAddress,
-            feePercentage: input.feePercentage?.toString() ?? undefined,
+            feeAddress: input.feeAddress ?? null,
+            feePercentage: input.feePercentage ?? null,
           })
           .where(eq(ecommerceClientTable.id, input.id));
       } catch (error) {
@@ -131,13 +138,13 @@ export const ecommerceRouter = router({
           throw new Error("Client ID not found.");
         }
 
-        await apiClient.delete(
-          `v2/client-ids/${existingEcommerceClient.externalId}`,
-        );
-
         await db
           .delete(ecommerceClientTable)
           .where(eq(ecommerceClientTable.id, existingEcommerceClient.id));
+
+        await apiClient.delete(
+          `v2/client-ids/${existingEcommerceClient.externalId}`,
+        );
       } catch (error) {
         throw toTRPCError(error);
       }

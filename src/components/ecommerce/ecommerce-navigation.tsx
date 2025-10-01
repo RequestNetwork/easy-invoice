@@ -19,7 +19,7 @@ export function EcommerceNavigation() {
 
   return (
     <Tabs value={activeTab} className="w-full mb-8">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="manage" asChild>
           <Link href="/ecommerce/manage">Manage</Link>
         </TabsTrigger>

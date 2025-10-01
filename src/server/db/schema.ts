@@ -10,6 +10,7 @@ import {
   pgTableCreator,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `easyinvoice_${name}`);
@@ -299,21 +300,30 @@ export const subscriptionPlanTable = createTable("subscription_plans", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const ecommerceClientTable = createTable("ecommerce_client", {
-  id: text().primaryKey().notNull(),
-  externalId: text().notNull(), // the API's id for the client ID
-  rnClientId: text().notNull(), // the request API client ID
-  userId: text()
-    .notNull()
-    .references(() => userTable.id, {
-      onDelete: "cascade",
-    }),
-  label: text().notNull(),
-  domain: text().notNull(),
-  feeAddress: text(),
-  feePercentage: text(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export const ecommerceClientTable = createTable(
+  "ecommerce_client",
+  {
+    id: text().primaryKey().notNull(),
+    externalId: text().notNull(), // the API's id for the client ID
+    rnClientId: text().notNull(), // the request API client ID
+    userId: text()
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      }),
+    label: text().notNull(),
+    domain: text().notNull(),
+    feeAddress: text(),
+    feePercentage: text(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    userIdDomainIndex: uniqueIndex("ecommerce_client_user_id_domain_unique").on(
+      table.userId,
+      table.domain,
+    ),
+  }),
+);
 
 // Relationships
 

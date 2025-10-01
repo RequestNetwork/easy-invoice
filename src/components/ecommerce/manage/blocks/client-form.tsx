@@ -22,7 +22,7 @@ interface EcommerceClientFormProps {
   onSubmit: (data: EcommerceClientFormValues) => void;
   isLoading?: boolean;
   defaultValues?: Partial<EcommerceClientFormValues>;
-  submitButtonText?: string;
+  submitButtonText: string;
   onCancel?: () => void;
 }
 
@@ -30,7 +30,7 @@ export function EcommerceClientForm({
   onSubmit,
   isLoading = false,
   defaultValues,
-  submitButtonText = "Create Client ID",
+  submitButtonText,
   onCancel,
 }: EcommerceClientFormProps) {
   const form = useForm<EcommerceClientFormValues>({
@@ -116,12 +116,7 @@ export function EcommerceClientForm({
                   max="100"
                   step="0.1"
                   disabled={isLoading}
-                  value={field.value || ""}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
-                  }
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -144,9 +139,7 @@ export function EcommerceClientForm({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {submitButtonText.includes("Create")
-                  ? "Creating..."
-                  : "Updating..."}
+                {submitButtonText}
               </>
             ) : (
               submitButtonText

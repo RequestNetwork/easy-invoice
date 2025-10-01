@@ -59,7 +59,7 @@ export function DeleteEcommerceClient({
             </p>
             <p className="font-medium text-red-600">
               ⚠️ This action cannot be undone. The client will be permanently
-              removed and any integrations using it's ID will stop working.
+              removed and any integrations using its ID will stop working.
             </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
