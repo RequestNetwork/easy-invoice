@@ -187,6 +187,8 @@ export const clientPaymentTable = createTable("client_payment", {
   requestId: text().notNull(),
   invoiceCurrency: text().notNull(),
   paymentCurrency: text().notNull(),
+  txHash: text().notNull(),
+  network: text().notNull(),
   amount: text().notNull(),
   customerInfo: json().$type<{
     firstName?: string;

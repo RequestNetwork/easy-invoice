@@ -18,6 +18,24 @@ import { ulid } from "ulid";
 
 async function addClientPayment(webhookBody: any) {
   await db.transaction(async (tx) => {
+    const existingPayment = await tx
+      .select()
+      .from(clientPaymentTable)
+      .where(
+        and(
+          eq(clientPaymentTable.txHash, webhookBody.txHash),
+          eq(clientPaymentTable.requestId, webhookBody.requestId),
+        ),
+      )
+      .limit(1);
+
+    if (existingPayment.length > 0) {
+      console.warn(
+        `Duplicate payment detected for txHash: ${webhookBody.txHash} and requestId: ${webhookBody.requestId}`,
+      );
+      return;
+    }
+
     const ecommerceClient = await tx
       .select()
       .from(ecommerceClientTable)
@@ -38,6 +56,8 @@ async function addClientPayment(webhookBody: any) {
       requestId: webhookBody.requestId,
       invoiceCurrency: webhookBody.currency,
       paymentCurrency: webhookBody.paymentCurrency,
+      txHash: webhookBody.txHash,
+      network: webhookBody.network,
       amount: webhookBody.amount,
       customerInfo: webhookBody.customerInfo || null,
       reference: webhookBody.reference || null,
