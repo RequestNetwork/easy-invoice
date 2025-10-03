@@ -29,6 +29,21 @@ async function addClientPayment(webhookBody: any) {
         `No ecommerce client found with client ID: ${webhookBody.clientId}`,
       );
     }
+    const requiredFields = [
+      "requestId",
+      "currency",
+      "paymentCurrency",
+      "txHash",
+      "network",
+      "amount",
+    ];
+
+    const missingFields = requiredFields.filter((field) => !webhookBody[field]);
+    if (missingFields.length > 0) {
+      throw new Error(
+        `Missing required webhook fields: ${missingFields.join(", ")}`,
+      );
+    }
 
     const client = ecommerceClient[0];
 
