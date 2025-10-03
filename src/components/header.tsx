@@ -45,6 +45,12 @@ export function Header({ user }: { user?: User | undefined }) {
                 Payouts
               </Link>
               <Link
+                href="/ecommerce"
+                className="text-foreground hover:text-muted-foreground transition-colors"
+              >
+                Ecommerce
+              </Link>
+              <Link
                 href="/invoice-me"
                 className="text-foreground hover:text-muted-foreground transition-colors"
               >
