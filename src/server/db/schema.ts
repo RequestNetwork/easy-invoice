@@ -185,6 +185,11 @@ export const clientPaymentTable = createTable("client_payment", {
       onDelete: "cascade",
     }),
   requestId: text().notNull(),
+  ecommerceClientId: text()
+    .notNull()
+    .references(() => ecommerceClientTable.id, {
+      onDelete: "cascade",
+    }),
   invoiceCurrency: text().notNull(),
   paymentCurrency: text().notNull(),
   txHash: text().notNull(),
@@ -203,7 +208,6 @@ export const clientPaymentTable = createTable("client_payment", {
     };
   }>(),
   reference: text(),
-  clientId: text().notNull(),
   origin: text(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -435,6 +439,10 @@ export const clientPaymentRelations = relations(
     user: one(userTable, {
       fields: [clientPaymentTable.userId],
       references: [userTable.id],
+    }),
+    ecommerceClient: one(ecommerceClientTable, {
+      fields: [clientPaymentTable.ecommerceClientId],
+      references: [ecommerceClientTable.id],
     }),
   }),
 );

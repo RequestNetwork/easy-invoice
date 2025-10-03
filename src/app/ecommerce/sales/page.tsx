@@ -10,15 +10,7 @@ export default async function SalesPage() {
     redirect("/");
   }
 
-  const [clientPayments, ecommerceClients] = await Promise.all([
-    api.ecommerce.getAllClientPayments.query(),
-    api.ecommerce.getAll.query(),
-  ]);
+  const clientPayments = await api.ecommerce.getAllClientPayments.query();
 
-  return (
-    <EcommerceSales
-      initialClientPayments={clientPayments}
-      ecommerceClients={ecommerceClients}
-    />
-  );
+  return <EcommerceSales initialClientPayments={clientPayments} />;
 }

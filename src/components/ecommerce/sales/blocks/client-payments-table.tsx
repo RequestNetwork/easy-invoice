@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table/table";
 import { TableHeadCell } from "@/components/ui/table/table-head-cell";
-import type { ClientPayment, EcommerceClient } from "@/server/db/schema";
+import type { ClientPaymentWithEcommerceClient } from "@/lib/types";
 import { format } from "date-fns";
 import {
   ChevronDown,
@@ -32,12 +32,11 @@ import {
 import { useState } from "react";
 
 interface ClientPaymentsTableProps {
-  clientPayments: ClientPayment[];
-  ecommerceClients: EcommerceClient[];
+  clientPayments: ClientPaymentWithEcommerceClient[];
 }
 
 interface CustomerInfoDisplayProps {
-  customerInfo: ClientPayment["customerInfo"];
+  customerInfo: ClientPaymentWithEcommerceClient["customerInfo"];
 }
 
 function CustomerInfoDisplay({ customerInfo }: CustomerInfoDisplayProps) {
@@ -111,7 +110,7 @@ const ClientPaymentTableColumns = () => (
     <TableHeadCell>Payment Currency</TableHeadCell>
     <TableHeadCell>Customer Info</TableHeadCell>
     <TableHeadCell>Reference</TableHeadCell>
-    <TableHeadCell>Client ID</TableHeadCell>
+    <TableHeadCell>Client</TableHeadCell>
     <TableHeadCell>Origin</TableHeadCell>
     <TableHeadCell>Request Scan URL</TableHeadCell>
   </TableRow>
@@ -119,7 +118,7 @@ const ClientPaymentTableColumns = () => (
 
 const ClientPaymentRow = ({
   clientPayment,
-}: { clientPayment: ClientPayment }) => {
+}: { clientPayment: ClientPaymentWithEcommerceClient }) => {
   return (
     <TableRow className="hover:bg-zinc-50/50">
       <TableCell>
@@ -137,8 +136,9 @@ const ClientPaymentRow = ({
       <TableCell>
         {clientPayment.reference || <span className="text-zinc-500">-</span>}
       </TableCell>
-      <TableCell>
-        <ShortAddress address={clientPayment.clientId} />
+      <TableCell className="flex flex-col items-start gap-1 self-center">
+        <span>{clientPayment.ecommerceClient.label}</span>
+        <ShortAddress address={clientPayment.ecommerceClient.rnClientId} />
       </TableCell>
       <TableCell>
         {clientPayment.origin || <span className="text-zinc-500">-</span>}
@@ -161,13 +161,14 @@ const ClientPaymentRow = ({
 const ITEMS_PER_PAGE = 10;
 export function ClientPaymentsTable({
   clientPayments,
-  ecommerceClients,
 }: ClientPaymentsTableProps) {
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredPayments = activeClientId
-    ? clientPayments.filter((payment) => payment.clientId === activeClientId)
+    ? clientPayments.filter(
+        (payment) => payment.ecommerceClientId === activeClientId,
+      )
     : clientPayments;
 
   const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE);
@@ -181,16 +182,13 @@ export function ClientPaymentsTable({
     setCurrentPage(1);
   };
 
-  const clientIdToLabel = ecommerceClients.reduce(
-    (acc, client) => {
-      acc[client.rnClientId] = client.label;
+  const ecommerceClients = clientPayments.reduce(
+    (acc, payment) => {
+      if (acc[payment.ecommerceClient.id]) return acc;
+      acc[payment.ecommerceClient.id] = payment.ecommerceClient;
       return acc;
     },
-    {} as Record<string, string>,
-  );
-
-  const uniqueClientIds = Array.from(
-    new Set(clientPayments.map((payment) => payment.clientId)),
+    {} as Record<string, ClientPaymentWithEcommerceClient["ecommerceClient"]>,
   );
 
   return (
@@ -212,9 +210,9 @@ export function ClientPaymentsTable({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Clients</SelectItem>
-              {uniqueClientIds.map((clientId) => (
+              {Object.entries(ecommerceClients).map(([clientId, client]) => (
                 <SelectItem key={clientId} value={clientId}>
-                  {clientIdToLabel[clientId] || `${clientId.slice(0, 8)}...`}
+                  {client.label}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -53,6 +53,7 @@ async function addClientPayment(webhookBody: any) {
     await tx.insert(clientPaymentTable).values({
       id: ulid(),
       userId: client.userId,
+      ecommerceClientId: client.id,
       requestId: webhookBody.requestId,
       invoiceCurrency: webhookBody.currency,
       paymentCurrency: webhookBody.paymentCurrency,
@@ -61,7 +62,6 @@ async function addClientPayment(webhookBody: any) {
       amount: webhookBody.amount,
       customerInfo: webhookBody.customerInfo || null,
       reference: webhookBody.reference || null,
-      clientId: webhookBody.clientId,
       origin: webhookBody.origin,
     });
   });

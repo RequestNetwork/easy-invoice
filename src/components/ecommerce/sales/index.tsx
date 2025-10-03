@@ -1,19 +1,15 @@
 "use client";
 
 import { ErrorState } from "@/components/ui/table/error-state";
-import type { ClientPayment, EcommerceClient } from "@/server/db/schema";
+import type { ClientPaymentWithEcommerceClient } from "@/lib/types";
 import { api } from "@/trpc/react";
 import { ClientPaymentsTable } from "./blocks/client-payments-table";
 
 interface EcommerceSalesProps {
-  initialClientPayments: ClientPayment[];
-  ecommerceClients: EcommerceClient[];
+  initialClientPayments: ClientPaymentWithEcommerceClient[];
 }
 
-export function EcommerceSales({
-  initialClientPayments,
-  ecommerceClients,
-}: EcommerceSalesProps) {
+export function EcommerceSales({ initialClientPayments }: EcommerceSalesProps) {
   const { data, error, refetch, isRefetching } =
     api.ecommerce.getAllClientPayments.useQuery(undefined, {
       initialData: initialClientPayments,
@@ -38,10 +34,7 @@ export function EcommerceSales({
           View all payments received through your ecommerce integrations
         </p>
       </div>
-      <ClientPaymentsTable
-        clientPayments={data}
-        ecommerceClients={ecommerceClients}
-      />
+      <ClientPaymentsTable clientPayments={data} />
     </div>
   );
 }

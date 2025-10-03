@@ -154,6 +154,9 @@ export const ecommerceRouter = router({
     try {
       const clientPayments = await db.query.clientPaymentTable.findMany({
         where: eq(clientPaymentTable.userId, user.id),
+        with: {
+          ecommerceClient: true,
+        },
       });
 
       return clientPayments;
@@ -164,12 +167,12 @@ export const ecommerceRouter = router({
   getAllUserReceipts: protectedProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
     try {
-      const receipts = await db
-        .select()
-        .from(clientPaymentTable)
-        .where(
-          sql`${clientPaymentTable.customerInfo}->>'email' = ${user.email}`,
-        );
+      const receipts = await db.query.clientPaymentTable.findMany({
+        where: sql`${clientPaymentTable.customerInfo}->>'email' = ${user.email}`,
+        with: {
+          ecommerceClient: true,
+        },
+      });
 
       return receipts;
     } catch (error) {
