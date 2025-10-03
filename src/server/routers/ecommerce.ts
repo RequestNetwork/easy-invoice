@@ -5,7 +5,7 @@ import {
   ecommerceClientApiSchema,
   editecommerceClientApiSchema,
 } from "@/lib/schemas/ecommerce";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq, not, sql } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
 import { clientPaymentTable, ecommerceClientTable } from "../db/schema";
@@ -157,6 +157,21 @@ export const ecommerceRouter = router({
       });
 
       return clientPayments;
+    } catch (error) {
+      throw toTRPCError(error);
+    }
+  }),
+  getAllUserReceipts: protectedProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+    try {
+      const receipts = await db
+        .select()
+        .from(clientPaymentTable)
+        .where(
+          sql`${clientPaymentTable.customerInfo}->>'email' = ${user.email}`,
+        );
+
+      return receipts;
     } catch (error) {
       throw toTRPCError(error);
     }
