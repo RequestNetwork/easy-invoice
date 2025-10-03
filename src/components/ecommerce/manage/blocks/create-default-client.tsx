@@ -22,7 +22,7 @@ export function CreateDefaultEcommerceClient() {
 
   const handleCreateDefault = () => {
     createEcommerceClientMutation({
-      label: "Default Ecommerce",
+      label: "Request Checkout",
       domain: DEFAULT_CLIENT_ID_DOMAIN,
     });
   };
