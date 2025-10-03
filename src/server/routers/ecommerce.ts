@@ -5,10 +5,10 @@ import {
   ecommerceClientApiSchema,
   editecommerceClientApiSchema,
 } from "@/lib/schemas/ecommerce";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq, not, sql } from "drizzle-orm";
 import { ulid } from "ulid";
 import { z } from "zod";
-import { ecommerceClientTable } from "../db/schema";
+import { clientPaymentTable, ecommerceClientTable } from "../db/schema";
 import { protectedProcedure, router } from "../trpc";
 
 export const ecommerceRouter = router({
@@ -149,4 +149,34 @@ export const ecommerceRouter = router({
         throw toTRPCError(error);
       }
     }),
+  getAllClientPayments: protectedProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+    try {
+      const clientPayments = await db.query.clientPaymentTable.findMany({
+        where: eq(clientPaymentTable.userId, user.id),
+        with: {
+          ecommerceClient: true,
+        },
+      });
+
+      return clientPayments;
+    } catch (error) {
+      throw toTRPCError(error);
+    }
+  }),
+  getAllUserReceipts: protectedProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+    try {
+      const receipts = await db.query.clientPaymentTable.findMany({
+        where: sql`${clientPaymentTable.customerInfo}->>'email' = ${user.email}`,
+        with: {
+          ecommerceClient: true,
+        },
+      });
+
+      return receipts;
+    } catch (error) {
+      throw toTRPCError(error);
+    }
+  }),
 });

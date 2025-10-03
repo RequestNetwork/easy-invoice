@@ -52,6 +52,12 @@ export function Header({ user }: { user?: User | undefined }) {
               </Link>
               <Link
                 href="/invoice-me"
+                className="text-zinc-900 hover:text-zinc-600 transition-colors"
+              >
+                Ecommerce
+              </Link>
+              <Link
+                href="/invoice-me"
                 className="text-foreground hover:text-muted-foreground transition-colors"
               >
                 Invoice Me

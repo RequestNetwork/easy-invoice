@@ -1,5 +1,6 @@
+import { EcommerceSales } from "@/components/ecommerce/sales";
 import { getCurrentSession } from "@/server/auth";
-//import { api } from "@/trpc/server";
+import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 
 export default async function SalesPage() {
@@ -9,7 +10,7 @@ export default async function SalesPage() {
     redirect("/");
   }
 
-  // TODO fetch sales data
+  const clientPayments = await api.ecommerce.getAllClientPayments.query();
 
-  return <div>Sales Page - to be implemented</div>;
+  return <EcommerceSales initialClientPayments={clientPayments} />;
 }

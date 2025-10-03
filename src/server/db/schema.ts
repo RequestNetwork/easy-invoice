@@ -322,8 +322,46 @@ export const ecommerceClientTable = createTable(
       table.userId,
       table.domain,
     ),
+    clientIdIndex: uniqueIndex("ecommerce_client_user_id_client_id_unique").on(
+      table.rnClientId,
+    ),
   }),
 );
+
+export const clientPaymentTable = createTable("client_payment", {
+  id: text().primaryKey().notNull(),
+  userId: text()
+    .notNull()
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+  requestId: text().notNull(),
+  ecommerceClientId: text()
+    .notNull()
+    .references(() => ecommerceClientTable.id, {
+      onDelete: "cascade",
+    }),
+  invoiceCurrency: text().notNull(),
+  paymentCurrency: text().notNull(),
+  txHash: text().notNull(),
+  network: text().notNull(),
+  amount: text().notNull(),
+  customerInfo: json().$type<{
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      postalCode?: string;
+      country?: string;
+    };
+  }>(),
+  reference: text(),
+  origin: text(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Relationships
 
@@ -332,6 +370,7 @@ export const userRelations = relations(userTable, ({ many }) => ({
   session: many(sessionTable),
   invoiceMe: many(invoiceMeTable),
   paymentDetailsPayers: many(paymentDetailsPayersTable),
+  clientPayments: many(clientPaymentTable),
 }));
 
 export const requestRelations = relations(requestTable, ({ one }) => ({
@@ -394,6 +433,20 @@ export const ecommerceClientRelations = relations(
   }),
 );
 
+export const clientPaymentRelations = relations(
+  clientPaymentTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [clientPaymentTable.userId],
+      references: [userTable.id],
+    }),
+    ecommerceClient: one(ecommerceClientTable, {
+      fields: [clientPaymentTable.ecommerceClientId],
+      references: [ecommerceClientTable.id],
+    }),
+  }),
+);
+
 export const paymentDetailsRelations = relations(
   paymentDetailsTable,
   ({ one, many }) => ({
@@ -430,3 +483,4 @@ export type PaymentDetailsPayers = InferSelectModel<
 >;
 export type RecurringPayment = InferSelectModel<typeof recurringPaymentTable>;
 export type EcommerceClient = InferSelectModel<typeof ecommerceClientTable>;
+export type ClientPayment = InferSelectModel<typeof clientPaymentTable>;

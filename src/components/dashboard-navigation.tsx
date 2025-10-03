@@ -14,6 +14,8 @@ export function DashboardNavigation() {
       setActiveTab("pay");
     } else if (pathname.includes("/subscriptions")) {
       setActiveTab("subscriptions");
+    } else if (pathname.includes("/receipts")) {
+      setActiveTab("receipts");
     } else {
       setActiveTab("get-paid");
     }
@@ -21,7 +23,7 @@ export function DashboardNavigation() {
 
   return (
     <Tabs value={activeTab} className="w-full mb-8">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="get-paid" asChild>
           <Link href="/dashboard/get-paid">Get Paid</Link>
         </TabsTrigger>
@@ -30,6 +32,9 @@ export function DashboardNavigation() {
         </TabsTrigger>
         <TabsTrigger value="subscriptions" asChild>
           <Link href="/dashboard/subscriptions">Subscriptions</Link>
+        </TabsTrigger>
+        <TabsTrigger value="receipts" asChild>
+          <Link href="/dashboard/receipts">Receipts</Link>
         </TabsTrigger>
       </TabsList>
     </Tabs>

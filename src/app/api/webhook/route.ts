@@ -4,6 +4,8 @@ import { generateInvoiceNumber } from "@/lib/helpers/client";
 import { getInvoiceCount } from "@/lib/helpers/invoice";
 import { db } from "@/server/db";
 import {
+  clientPaymentTable,
+  ecommerceClientTable,
   paymentDetailsPayersTable,
   recurringPaymentTable,
   type requestStatusEnum,
@@ -13,6 +15,52 @@ import {
 import { and, eq, not } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ulid } from "ulid";
+
+async function addClientPayment(webhookBody: any) {
+  await db.transaction(async (tx) => {
+    const ecommerceClient = await tx
+      .select()
+      .from(ecommerceClientTable)
+      .where(eq(ecommerceClientTable.rnClientId, webhookBody.clientId))
+      .limit(1);
+
+    if (!ecommerceClient.length) {
+      throw new ResourceNotFoundError(
+        `No ecommerce client found with client ID: ${webhookBody.clientId}`,
+      );
+    }
+
+    const client = ecommerceClient[0];
+
+    const inserted = await tx
+      .insert(clientPaymentTable)
+      .values({
+        id: ulid(),
+        userId: client.userId,
+        ecommerceClientId: client.id,
+        requestId: webhookBody.requestId,
+        invoiceCurrency: webhookBody.currency,
+        paymentCurrency: webhookBody.paymentCurrency,
+        txHash: webhookBody.txHash,
+        network: webhookBody.network,
+        amount: webhookBody.amount,
+        customerInfo: webhookBody.customerInfo || null,
+        reference: webhookBody.reference || null,
+        origin: webhookBody.origin,
+      })
+      .onConflictDoNothing({
+        target: [clientPaymentTable.requestId, clientPaymentTable.txHash],
+      })
+      .returning({ id: clientPaymentTable.id });
+
+    if (!inserted.length) {
+      console.warn(
+        `Duplicate client payment detected for requestId: ${webhookBody.requestId} and txHash: ${webhookBody.txHash}`,
+      );
+      return;
+    }
+  });
+}
 
 /**
  * Updates the request status in the database
@@ -132,6 +180,8 @@ export async function POST(req: Request) {
             txHash: body.txHash,
             requestScanUrl: body.explorer,
           });
+        } else if (body.clientId) {
+          await addClientPayment(body);
         } else {
           await updateRequestStatus(
             requestId,
