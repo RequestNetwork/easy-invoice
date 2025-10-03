@@ -71,6 +71,13 @@
       "when": 1759323380579,
       "tag": "0009_slippery_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1759491911320,
+      "tag": "0010_minor_roulette",
+      "breakpoints": true
     }
   ]
 }

@@ -18,24 +18,6 @@ import { ulid } from "ulid";
 
 async function addClientPayment(webhookBody: any) {
   await db.transaction(async (tx) => {
-    const existingPayment = await tx
-      .select()
-      .from(clientPaymentTable)
-      .where(
-        and(
-          eq(clientPaymentTable.txHash, webhookBody.txHash),
-          eq(clientPaymentTable.requestId, webhookBody.requestId),
-        ),
-      )
-      .limit(1);
-
-    if (existingPayment.length > 0) {
-      console.warn(
-        `Duplicate payment detected for txHash: ${webhookBody.txHash} and requestId: ${webhookBody.requestId}`,
-      );
-      return;
-    }
-
     const ecommerceClient = await tx
       .select()
       .from(ecommerceClientTable)
@@ -50,20 +32,33 @@ async function addClientPayment(webhookBody: any) {
 
     const client = ecommerceClient[0];
 
-    await tx.insert(clientPaymentTable).values({
-      id: ulid(),
-      userId: client.userId,
-      ecommerceClientId: client.id,
-      requestId: webhookBody.requestId,
-      invoiceCurrency: webhookBody.currency,
-      paymentCurrency: webhookBody.paymentCurrency,
-      txHash: webhookBody.txHash,
-      network: webhookBody.network,
-      amount: webhookBody.amount,
-      customerInfo: webhookBody.customerInfo || null,
-      reference: webhookBody.reference || null,
-      origin: webhookBody.origin,
-    });
+    const inserted = await tx
+      .insert(clientPaymentTable)
+      .values({
+        id: ulid(),
+        userId: client.userId,
+        ecommerceClientId: client.id,
+        requestId: webhookBody.requestId,
+        invoiceCurrency: webhookBody.currency,
+        paymentCurrency: webhookBody.paymentCurrency,
+        txHash: webhookBody.txHash,
+        network: webhookBody.network,
+        amount: webhookBody.amount,
+        customerInfo: webhookBody.customerInfo || null,
+        reference: webhookBody.reference || null,
+        origin: webhookBody.origin,
+      })
+      .onConflictDoNothing({
+        target: [clientPaymentTable.requestId, clientPaymentTable.txHash],
+      })
+      .returning({ id: clientPaymentTable.id });
+
+    if (!inserted.length) {
+      console.warn(
+        `Duplicate client payment detected for requestId: ${webhookBody.requestId} and txHash: ${webhookBody.txHash}`,
+      );
+      return;
+    }
   });
 }
 

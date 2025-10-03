@@ -73,6 +73,7 @@ export function DashboardReceipts({
     api.ecommerce.getAllUserReceipts.useQuery(undefined, {
       initialData: initialClientPayments,
       refetchOnMount: true,
+      refetchInterval: 10000,
     });
 
   if (error) {

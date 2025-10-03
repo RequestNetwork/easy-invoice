@@ -229,7 +229,7 @@ export function ClientPaymentsTable({
             <TableBody>
               {paginatedPayments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="p-0">
+                  <TableCell colSpan={10} className="p-0">
                     <EmptyState
                       icon={<CreditCard className="h-6 w-6 text-zinc-600" />}
                       title="No client payments"

@@ -14,6 +14,7 @@ export function EcommerceSales({ initialClientPayments }: EcommerceSalesProps) {
     api.ecommerce.getAllClientPayments.useQuery(undefined, {
       initialData: initialClientPayments,
       refetchOnMount: true,
+      refetchInterval: 10000,
     });
 
   if (error) {
