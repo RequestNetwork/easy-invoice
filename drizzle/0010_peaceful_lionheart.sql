@@ -26,4 +26,5 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "client_payment_request_id_tx_hash_unique" ON "easyinvoice_client_payment" USING btree ("requestId","txHash");--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "ecommerce_client_user_id_client_id_unique" ON "easyinvoice_ecommerce_client" USING btree ("rnClientId");

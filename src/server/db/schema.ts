@@ -328,40 +328,48 @@ export const ecommerceClientTable = createTable(
   }),
 );
 
-export const clientPaymentTable = createTable("client_payment", {
-  id: text().primaryKey().notNull(),
-  userId: text()
-    .notNull()
-    .references(() => userTable.id, {
-      onDelete: "cascade",
-    }),
-  requestId: text().notNull(),
-  ecommerceClientId: text()
-    .notNull()
-    .references(() => ecommerceClientTable.id, {
-      onDelete: "cascade",
-    }),
-  invoiceCurrency: text().notNull(),
-  paymentCurrency: text().notNull(),
-  txHash: text().notNull(),
-  network: text().notNull(),
-  amount: text().notNull(),
-  customerInfo: json().$type<{
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    address?: {
-      street?: string;
-      city?: string;
-      state?: string;
-      postalCode?: string;
-      country?: string;
-    };
-  }>(),
-  reference: text(),
-  origin: text(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export const clientPaymentTable = createTable(
+  "client_payment",
+  {
+    id: text().primaryKey().notNull(),
+    userId: text()
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      }),
+    requestId: text().notNull(),
+    ecommerceClientId: text()
+      .notNull()
+      .references(() => ecommerceClientTable.id, {
+        onDelete: "cascade",
+      }),
+    invoiceCurrency: text().notNull(),
+    paymentCurrency: text().notNull(),
+    txHash: text().notNull(),
+    network: text().notNull(),
+    amount: text().notNull(),
+    customerInfo: json().$type<{
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      address?: {
+        street?: string;
+        city?: string;
+        state?: string;
+        postalCode?: string;
+        country?: string;
+      };
+    }>(),
+    reference: text(),
+    origin: text(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    requestIdTxHashIndex: uniqueIndex(
+      "client_payment_request_id_tx_hash_unique",
+    ).on(table.requestId, table.txHash),
+  }),
+);
 
 // Relationships
 

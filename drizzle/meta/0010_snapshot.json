@@ -1,5 +1,5 @@
 {
-  "id": "a7122423-3c6d-4c9c-b8b0-a238439305ef",
+  "id": "9c05fd19-afb4-41b6-820f-f4bbaef48195",
   "prevId": "6e0a4809-52c5-406f-91d0-c7469ebdf1b2",
   "version": "7",
   "dialect": "postgresql",
@@ -88,7 +88,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "client_payment_request_id_tx_hash_unique": {
+          "name": "client_payment_request_id_tx_hash_unique",
+          "columns": [
+            {
+              "expression": "requestId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "txHash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "easyinvoice_client_payment_userId_easyinvoice_user_id_fk": {
           "name": "easyinvoice_client_payment_userId_easyinvoice_user_id_fk",
