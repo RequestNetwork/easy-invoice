@@ -1,4 +1,6 @@
 import type { RecurringPayment } from "@/server/db/schema";
+import type { ecommerceRouter } from "@/server/routers/ecommerce";
+import type { inferRouterOutputs } from "@trpc/server";
 
 export interface PaymentRoute {
   id: string;
@@ -46,3 +48,7 @@ export type SubscriptionPayment = {
   totalNumberOfPayments: number;
   paymentNumber: number;
 };
+
+export type ClientPaymentWithEcommerceClient = inferRouterOutputs<
+  typeof ecommerceRouter
+>["getAllClientPayments"][number];
