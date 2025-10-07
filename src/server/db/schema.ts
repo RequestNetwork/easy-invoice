@@ -10,6 +10,7 @@ import {
   pgTableCreator,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `easyinvoice_${name}`);
@@ -299,6 +300,77 @@ export const subscriptionPlanTable = createTable("subscription_plans", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const ecommerceClientTable = createTable(
+  "ecommerce_client",
+  {
+    id: text().primaryKey().notNull(),
+    externalId: text().notNull(), // the API's id for the client ID
+    rnClientId: text().notNull(), // the request API client ID
+    userId: text()
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      }),
+    label: text().notNull(),
+    domain: text().notNull(),
+    feeAddress: text(),
+    feePercentage: text(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    userIdDomainIndex: uniqueIndex("ecommerce_client_user_id_domain_unique").on(
+      table.userId,
+      table.domain,
+    ),
+    clientIdIndex: uniqueIndex("ecommerce_client_user_id_client_id_unique").on(
+      table.rnClientId,
+    ),
+  }),
+);
+
+export const clientPaymentTable = createTable(
+  "client_payment",
+  {
+    id: text().primaryKey().notNull(),
+    userId: text()
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      }),
+    requestId: text().notNull(),
+    ecommerceClientId: text()
+      .notNull()
+      .references(() => ecommerceClientTable.id, {
+        onDelete: "cascade",
+      }),
+    invoiceCurrency: text().notNull(),
+    paymentCurrency: text().notNull(),
+    txHash: text().notNull(),
+    network: text().notNull(),
+    amount: text().notNull(),
+    customerInfo: json().$type<{
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      address?: {
+        street?: string;
+        city?: string;
+        state?: string;
+        postalCode?: string;
+        country?: string;
+      };
+    }>(),
+    reference: text(),
+    origin: text(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    requestIdTxHashIndex: uniqueIndex(
+      "client_payment_request_id_tx_hash_unique",
+    ).on(table.requestId, table.txHash),
+  }),
+);
+
 // Relationships
 
 export const userRelations = relations(userTable, ({ many }) => ({
@@ -306,6 +378,7 @@ export const userRelations = relations(userTable, ({ many }) => ({
   session: many(sessionTable),
   invoiceMe: many(invoiceMeTable),
   paymentDetailsPayers: many(paymentDetailsPayersTable),
+  clientPayments: many(clientPaymentTable),
 }));
 
 export const requestRelations = relations(requestTable, ({ one }) => ({
@@ -358,6 +431,30 @@ export const subscriptionPlanRelations = relations(
   }),
 );
 
+export const ecommerceClientRelations = relations(
+  ecommerceClientTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [ecommerceClientTable.userId],
+      references: [userTable.id],
+    }),
+  }),
+);
+
+export const clientPaymentRelations = relations(
+  clientPaymentTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [clientPaymentTable.userId],
+      references: [userTable.id],
+    }),
+    ecommerceClient: one(ecommerceClientTable, {
+      fields: [clientPaymentTable.ecommerceClientId],
+      references: [ecommerceClientTable.id],
+    }),
+  }),
+);
+
 export const paymentDetailsRelations = relations(
   paymentDetailsTable,
   ({ one, many }) => ({
@@ -393,3 +490,5 @@ export type PaymentDetailsPayers = InferSelectModel<
   typeof paymentDetailsPayersTable
 >;
 export type RecurringPayment = InferSelectModel<typeof recurringPaymentTable>;
+export type EcommerceClient = InferSelectModel<typeof ecommerceClientTable>;
+export type ClientPayment = InferSelectModel<typeof clientPaymentTable>;

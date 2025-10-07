@@ -64,6 +64,20 @@
       "when": 1753346217295,
       "tag": "0008_mysterious_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1759323380579,
+      "tag": "0009_slippery_penance",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1759497538341,
+      "tag": "0010_peaceful_lionheart",
+      "breakpoints": true
     }
   ]
 }

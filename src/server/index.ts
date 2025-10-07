@@ -1,6 +1,7 @@
 import { authRouter } from "./routers/auth";
 import { complianceRouter } from "./routers/compliance";
 import { currencyRouter } from "./routers/currency";
+import { ecommerceRouter } from "./routers/ecommerce";
 import { invoiceRouter } from "./routers/invoice";
 import { invoiceMeRouter } from "./routers/invoice-me";
 import { paymentRouter } from "./routers/payment";
@@ -17,6 +18,7 @@ export const appRouter = router({
   recurringPayment: recurringPaymentRouter,
   subscriptionPlan: subscriptionPlanRouter,
   currency: currencyRouter,
+  ecommerce: ecommerceRouter,
 });
 
 export type AppRouter = typeof appRouter;
