@@ -1,5 +1,6 @@
+import { Tooltip } from "@/components/ui/tooltip";
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
-import { ArrowRight, Globe, Zap } from "lucide-react";
+import { ArrowRight, Globe, Info, Zap } from "lucide-react";
 import Image from "next/image";
 
 interface RouteTypeInfo {
@@ -26,15 +27,12 @@ export function PaymentRoute({
   onClick,
   variant = "default",
   routeType,
-  platformFee,
 }: PaymentRouteProps) {
   const isDirectPayment =
     routeType?.type === "direct" ||
     (route.id === "REQUEST_NETWORK_PAYMENT" && !route.isCryptoToFiat);
   const isGasFreePayment = routeType?.type === "same-chain-erc20";
   const isCryptoToFiat = routeType?.type === "crypto-to-fiat";
-
-  const nativeToken = route.chain === "POLYGON" ? "POL" : "ETH";
 
   // Get the appropriate badge color and icon based on route type
   const getBadgeStyles = () => {
@@ -70,6 +68,40 @@ export function PaymentRoute({
   };
 
   const { bgColor, textColor, icon } = getBadgeStyles();
+
+  // Format fee breakdown for tooltip
+  const formatFeeBreakdown = () => {
+    if (!route.feeBreakdown || route.feeBreakdown.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-2 max-w-xs">
+        <div className="font-medium text-popover-foreground">Fee Breakdown</div>
+        {route.feeBreakdown.map((fee) => (
+          <div
+            key={`${fee.type}-${fee.provider}-${fee.stage}`}
+            className="flex justify-between items-start text-xs"
+          >
+            <div className="flex-1">
+              <div className="capitalize font-medium">
+                {fee.type === "gas"
+                  ? "Gas Fee"
+                  : fee.type === "crosschain"
+                    ? "Crosschain Fee"
+                    : "Platform Fee"}
+              </div>
+            </div>
+            <div className="text-right ml-2">
+              <div className="font-medium">
+                {Number(fee.amountInUSD).toFixed(6)} USD
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <button
@@ -117,21 +149,31 @@ export function PaymentRoute({
             {route.fee === 0 ? (
               "No fee"
             ) : (
-              <span className="text-amber-700">
-                {route.fee} {isDirectPayment ? nativeToken : route.token} fee
-              </span>
+              <div className="flex items-center gap-1 justify-end">
+                <span className="text-amber-700">
+                  {Number(route?.feeInUSD)?.toFixed(6)} USD fee
+                </span>
+                {route.feeBreakdown && route.feeBreakdown.length > 0 && (
+                  <Tooltip
+                    tooltipTrigger={
+                      <button
+                        type="button"
+                        aria-label="Show fee breakdown"
+                        className="text-zinc-400 hover:text-zinc-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-zinc-400 rounded"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Info className="w-3 h-3" aria-hidden="true" />
+                      </button>
+                    }
+                    tooltipContent={formatFeeBreakdown()}
+                  />
+                )}
+              </div>
             )}
           </div>
           <div className="text-sm text-muted-foreground">
             {typeof route.speed === "number" ? `~${route.speed}s` : "Fast"}
           </div>
-          {platformFee?.percentage && platformFee?.percentage > 0 && (
-            <div className="text-sm text-muted-foreground mt-1">
-              <span className="text-purple-600">
-                {platformFee?.percentage}% {route.token} platform fee
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </button>

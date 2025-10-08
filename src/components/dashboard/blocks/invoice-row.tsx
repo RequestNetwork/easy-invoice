@@ -95,7 +95,10 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
             {invoice?.recurrence?.startDate && (
               <span className="text-xs text-muted-foreground">
                 from{" "}
-                {format(new Date(invoice?.recurrence?.startDate), "do MMM yyyy")}
+                {format(
+                  new Date(invoice?.recurrence?.startDate),
+                  "do MMM yyyy",
+                )}
               </span>
             )}
           </div>
