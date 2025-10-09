@@ -1,5 +1,5 @@
-import { validateClientEnv } from "./src/lib/env/client.js";
-import { validateServerEnv } from "./src/lib/env/server.js";
+import { validateClientEnv } from "./src/lib/env/client.mjs";
+import { validateServerEnv } from "./src/lib/env/server.mjs";
 
 if (process.env.SKIP_ENV_VALIDATION !== "true") {
   validateServerEnv();
