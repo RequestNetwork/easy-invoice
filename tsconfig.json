@@ -26,9 +26,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/lib/env/client.mjs",
-    "src/lib/env/helpers.mjs",
-    "src/lib/env/server.mjs"
+    "src/lib/env/*.mjs"
   ],
   "exclude": ["node_modules"]
 }
