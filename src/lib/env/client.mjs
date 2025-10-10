@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { shouldSkipValidation } from "./helpers.js";
+import { shouldSkipValidation } from "./helpers.mjs";
 
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_REOWN_PROJECT_ID: z

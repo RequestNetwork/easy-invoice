@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { shouldSkipValidation } from "./helpers.js";
+import { shouldSkipValidation } from "./helpers.mjs";
 
 const serverEnvSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
