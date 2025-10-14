@@ -47,7 +47,7 @@ export function PaymentRoute({
     if (isDirectPayment) {
       return {
         bgColor: "bg-primary/10",
-        textColor: "text-primary-foreground",
+        textColor: "text-primary",
         icon: <ArrowRight className="w-3 h-3 mr-1" />,
       };
     }

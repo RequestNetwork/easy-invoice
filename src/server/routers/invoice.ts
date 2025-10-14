@@ -447,9 +447,15 @@ export const invoiceRouter = router({
     .query(async ({ input }) => {
       const { requestId, walletAddress } = input;
 
-      const response = await apiClient.get(
-        `/v2/request/${requestId}/routes?wallet=${walletAddress}&feePercentage=${process.env.FEE_PERCENTAGE_FOR_PAYMENT}&feeAddress=${process.env.FEE_ADDRESS_FOR_PAYMENT}`,
-      );
+      let url = `/v2/request/${requestId}/routes?wallet=${walletAddress}`;
+
+      if (
+        process.env.FEE_PERCENTAGE_FOR_PAYMENT &&
+        process.env.FEE_ADDRESS_FOR_PAYMENT
+      ) {
+        url += `&feePercentage=${process.env.FEE_PERCENTAGE_FOR_PAYMENT}&feeAddress=${process.env.FEE_ADDRESS_FOR_PAYMENT}`;
+      }
+      const response = await apiClient.get(url);
 
       if (response.status !== 200) {
         throw new TRPCError({

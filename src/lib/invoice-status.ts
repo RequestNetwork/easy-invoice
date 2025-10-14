@@ -75,18 +75,18 @@ export const getPaymentSectionStatusClass = (
   status: (typeof requestStatusEnum.enumValues)[number],
 ) => {
   if (status === "paid" || status === "crypto_paid") {
-    return "bg-green-100 text-green-800";
+    return "bg-success/10 text-success-foreground";
   }
 
   if (status === "offramp_failed") {
-    return "bg-red-100 text-red-800";
+    return "bg-destructive/10 text-destructive";
   }
 
   if (status.includes("offramp") || status === "processing") {
-    return "bg-orange-100 text-orange-800";
+    return "bg-warning/10 text-warning-foreground";
   }
 
-  return "bg-blue-100 text-blue-800";
+  return "bg-primary/10 text-primary";
 };
 
 /**
