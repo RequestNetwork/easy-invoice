@@ -2,14 +2,20 @@
 
 import { Tooltip } from "@/components/ui/tooltip";
 import { Copy } from "lucide-react";
+import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 interface ShortAddressProps {
   address: string;
   className?: string;
+  copyContent?: ReactNode;
 }
 
-export function ShortAddress({ address, className = "" }: ShortAddressProps) {
+export function ShortAddress({
+  address,
+  className = "",
+  copyContent = "Copy Address",
+}: ShortAddressProps) {
   const shortAddress = `${address.substring(0, 6)}...${address.substring(
     address.length - 4,
   )}`;
@@ -31,7 +37,7 @@ export function ShortAddress({ address, className = "" }: ShortAddressProps) {
           <Copy className="h-3 w-3" />
         </button>
       }
-      tooltipContent={<span>Copy address</span>}
+      tooltipContent={<span>{copyContent}</span>}
     />
   );
 }

@@ -59,7 +59,10 @@ const EcommerceClientRow = ({
       <TableCell className="font-medium">{ecommerceClient.label}</TableCell>
       <TableCell>{ecommerceClient.domain}</TableCell>
       <TableCell>
-        <ShortAddress address={ecommerceClient.rnClientId} />
+        <ShortAddress
+          copyContent="Copy RN Client ID"
+          address={ecommerceClient.rnClientId}
+        />
       </TableCell>
       <TableCell>
         {ecommerceClient.feeAddress ? (
