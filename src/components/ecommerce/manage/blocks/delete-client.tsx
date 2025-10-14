@@ -57,7 +57,7 @@ export function DeleteEcommerceClient({
               Are you sure you want to delete the client "
               {ecommerceClient.label}"?
             </p>
-            <p className="font-medium text-red-600">
+            <p className="font-medium text-destructive-foreground">
               ⚠️ This action cannot be undone. The client will be permanently
               removed and any integrations using its ID will stop working.
             </p>
@@ -70,7 +70,7 @@ export function DeleteEcommerceClient({
           <AlertDialogAction
             onClick={handleDeleteEcommerceClient}
             disabled={isDeletingEcommerceClient}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {isDeletingEcommerceClient ? "Deleting..." : "Delete Client ID"}
           </AlertDialogAction>
