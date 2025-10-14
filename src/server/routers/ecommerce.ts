@@ -32,8 +32,8 @@ export const ecommerceRouter = router({
         const response = await apiClient.post("v2/client-ids", {
           label: input.label,
           allowedDomains: [input.domain],
-          feePercentage: input.feePercentage ?? null,
-          feeAddress: input.feeAddress ?? null,
+          feePercentage: input.feePercentage ?? undefined,
+          feeAddress: input.feeAddress ?? undefined,
         });
 
         if (!response.data.clientId) {

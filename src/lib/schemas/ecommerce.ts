@@ -30,22 +30,27 @@ const baseEcommerceClientApiSchema = z.object({
   domain: z.string().url(),
   feeAddress: z
     .string()
-    .transform((val) => (val === "" ? undefined : val))
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === "") return undefined;
+      return val;
+    })
     .refine((value) => {
       if (value === undefined) return true;
       return isEthereumAddress(value);
-    }, "Invalid Ethereum address format")
-    .optional(),
+    }, "Invalid Ethereum address format"),
   feePercentage: z
     .string()
-    .transform((val) => (val === "" ? undefined : val))
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === "") return undefined;
+      return val;
+    })
     .refine((value) => {
       if (value === undefined) return true;
       const num = Number(value);
-
       return !Number.isNaN(num) && num >= 0 && num <= 100;
-    }, "Fee percentage must be a number between 0 and 100")
-    .optional(),
+    }, "Fee percentage must be a number between 0 and 100"),
 });
 
 export const ecommerceClientApiSchema =
