@@ -216,7 +216,7 @@ export function SubscribersTable({
           {hasNonUsdValues && (
             <div className="absolute -bottom-5 left-0 right-0 text-center">
               <p className="text-xs text-muted-foreground">
-                * Excludes non-USD denominated subscriptions
+                * Excludes non-USD subscriptions without conversion info
               </p>
             </div>
           )}

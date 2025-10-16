@@ -66,7 +66,10 @@ function consolidatePaymentUsdValues(
       }, 0)
       .toFixed(2),
     hasNonUsdValues: payments.some(
-      (item) => item.currency !== "USD" && !isStablecoin(item.currency),
+      (item) =>
+        item.currency !== "USD" &&
+        !isStablecoin(item.currency) &&
+        !item.conversionInfo,
     ),
   };
 }

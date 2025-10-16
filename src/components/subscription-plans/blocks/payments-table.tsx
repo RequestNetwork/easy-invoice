@@ -178,7 +178,7 @@ export function PaymentsTable({
           {hasNonUsdValues && (
             <div className="absolute -bottom-5 left-0 right-0 text-center">
               <p className="text-xs text-muted-foreground">
-                * Excludes non-USD denominated payments
+                * Excludes non-USD invoices without conversion info
               </p>
             </div>
           )}

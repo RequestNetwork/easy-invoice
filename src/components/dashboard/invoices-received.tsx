@@ -78,9 +78,12 @@ export const InvoicesReceived = ({
     refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
   });
 
-  const { totalInUsd, hasNonUsdValues } = consolidateRequestUsdValues(
-    invoices || [],
+  const unpaidInvoices = (invoices || []).filter(
+    (inv) => inv.status !== "paid",
   );
+  const { totalInUsd, hasNonUsdValues } =
+    consolidateRequestUsdValues(unpaidInvoices);
+
   const outstanding =
     invoices?.filter((inv) => inv.status !== "paid").length || 0;
 
@@ -219,7 +222,7 @@ export const InvoicesReceived = ({
           {hasNonUsdValues && (
             <div className="absolute -bottom-5 left-0 right-0 text-center">
               <p className="text-xs text-muted-foreground">
-                * Excludes non-USD denominated invoices
+                * Excludes non-USD invoices without conversion info
               </p>
             </div>
           )}

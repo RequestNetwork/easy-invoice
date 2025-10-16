@@ -199,7 +199,7 @@ export const subscriptionPlanRouter = router({
                 requestScanUrl: payment.requestScanUrl,
                 chain: subscriber.chain,
                 subscriber: subscriber.payer,
-                conversionInfo: payment.conversionInfo,
+                conversionInfo: payment.conversionInfo ?? null,
               });
             });
           }
