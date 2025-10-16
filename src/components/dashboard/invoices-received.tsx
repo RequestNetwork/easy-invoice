@@ -12,10 +12,7 @@ import {
 } from "@/components/ui/table/table";
 import { NETWORK_TO_ID } from "@/lib/constants/chains";
 import { handleBatchPayment } from "@/lib/helpers/batch-payment";
-import {
-  calculateTotalsByCurrency,
-  formatCurrencyTotals,
-} from "@/lib/helpers/currency";
+import { consolidateRequestUsdValues } from "@/lib/helpers/conversion";
 import { useSwitchNetwork } from "@/lib/hooks/use-switch-network";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
@@ -28,7 +25,6 @@ import { ethers } from "ethers";
 import { AlertCircle, DollarSign, FileText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
 import { StatCard } from "../stat-card";
 import { EmptyState } from "../ui/table/empty-state";
 import { Pagination } from "../ui/table/pagination";
@@ -82,14 +78,9 @@ export const InvoicesReceived = ({
     refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
   });
 
-  const invoiceItems =
-    invoices?.map((invoice) => ({
-      amount: invoice.amount,
-      currency: invoice.paymentCurrency,
-    })) || [];
-
-  const totalsByCurrency = calculateTotalsByCurrency(invoiceItems);
-  const totalValues = formatCurrencyTotals(totalsByCurrency);
+  const { totalInUsd, hasNonUsdValues } = consolidateRequestUsdValues(
+    invoices || [],
+  );
   const outstanding =
     invoices?.filter((inv) => inv.status !== "paid").length || 0;
 
@@ -219,11 +210,20 @@ export const InvoicesReceived = ({
           value={outstanding}
           icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}
         />
-        <MultiCurrencyStatCard
-          title="Total Due"
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          values={totalValues}
-        />
+        <div className="relative">
+          <StatCard
+            title="Total Due"
+            value={`$${Number(totalInUsd).toLocaleString()}`}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          />
+          {hasNonUsdValues && (
+            <div className="absolute -bottom-5 left-0 right-0 text-center">
+              <p className="text-xs text-muted-foreground">
+                * Excludes non-USD denominated invoices
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card className="border border-border">

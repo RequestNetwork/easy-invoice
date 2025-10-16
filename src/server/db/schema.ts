@@ -1,4 +1,5 @@
 import { type EncryptionVersion, getEncryptionKey } from "@/lib/encryption";
+import type { ConversionInfo } from "@/lib/types";
 import CryptoJS from "crypto-js";
 import { type InferSelectModel, relations } from "drizzle-orm";
 import {
@@ -83,6 +84,13 @@ export const recurringPaymentStatusEnum = pgEnum(
 
 export type RecurringPaymentStatusType =
   (typeof RecurringPaymentStatus)[number];
+
+export type RecurringPaymentInstallment = {
+  date: string;
+  txHash: string;
+  requestScanUrl?: string;
+  conversionInfo: ConversionInfo | null;
+};
 
 // biome-ignore lint/correctness/noUnusedVariables: This is a type definition that will be used in future database migrations
 const encryptedText = customType<{ data: string }>({
@@ -214,6 +222,7 @@ export const requestTable = createTable("request", {
   paymentDetailsId: text().references(() => paymentDetailsTable.id, {
     onDelete: "set null",
   }),
+  conversionInfo: json().$type<ConversionInfo>(),
 });
 
 export const recurringPaymentTable = createTable("recurring_payment", {
@@ -247,14 +256,7 @@ export const recurringPaymentTable = createTable("recurring_payment", {
       address: string;
     }>()
     .notNull(),
-  payments:
-    json().$type<
-      Array<{
-        date: string;
-        txHash: string;
-        requestScanUrl?: string;
-      }>
-    >(),
+  payments: json().$type<Array<RecurringPaymentInstallment>>(),
 });
 
 export const sessionTable = createTable("session", {
@@ -363,6 +365,7 @@ export const clientPaymentTable = createTable(
     reference: text(),
     origin: text(),
     createdAt: timestamp("created_at").defaultNow(),
+    conversionInfo: json().$type<ConversionInfo>(),
   },
   (table) => ({
     requestIdTxHashIndex: uniqueIndex(

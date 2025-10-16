@@ -47,8 +47,18 @@ export type SubscriptionPayment = {
   subscriber: string;
   totalNumberOfPayments: number;
   paymentNumber: number;
+  conversionInfo: ConversionInfo | null;
 };
 
 export type ClientPaymentWithEcommerceClient = inferRouterOutputs<
   typeof ecommerceRouter
 >["getAllClientPayments"][number];
+
+export interface ConversionInfo {
+  conversionRate: string;
+  convertedAmountSource: string;
+  convertedAmountDestination: string;
+  conversionRateSource: string;
+  conversionRateDestination: string;
+  rateProvider: string;
+}
