@@ -1,7 +1,7 @@
 "use client";
 
-import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
 import { ShortAddress } from "@/components/short-address";
+import { StatCard } from "@/components/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -21,18 +21,14 @@ import {
 import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
-import {
-  calculateTotalsByCurrency,
-  formatCurrencyTotals,
-} from "@/lib/helpers/currency";
+import { consolidateRecurringPaymentUsdValues } from "@/lib/helpers/conversion";
 import type { SubscriptionWithDetails } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
 import { utils } from "ethers";
-import { CreditCard, DollarSign, Filter } from "lucide-react";
+import { CreditCard, DollarSign, Filter, Users } from "lucide-react";
 import { useState } from "react";
-import { StatCard } from "../../stat-card";
 import { EmptyState } from "../../ui/table/empty-state";
 import { TableHeadCell } from "../../ui/table/table-head-cell";
 
@@ -60,7 +56,9 @@ const SubscriberTableColumns = () => (
 
 const SubscriberRow = ({
   subscription,
-}: { subscription: SubscriptionWithDetails }) => {
+}: {
+  subscription: SubscriptionWithDetails;
+}) => {
   const getTrialEndDate = () => {
     if (!subscription.subscription?.trialDays) return "No trial";
     if (!subscription.createdAt) return "No trial";
@@ -157,10 +155,10 @@ export function SubscribersTable({
             value="--"
             icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
           />
-          <MultiCurrencyStatCard
+          <StatCard
             title="Total Revenue"
+            value="--"
             icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-            values={[]}
           />
         </div>
         <ErrorState
@@ -180,33 +178,49 @@ export function SubscribersTable({
 
   const activeSubscribers = filteredSubscribers.filter((sub) =>
     ACTIVE_STATUSES.includes(sub.status),
-  ).length;
+  );
 
-  const revenueItems = filteredSubscribers
-    .filter(
-      (sub) => ACTIVE_STATUSES.includes(sub.status) && sub.payments?.length,
-    )
-    .flatMap((sub) => ({
-      amount: sub.totalAmount,
-      currency: sub.paymentCurrency,
-    }));
+  let totalRevenue = 0;
+  let hasNonUsdValues = false;
 
-  const revenueTotal = calculateTotalsByCurrency(revenueItems);
-  const revenueValues = formatCurrencyTotals(revenueTotal);
+  for (const sub of activeSubscribers) {
+    if (!sub.payments || sub.payments.length === 0) continue;
+
+    const { totalInUsd, hasNonUsdValues: subHasNonUsdValues } =
+      consolidateRecurringPaymentUsdValues(
+        sub.totalAmount,
+        sub.paymentCurrency,
+        sub.payments || [],
+      );
+
+    totalRevenue += Number(totalInUsd);
+    if (subHasNonUsdValues) {
+      hasNonUsdValues = true;
+    }
+  }
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatCard
           title="Active Subscriptions"
-          value={activeSubscribers}
+          value={`${activeSubscribers.length}`}
           icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
         />
-        <MultiCurrencyStatCard
-          title="Total Revenue"
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          values={revenueValues}
-        />
+        <div className="relative">
+          <StatCard
+            title="Total Revenue"
+            value={`$${totalRevenue.toLocaleString()}`}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          />
+          {hasNonUsdValues && (
+            <div className="absolute -bottom-5 left-0 right-0 text-center">
+              <p className="text-xs text-muted-foreground">
+                * Excludes non-USD subscriptions without conversion info
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-4 mb-6">
@@ -247,9 +261,7 @@ export function SubscribersTable({
                 <TableRow>
                   <TableCell colSpan={10} className="p-0">
                     <EmptyState
-                      icon={
-                        <CreditCard className="h-6 w-6 text-muted-foreground" />
-                      }
+                      icon={<Users className="h-6 w-6 text-muted-foreground" />}
                       title="No subscribers"
                       subtitle={
                         activePlan
