@@ -132,48 +132,6 @@ export function Sidebar() {
         <div>
           <button
             type="button"
-            onClick={() => toggleSection("subscriptions")}
-            className="flex items-center justify-between w-full px-3 py-2 text-foreground hover:bg-muted rounded-lg transition-colors"
-          >
-            <div className="flex items-center space-x-3">
-              <Repeat className="h-5 w-5" />
-              <span className="font-medium">Subscriptions</span>
-            </div>
-            {expandedSections.subscriptions ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </button>
-          {expandedSections.subscriptions && (
-            <div className="ml-8 mt-1 space-y-1">
-              <Link
-                href="/subscriptions/create"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/subscriptions/create"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Create Subscription
-              </Link>
-              <Link
-                href="/subscriptions/manage"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/subscriptions/manage"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Manage Subscriptions
-              </Link>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <button
-            type="button"
             onClick={() => toggleSection("ecommerce")}
             className="flex items-center justify-between w-full px-3 py-2 text-foreground hover:bg-muted rounded-lg transition-colors"
           >
@@ -190,24 +148,76 @@ export function Sidebar() {
           {expandedSections.ecommerce && (
             <div className="ml-8 mt-1 space-y-1">
               <Link
-                href="/ecommerce/products"
+                href="/ecommerce/manage"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/ecommerce/products"
+                  pathname === "/ecommerce/manage"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                Products
+                Clients
               </Link>
               <Link
-                href="/ecommerce/orders"
+                href="/ecommerce/sales"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/ecommerce/orders"
+                  pathname === "/ecommerce/sales"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                Orders
+                Sales
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => toggleSection("subscriptions")}
+            className="flex items-center justify-between w-full px-3 py-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+          >
+            <div className="flex items-center space-x-3">
+              <Repeat className="h-5 w-5" />
+              <span className="font-medium">Subscriptions</span>
+            </div>
+            {expandedSections.subscriptions ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+          {expandedSections.subscriptions && (
+            <div className="ml-8 mt-1 space-y-1">
+              <Link
+                href="/subscriptions"
+                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                  pathname === "/subscriptions"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Manage Plans
+              </Link>
+              <Link
+                href="/subscriptions/subscribers"
+                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                  pathname === "/subscriptions/subscribers"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Subscribers
+              </Link>
+              <Link
+                href="/subscriptions/payments"
+                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                  pathname === "/subscriptions/manage"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Payments
               </Link>
             </div>
           )}
