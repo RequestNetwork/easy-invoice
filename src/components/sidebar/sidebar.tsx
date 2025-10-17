@@ -242,19 +242,9 @@ export function Sidebar() {
           {expandedSections.payouts && (
             <div className="ml-8 mt-1 space-y-1">
               <Link
-                href="/payments"
+                href="/payments/direct"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payments"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Overview
-              </Link>
-              <Link
-                href="/payments/pay"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payments/pay"
+                  pathname === "/payments/direct"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -280,16 +270,6 @@ export function Sidebar() {
                 }`}
               >
                 Recurring Payments
-              </Link>
-              <Link
-                href="/payments/vendors"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payments/vendors"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Vendors
               </Link>
             </div>
           )}

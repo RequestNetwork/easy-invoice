@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function PayoutsPage() {
-  return redirect("/payouts/single");
+  return redirect("/payouts/direct");
 }
