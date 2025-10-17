@@ -86,9 +86,9 @@ export function Sidebar() {
           {expandedSections.billing && (
             <div className="ml-8 mt-1 space-y-1">
               <Link
-                href="/invoice"
+                href="/invoices"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoice"
+                  pathname === "/invoices"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -96,9 +96,9 @@ export function Sidebar() {
                 View Invoices
               </Link>
               <Link
-                href="/invoice/create"
+                href="/invoices/create"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoice/create"
+                  pathname === "/invoices/create"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -106,9 +106,9 @@ export function Sidebar() {
                 Create Invoice
               </Link>
               <Link
-                href="/invoice/clients"
+                href="/invoices/clients"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoice/clients"
+                  pathname === "/invoices/clients"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -116,9 +116,9 @@ export function Sidebar() {
                 Clients
               </Link>
               <Link
-                href="/invoice/invoiceme"
+                href="/invoices/me"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoice/invoiceme"
+                  pathname === "/invoices/me"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
