@@ -15,7 +15,7 @@ export default async function LoginPage() {
   const { user } = await getCurrentSession();
 
   if (user) {
-    return redirect("/dashboard");
+    return redirect("/home");
   }
 
   return (

@@ -1,5 +1,6 @@
 import { AppKit } from "@/components/app-kit";
 import { BackgroundWrapper } from "@/components/background-wrapper";
+import { Sidebar } from "@/components/sidebar/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
 import { TRPCReactProvider } from "@/trpc/react";
@@ -48,7 +49,12 @@ export default function RootLayout({
           <AppKit>
             <TooltipProvider>
               <TRPCReactProvider cookies={cookies().toString()}>
-                <BackgroundWrapper>{children}</BackgroundWrapper>
+                <div className="flex min-h-screen">
+                  <Sidebar />
+                  <div className="flex-1">
+                    <BackgroundWrapper>{children}</BackgroundWrapper>
+                  </div>
+                </div>
               </TRPCReactProvider>
               <Toaster />
             </TooltipProvider>
