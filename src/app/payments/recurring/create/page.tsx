@@ -1,4 +1,4 @@
-import { CreateRecurringPayment } from "@/components/create-recurring-payment/create-recurring-payment";
+import { CreateRecurringPayment } from "@/components/recurring-payments/create-recurring-payment/create-recurring-payment";
 
 export const metadata = {
   title: "Recurring Payments | Easy Invoice",

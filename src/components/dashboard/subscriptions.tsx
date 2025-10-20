@@ -1,5 +1,7 @@
 "use client";
 
+import { CompletedPayments } from "@/components/recurring-payments/view-recurring-payments/blocks/completed-payments";
+import { FrequencyBadge } from "@/components/recurring-payments/view-recurring-payments/blocks/frequency-badge";
 import { ShortAddress } from "@/components/short-address";
 import {
   AlertDialog,
@@ -19,8 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
-import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
-import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import {
   calculateTotalsByCurrency,
@@ -34,12 +34,12 @@ import { addDays, format } from "date-fns";
 import { Ban, CreditCard, DollarSign, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { MultiCurrencyStatCard } from "../multi-currency-stat-card";
+import { StatusBadge } from "../recurring-payments/view-recurring-payments/blocks/status-badge";
 import { StatCard } from "../stat-card";
 import { Button } from "../ui/button";
 import { EmptyState } from "../ui/table/empty-state";
 import { Pagination } from "../ui/table/pagination";
 import { TableHeadCell } from "../ui/table/table-head-cell";
-import { StatusBadge } from "../view-recurring-payments/blocks/status-badge";
 
 const ITEMS_PER_PAGE = 10;
 const ACTIVE_STATUSES = ["pending", "active"];

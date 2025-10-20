@@ -20,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
-import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
 import { formatDate } from "@/lib/date-utils";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import { getCanCancelPayment } from "@/lib/utils";
@@ -28,7 +27,8 @@ import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, Ban, Eye, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { ShortAddress } from "../short-address";
+import { ShortAddress } from "../../short-address";
+import { CompletedPayments } from "./blocks/completed-payments";
 import { FrequencyBadge } from "./blocks/frequency-badge";
 import { StatusBadge } from "./blocks/status-badge";
 

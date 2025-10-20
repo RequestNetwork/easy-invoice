@@ -1,4 +1,4 @@
-import { ViewRecurringPayments } from "@/components/view-recurring-payments/view-recurring-payments";
+import { ViewRecurringPayments } from "@/components/recurring-payments/view-recurring-payments/view-recurring-payments";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";

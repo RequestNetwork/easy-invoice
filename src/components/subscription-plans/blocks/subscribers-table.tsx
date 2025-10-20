@@ -1,6 +1,8 @@
 "use client";
 
 import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
+import { CompletedPayments } from "@/components/recurring-payments/view-recurring-payments/blocks/completed-payments";
+import { FrequencyBadge } from "@/components/recurring-payments/view-recurring-payments/blocks/frequency-badge";
 import { ShortAddress } from "@/components/short-address";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -18,8 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/table";
-import { CompletedPayments } from "@/components/view-recurring-payments/blocks/completed-payments";
-import { FrequencyBadge } from "@/components/view-recurring-payments/blocks/frequency-badge";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import {
   calculateTotalsByCurrency,

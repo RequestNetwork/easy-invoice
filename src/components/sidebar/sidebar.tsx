@@ -12,23 +12,39 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type Section = "billing" | "subscriptions" | "payouts" | "ecommerce";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [expandedSections, setExpandedSections] = useState({
+  const [expandedSections, setExpandedSections] = useState<
+    Record<Section, boolean>
+  >({
     billing: false,
     subscriptions: false,
     payouts: false,
     ecommerce: false,
   });
 
-  const toggleSection = (section: keyof typeof expandedSections) => {
+  const toggleSection = (section: Section) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
     }));
   };
+
+  useEffect(() => {
+    if (pathname.startsWith("/invoices")) {
+      setExpandedSections((prev) => ({ ...prev, billing: true }));
+    } else if (pathname.startsWith("/subscriptions")) {
+      setExpandedSections((prev) => ({ ...prev, subscriptions: true }));
+    } else if (pathname.startsWith("/payments")) {
+      setExpandedSections((prev) => ({ ...prev, payouts: true }));
+    } else if (pathname.startsWith("/ecommerce")) {
+      setExpandedSections((prev) => ({ ...prev, ecommerce: true }));
+    }
+  }, [pathname]);
 
   return (
     <aside className="w-64 bg-background border-r border-border overflow-y-auto">
