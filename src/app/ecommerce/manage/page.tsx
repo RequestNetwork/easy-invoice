@@ -1,7 +1,7 @@
-import { EcommerceManage } from "@/components/ecommerce/manage";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
+import { EcommerceManage } from "./_components/index";
 
 export default async function ManagePage() {
   const { user } = await getCurrentSession();

@@ -1,4 +1,4 @@
-import { RecurringPaymentsNavigation } from "@/components/recurring-payments-navigation";
+import { RecurringPaymentsNavigation } from "./_components/recurring-payments-navigation";
 
 export default function RecurringLayout({
   children,

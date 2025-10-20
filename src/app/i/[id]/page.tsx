@@ -1,7 +1,7 @@
 import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { InvoiceCreator } from "@/components/invoice-creator";
+import { InvoiceCreator } from "@/components/invoice/invoice-creator";
 import { getInvoiceCount } from "@/lib/helpers/invoice";
 import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
@@ -29,7 +29,7 @@ export default async function InvoiceMePage({
   }
 
   if (currentUser.user && currentUser.user.id === invoiceMeLink.user.id) {
-    redirect("/dashboard");
+    redirect("/home");
   }
 
   const invoiceCount = await getInvoiceCount(invoiceMeLink.user.id);

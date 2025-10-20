@@ -1,7 +1,7 @@
-import { DashboardReceipts } from "@/components/dashboard/receipts";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
+import { DashboardReceipts } from "./_components/receipts";
 
 export default async function ReceiptsPage() {
   const { user } = await getCurrentSession();

@@ -1,8 +1,8 @@
-import { CryptoToFiat } from "@/components/crypto-to-fiat";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { getCurrentSession } from "@/server/auth";
 import { redirect } from "next/navigation";
+import { CryptoToFiat } from "./_components/crypto-to-fiat";
 
 export default async function CryptoToFiatPage() {
   const { user } = await getCurrentSession();

@@ -1,4 +1,4 @@
-import { BatchPayout } from "@/components/batch-payout";
+import { BatchPayout } from "./_components/batch-payout";
 
 export const metadata = {
   title: "Batch Payouts | Easy Invoice",

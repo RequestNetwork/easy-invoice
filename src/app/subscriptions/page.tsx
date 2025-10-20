@@ -1,11 +1,11 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { SubscriptionPlansList } from "@/components/subscription-plans/blocks/subscription-plans-list";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SubscriptionPlansList } from "./_components/subscription-plans-list";
 
 export default async function ManagePlansPage() {
   const { user } = await getCurrentSession();

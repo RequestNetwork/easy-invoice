@@ -1,7 +1,7 @@
-import { ViewRecurringPayments } from "@/components/recurring-payments/view-recurring-payments/view-recurring-payments";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
+import { ViewRecurringPayments } from "./_components/view-recurring-payments";
 
 export const metadata = {
   title: "Recurring Payments | Easy Invoice",

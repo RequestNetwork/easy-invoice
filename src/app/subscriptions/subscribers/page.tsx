@@ -1,11 +1,11 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { SubscribersTable } from "@/components/subscription-plans/blocks/subscribers-table";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SubscribersTable } from "../_components/subscribers-table";
 
 export default async function SubscribersPage() {
   const { user } = await getCurrentSession();

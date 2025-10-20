@@ -1,7 +1,6 @@
 import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { PaymentSection } from "@/components/payment-section";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
@@ -9,6 +8,7 @@ import { formatDate } from "@/lib/date-utils";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PaymentSection } from "./_components/payment-section";
 import { getInvoice } from "./helpers";
 export const metadata: Metadata = {
   title: "Invoice Payment | EasyInvoice",

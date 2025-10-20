@@ -1,7 +1,7 @@
-import { InvoicesSent } from "@/components/dashboard/invoices-sent";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
+import { InvoicesSent } from "../_components/invoices-sent";
 
 export default async function GetPaidPage() {
   const { user } = await getCurrentSession();

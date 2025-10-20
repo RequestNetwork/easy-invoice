@@ -1,9 +1,9 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { InvoiceMeLinks } from "@/components/invoice-me-links";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
+import { InvoiceMeLinks } from "./_components/invoice-me-links";
 
 export default async function InvoiceMePage() {
   const { user } = await getCurrentSession();

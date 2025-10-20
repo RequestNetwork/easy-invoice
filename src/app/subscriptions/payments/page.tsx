@@ -1,11 +1,11 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { PaymentsTable } from "@/components/subscription-plans/blocks/payments-table";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PaymentsTable } from "../_components/payments-table";
 
 export default async function SubscriptionPaymentsPage() {
   const { user } = await getCurrentSession();

@@ -1,10 +1,10 @@
 import { BackgroundWrapper } from "@/components/background-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { SubscriptionPlanPreview } from "@/components/subscription-plan-preview";
 import { getCurrentSession } from "@/server/auth";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { SubscriptionPlanPreview } from "./_components/subscription-plan-preview";
 import { getSubscriptionPlan } from "./helpers";
 
 export const metadata: Metadata = {

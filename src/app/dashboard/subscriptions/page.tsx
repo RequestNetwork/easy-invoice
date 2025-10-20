@@ -1,7 +1,7 @@
-import { Subscriptions } from "@/components/dashboard/subscriptions";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
+import { Subscriptions } from "./_components/subscriptions";
 
 export default async function SubscriptionsPage() {
   const { user } = await getCurrentSession();

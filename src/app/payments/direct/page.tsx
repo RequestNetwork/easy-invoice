@@ -1,4 +1,4 @@
-import { DirectPayment } from "@/components/direct-payout";
+import { DirectPayment } from "./_components/direct-payout";
 
 export const metadata = {
   title: "Single Payouts | Easy Invoice",

@@ -1,6 +1,6 @@
 import { AppKit } from "@/components/app-kit";
 import { BackgroundWrapper } from "@/components/background-wrapper";
-import { Sidebar } from "@/components/sidebar/sidebar";
+import { Sidebar } from "@/components/navigation/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
 import { TRPCReactProvider } from "@/trpc/react";
