@@ -1,0 +1,21 @@
+import { getCurrentSession } from "@/server/auth";
+import { api } from "@/trpc/server";
+import { redirect } from "next/navigation";
+import { ViewRecurringPayments } from "./_components/view-recurring-payments";
+
+export const metadata = {
+  title: "Recurring Payments | Easy Invoice",
+  description: "Manage your recurring payments using Easy Invoice",
+};
+export default async function RecurringPaymentsSlot() {
+  const { user } = await getCurrentSession();
+
+  if (!user) {
+    redirect("/signin");
+  }
+
+  const recurringPayments =
+    await api.recurringPayment.getNonSubscriptionRecurringPayments.query();
+
+  return <ViewRecurringPayments initialRecurringPayments={recurringPayments} />;
+}

@@ -1,6 +1,4 @@
 import { AppKit } from "@/components/app-kit";
-import { BackgroundWrapper } from "@/components/background-wrapper";
-import { Sidebar } from "@/components/navigation/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import VersionDisplay from "@/components/version-badge";
 import { TRPCReactProvider } from "@/trpc/react";
@@ -10,6 +8,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import "./globals.css";
+import { AuthProvider } from "@/context/auth";
+import { getCurrentSession } from "@/server/auth";
 import { ThemeProvider } from "next-themes";
 
 const geistSans = localFont({
@@ -28,11 +28,13 @@ export const metadata: Metadata = {
   description: "Easy Invoice is a simple and secure invoice payment platform.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const sessionInfo = await getCurrentSession();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -49,12 +51,9 @@ export default function RootLayout({
           <AppKit>
             <TooltipProvider>
               <TRPCReactProvider cookies={cookies().toString()}>
-                <div className="flex min-h-screen">
-                  <Sidebar />
-                  <div className="flex-1">
-                    <BackgroundWrapper>{children}</BackgroundWrapper>
-                  </div>
-                </div>
+                <AuthProvider initialSession={sessionInfo}>
+                  {children}
+                </AuthProvider>
               </TRPCReactProvider>
               <Toaster />
             </TooltipProvider>
