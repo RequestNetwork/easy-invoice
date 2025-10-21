@@ -1,3 +1,4 @@
+import { PageDescription, PageTitle } from "@/components/page-elements";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
@@ -12,5 +13,11 @@ export default async function SalesPage() {
 
   const clientPayments = await api.ecommerce.getAllClientPayments.query();
 
-  return <EcommerceSales initialClientPayments={clientPayments} />;
+  return (
+    <>
+      <PageTitle>Ecommerce Sales</PageTitle>
+      <PageDescription>View all sales made by your clients</PageDescription>
+      <EcommerceSales initialClientPayments={clientPayments} />
+    </>
+  );
 }

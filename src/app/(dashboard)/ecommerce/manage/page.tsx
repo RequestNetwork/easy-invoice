@@ -1,3 +1,4 @@
+import { PageDescription, PageTitle } from "@/components/page-elements";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
@@ -12,5 +13,11 @@ export default async function ManagePage() {
 
   const ecommerceClients = await api.ecommerce.getAll.query();
 
-  return <EcommerceManage initialEcommerceClients={ecommerceClients} />;
+  return (
+    <>
+      <PageTitle>Ecommerce Management</PageTitle>
+      <PageDescription>Manage your Ecommerce clients</PageDescription>
+      <EcommerceManage initialEcommerceClients={ecommerceClients} />
+    </>
+  );
 }

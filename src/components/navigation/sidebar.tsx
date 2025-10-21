@@ -47,7 +47,7 @@ export function Sidebar() {
   }, [pathname]);
 
   return (
-    <aside className="w-64 bg-background border-r border-border overflow-y-auto">
+    <aside className="w-64 bg-background border-r border-border overflow-y-auto flex-shrink-0">
       <div className="p-6 border-b border-border">
         <h1 className="text-xl font-bold text-foreground">Request Dashboard</h1>
         <p className="text-sm text-muted-foreground">Crypto Payments</p>
@@ -120,16 +120,6 @@ export function Sidebar() {
                 }`}
               >
                 Create Invoice
-              </Link>
-              <Link
-                href="/invoices/clients"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoices/clients"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Clients
               </Link>
               <Link
                 href="/invoices/me"
@@ -228,7 +218,7 @@ export function Sidebar() {
               <Link
                 href="/subscriptions/payments"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/subscriptions/manage"
+                  pathname === "/subscriptions/payments"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -280,7 +270,7 @@ export function Sidebar() {
               <Link
                 href="/payments/recurring"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payments/recurring"
+                  pathname.startsWith("/payments/recurring")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}

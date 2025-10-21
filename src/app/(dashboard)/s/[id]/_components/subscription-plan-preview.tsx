@@ -15,15 +15,7 @@ import { api } from "@/trpc/react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { addDays } from "date-fns";
 import { BigNumber, utils } from "ethers";
-import {
-  ArrowLeft,
-  CheckCircle,
-  Copy,
-  Loader2,
-  LogOut,
-  Wallet,
-} from "lucide-react";
-import Link from "next/link";
+import { CheckCircle, Copy, Loader2, LogOut, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -121,195 +113,177 @@ export function SubscriptionPlanPreview({
   const isProcessing = paymentStatus === "processing";
 
   return (
-    <>
-      <div className="flex items-center mb-8">
-        <Link
-          href="/"
-          className="text-muted-foreground hover:text-foreground transition-colors mr-4"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </Link>
-        <h1 className="text-4xl font-bold tracking-tight">
-          Subscribe to {subscriptionPlan.label}
-        </h1>
-      </div>
+    <div className="max-w-md mx-auto">
+      <Card className="shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="text-xl">Subscription Details</CardTitle>
+          <div className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full">
+            Ready to Subscribe
+          </div>
+        </CardHeader>
 
-      <div className="max-w-md mx-auto">
-        <Card className="shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-xl">Subscription Details</CardTitle>
-            <div className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full">
-              Ready to Subscribe
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">
+                Amount Per Payment
+              </p>
+              <p className="text-2xl font-bold">
+                {displayCurrency} {displayAmount}
+              </p>
             </div>
-          </CardHeader>
 
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  Amount Per Payment
-                </p>
-                <p className="text-2xl font-bold">
-                  {displayCurrency} {displayAmount}
+                <p className="text-sm text-muted-foreground mb-1">Frequency</p>
+                <p className="font-semibold">
+                  {subscriptionPlan.recurrenceFrequency}
                 </p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Frequency
-                  </p>
-                  <p className="font-semibold">
-                    {subscriptionPlan.recurrenceFrequency}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Total Payments
-                  </p>
-                  <p className="font-semibold">
-                    {subscriptionPlan.totalNumberOfPayments}
-                  </p>
-                </div>
-              </div>
-
               <div>
                 <p className="text-sm text-muted-foreground mb-1">
-                  Total Amount
+                  Total Payments
                 </p>
                 <p className="font-semibold">
-                  {displayCurrency} {displayTotalAmount}
+                  {subscriptionPlan.totalNumberOfPayments}
                 </p>
               </div>
-              <div>
-                {subscriptionPlan.trialDays > 0 ? (
-                  <>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Trial Period
-                    </p>
-                    <p className="font-semibold">
-                      {`${subscriptionPlan.trialDays} day${
-                        subscriptionPlan.trialDays > 1 ? "s" : ""
-                      }`}
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground mb-1">
-                    No Trial Period
-                  </p>
-                )}
-              </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="recipientEmail">Recipient Email</Label>
-                <div className="relative">
-                  <Input
-                    id="recipientEmail"
-                    value={recipientEmail}
-                    placeholder="creator@example.com"
-                    disabled
-                    readOnly
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-1 top-1 h-6 w-6 p-0"
-                    onClick={() => copyToClipboard(recipientEmail, "Email")}
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="recipientAddress">Recipient Address</Label>
-                <div className="relative">
-                  <Input
-                    id="recipientAddress"
-                    value={subscriptionPlan.recipient}
-                    placeholder="0x..."
-                    className="font-mono text-sm"
-                    disabled
-                    readOnly
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-1 top-1 h-6 w-6 p-0"
-                    onClick={() =>
-                      copyToClipboard(subscriptionPlan.recipient, "Address")
-                    }
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
+              <p className="font-semibold">
+                {displayCurrency} {displayTotalAmount}
+              </p>
             </div>
-
-            {isAppKitReady ? (
-              isConnected ? (
+            <div>
+              {subscriptionPlan.trialDays > 0 ? (
                 <>
-                  <PaymentSecuredUsingRequest />
-
-                  <div className="flex justify-between items-center pt-4">
-                    <button
-                      type="button"
-                      onClick={() => open()}
-                      className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      disabled={isProcessing}
-                    >
-                      <span className="font-mono mr-2">
-                        {address?.substring(0, 6)}...
-                        {address?.substring(address?.length - 4)}
-                      </span>
-                      <LogOut className="h-3 w-3" />
-                    </button>
-                    <Button
-                      onClick={handleStartSubscription}
-                      disabled={isProcessing || !canSubscribeToPlan}
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating...
-                        </>
-                      ) : paymentStatus === "success" ? (
-                        <>
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Success!
-                        </>
-                      ) : (
-                        "Confirm Subscription"
-                      )}
-                    </Button>
-                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Trial Period
+                  </p>
+                  <p className="font-semibold">
+                    {`${subscriptionPlan.trialDays} day${
+                      subscriptionPlan.trialDays > 1 ? "s" : ""
+                    }`}
+                  </p>
                 </>
               ) : (
-                <div className="flex flex-col items-center py-6 space-y-4">
-                  <p className="text-muted-foreground text-center">
-                    Connect your wallet to subscribe
-                  </p>
-                  <Button onClick={() => open()} size="lg" className="w-full">
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Connect Wallet
+                <p className="text-sm text-muted-foreground mb-1">
+                  No Trial Period
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="recipientEmail">Recipient Email</Label>
+              <div className="relative">
+                <Input
+                  id="recipientEmail"
+                  value={recipientEmail}
+                  placeholder="creator@example.com"
+                  disabled
+                  readOnly
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1 h-6 w-6 p-0"
+                  onClick={() => copyToClipboard(recipientEmail, "Email")}
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="recipientAddress">Recipient Address</Label>
+              <div className="relative">
+                <Input
+                  id="recipientAddress"
+                  value={subscriptionPlan.recipient}
+                  placeholder="0x..."
+                  className="font-mono text-sm"
+                  disabled
+                  readOnly
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1 h-6 w-6 p-0"
+                  onClick={() =>
+                    copyToClipboard(subscriptionPlan.recipient, "Address")
+                  }
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {isAppKitReady ? (
+            isConnected ? (
+              <>
+                <PaymentSecuredUsingRequest />
+
+                <div className="flex justify-between items-center pt-4">
+                  <button
+                    type="button"
+                    onClick={() => open()}
+                    className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    disabled={isProcessing}
+                  >
+                    <span className="font-mono mr-2">
+                      {address?.substring(0, 6)}...
+                      {address?.substring(address?.length - 4)}
+                    </span>
+                    <LogOut className="h-3 w-3" />
+                  </button>
+                  <Button
+                    onClick={handleStartSubscription}
+                    disabled={isProcessing || !canSubscribeToPlan}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : paymentStatus === "success" ? (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Success!
+                      </>
+                    ) : (
+                      "Confirm Subscription"
+                    )}
                   </Button>
                 </div>
-              )
+              </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-6 space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  Initializing payment system...
+              <div className="flex flex-col items-center py-6 space-y-4">
+                <p className="text-muted-foreground text-center">
+                  Connect your wallet to subscribe
                 </p>
+                <Button onClick={() => open()} size="lg" className="w-full">
+                  <Wallet className="mr-2 h-4 w-4" />
+                  Connect Wallet
+                </Button>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </>
+            )
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">
+                Initializing payment system...
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

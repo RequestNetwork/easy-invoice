@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { InvoiceMe } from "@/server/db/schema";
 import { api } from "@/trpc/react";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 interface InvoiceMeLinksProps {
@@ -54,17 +52,7 @@ export function InvoiceMeLinks({ initialLinks }: InvoiceMeLinksProps) {
   return (
     <main className="flex-grow flex flex-col max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8 gap-8">
-        <div className="flex items-center ">
-          <Link
-            href="/dashboard"
-            className="text-muted-foreground hover:text-foreground transition-colors mr-4"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </Link>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Invoice Me Links
-          </h1>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Your links</h1>
         <Button
           onClick={() => setIsCreating(true)}
           className="bg-primary text-primary-foreground hover:bg-primary/80 rounded-md px-4 py-2 text-sm font-medium"

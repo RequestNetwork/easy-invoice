@@ -1,3 +1,4 @@
+import { PageDescription, PageTitle } from "@/components/page-elements";
 import { RecurringPaymentsNavigation } from "./_components/recurring-payments-navigation";
 
 export default function RecurringLayout({
@@ -6,9 +7,13 @@ export default function RecurringLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <>
+      <PageTitle>Recurring Payments</PageTitle>
+      <PageDescription>
+        Manage and create your recurring payments
+      </PageDescription>
       <RecurringPaymentsNavigation />
       <div className="mt-8">{children}</div>
-    </div>
+    </>
   );
 }

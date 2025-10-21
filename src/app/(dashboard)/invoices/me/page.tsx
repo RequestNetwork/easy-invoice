@@ -1,4 +1,4 @@
-import { Footer } from "@/components/footer";
+import { PageDescription, PageTitle } from "@/components/page-elements";
 import { getCurrentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
@@ -15,10 +15,11 @@ export default async function InvoiceMePage() {
 
   return (
     <>
-      <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-        <InvoiceMeLinks initialLinks={links} />
-      </main>
-      <Footer />
+      <PageTitle>InvoiceMe Links</PageTitle>
+      <PageDescription>
+        Create and configure your public InvoiceMe links
+      </PageDescription>
+      <InvoiceMeLinks initialLinks={links} />
     </>
   );
 }

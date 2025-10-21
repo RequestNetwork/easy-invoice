@@ -1,5 +1,4 @@
-import { BackgroundWrapper } from "@/components/background-wrapper";
-import { Footer } from "@/components/footer";
+import { PageTitle } from "@/components/page-elements";
 import { getCurrentSession } from "@/server/auth";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
@@ -26,17 +25,14 @@ export default async function SubscriptionPlanPage({
   }
 
   return (
-    <BackgroundWrapper
-      topGradient={{ from: "purple-100", to: "purple-200" }}
-      bottomGradient={{ from: "blue-100", to: "blue-200" }}
-    >
-      <main className="flex-grow flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-        <SubscriptionPlanPreview
-          subscriptionPlan={subscriptionPlan}
-          recipientEmail={subscriptionPlan.user.email ?? ""}
-        />
-      </main>
-      <Footer />
-    </BackgroundWrapper>
+    <>
+      <PageTitle className="mb-8">
+        Subscribe to {subscriptionPlan.label}
+      </PageTitle>
+      <SubscriptionPlanPreview
+        subscriptionPlan={subscriptionPlan}
+        recipientEmail={subscriptionPlan.user.email ?? ""}
+      />
+    </>
   );
 }

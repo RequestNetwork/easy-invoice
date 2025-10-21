@@ -27,15 +27,5 @@ export function EcommerceSales({ initialClientPayments }: EcommerceSalesProps) {
     );
   }
 
-  return (
-    <div className="flex flex-col items-start gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Client Payments</h1>
-        <p className="text-sm text-muted-foreground">
-          View all payments received through your ecommerce integrations
-        </p>
-      </div>
-      <ClientPaymentsTable clientPayments={data} />
-    </div>
-  );
+  return <ClientPaymentsTable clientPayments={data} />;
 }
