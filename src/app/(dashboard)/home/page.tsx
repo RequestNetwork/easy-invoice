@@ -33,12 +33,15 @@ export default async function HomePage() {
           Request Network.
         </p>
         <div className="mt-6">
-          <Link href="/invoice/create">
-            <Button className="bg-highlight hover:bg-highlight/90 text-[hsl(var(--highlight-foreground))]">
+          <Button
+            className="bg-highlight hover:bg-highlight/90 text-[hsl(var(--highlight-foreground))]"
+            asChild
+          >
+            <Link href="/invoices/create">
               <Plus className="mr-2 h-4 w-4" />
               Create Your First Invoice
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -109,7 +112,7 @@ export default async function HomePage() {
               className="w-full bg-highlight hover:bg-highlight/90 text-highlight-foreground"
               asChild
             >
-              <Link href="/invoice/create">Create New Invoice</Link>
+              <Link href="/invoices/create">Create New Invoice</Link>
             </Button>
           </CardContent>
         </Card>
@@ -125,14 +128,13 @@ export default async function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/invoice">
-              <Button
-                variant="outline"
-                className="w-full border-highlight/30 hover:bg-highlight/10"
-              >
-                View All Invoices
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="w-full border-highlight/30 hover:bg-highlight/10"
+              asChild
+            >
+              <Link href="/invoices">View All Invoices</Link>
+            </Button>
           </CardContent>
         </Card>
 
@@ -145,14 +147,13 @@ export default async function HomePage() {
             <CardDescription>Track payments and payouts</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/payments">
-              <Button
-                variant="outline"
-                className="w-full border-highlight/30 hover:bg-highlight/10"
-              >
-                Manage Payments
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="w-full border-highlight/30 hover:bg-highlight/10"
+              asChild
+            >
+              <Link href="/payments">Manage Payments</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

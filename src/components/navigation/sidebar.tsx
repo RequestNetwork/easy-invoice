@@ -237,7 +237,7 @@ export function Sidebar() {
           >
             <div className="flex items-center space-x-3">
               <DollarSign className="h-5 w-5" />
-              <span className="font-medium">Payouts</span>
+              <span className="font-medium">Payments</span>
             </div>
             {expandedSections.payouts ? (
               <ChevronDown className="h-4 w-4" />

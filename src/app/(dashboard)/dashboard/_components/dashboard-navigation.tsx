@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 export function DashboardNavigation() {
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState("get-paid");
+  const [activeTab, setActiveTab] = useState("subscriptions");
 
   useEffect(() => {
     if (pathname.includes("/subscriptions")) {
