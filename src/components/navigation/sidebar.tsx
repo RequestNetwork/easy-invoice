@@ -54,9 +54,9 @@ export function Sidebar() {
       </div>
       <nav className="p-4 space-y-2">
         <Link
-          href="/"
+          href="/home"
           className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-            pathname === "/"
+            pathname === "/home"
               ? "bg-primary/10 text-primary"
               : "text-foreground hover:bg-muted"
           }`}

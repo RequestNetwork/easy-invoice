@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCurrentSession } from "@/server/auth";
+import { requireAuth } from "@/lib/auth";
 import {
   DollarSign,
   FileText,
@@ -17,14 +17,9 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 export default async function HomePage() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
+  await requireAuth();
 
   return (
     <div className="space-y-8">
@@ -110,11 +105,12 @@ export default async function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/invoice/create">
-              <Button className="w-full bg-highlight hover:bg-highlight/90 text-highlight-foreground">
-                Create New Invoice
-              </Button>
-            </Link>
+            <Button
+              className="w-full bg-highlight hover:bg-highlight/90 text-highlight-foreground"
+              asChild
+            >
+              <Link href="/invoice/create">Create New Invoice</Link>
+            </Button>
           </CardContent>
         </Card>
 

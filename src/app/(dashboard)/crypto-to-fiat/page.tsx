@@ -1,14 +1,9 @@
 import { PageDescription, PageTitle } from "@/components/page-elements";
-import { getCurrentSession } from "@/server/auth";
-import { redirect } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
 import { CryptoToFiat } from "./_components/crypto-to-fiat";
 
 export default async function CryptoToFiatPage() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
+  const user = await requireAuth();
 
   return (
     <>

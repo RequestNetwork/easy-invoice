@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuthContext } from "@/context/auth";
 import {
   type PayoutCurrency,
   formatCurrencyLabel,
 } from "@/lib/constants/currencies";
 import { useCreateRecurringPayment } from "@/lib/hooks/use-create-recurring-payment";
 import type { SubscriptionPlan } from "@/server/db/schema";
-import { api } from "@/trpc/react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { addDays } from "date-fns";
 import { BigNumber, utils } from "ethers";
@@ -32,10 +32,10 @@ export function SubscriptionPlanPreview({
   const router = useRouter();
   const [isAppKitReady, setIsAppKitReady] = useState(false);
   const {
-    data: sessionData,
+    user,
+    isAuthenticated,
     isLoading: isSessionLoading,
-    error: sessionError,
-  } = api.auth.getSessionInfo.useQuery();
+  } = useAuthContext();
 
   const { address, isConnected } = useAppKitAccount();
   const { open } = useAppKit();
@@ -58,10 +58,8 @@ export function SubscriptionPlanPreview({
     return () => clearTimeout(timer);
   }, []);
 
-  const canSubscribeToPlan =
-    !isSessionLoading &&
-    !sessionError &&
-    sessionData.session?.userId !== subscriptionPlan.userId;
+  const isOwnPlan = user?.id === subscriptionPlan.userId;
+  const canSubscribeToPlan = !isSessionLoading && isAuthenticated && !isOwnPlan;
 
   const amount = utils.parseUnits(subscriptionPlan.amount, 18);
   const totalPayments = BigNumber.from(
@@ -79,8 +77,13 @@ export function SubscriptionPlanPreview({
   };
 
   const handleStartSubscription = async () => {
-    if (!canSubscribeToPlan) {
+    if (isOwnPlan) {
       toast.error("You cannot subscribe to your own plan");
+      return;
+    }
+
+    if (!canSubscribeToPlan) {
+      toast.error("You cannot subscribe to this plan");
       return;
     }
 

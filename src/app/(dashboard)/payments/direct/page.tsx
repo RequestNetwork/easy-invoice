@@ -1,11 +1,14 @@
 import { PageDescription, PageTitle } from "@/components/page-elements";
+import { requireAuth } from "@/lib/auth";
 import { DirectPayment } from "./_components/direct-payout";
 
 export const metadata = {
-  title: "Single Payouts | Easy Invoice",
-  description: "Create one time payments using Easy Invoice",
+  title: "Direct Payments | Easy Invoice",
+  description: "Create direct payments using Easy Invoice",
 };
-export default function SinglePayoutPage() {
+export default async function DirectPaymentPage() {
+  await requireAuth();
+
   return (
     <>
       <PageTitle>Direct Payment</PageTitle>

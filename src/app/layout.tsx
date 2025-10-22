@@ -34,6 +34,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const sessionInfo = await getCurrentSession();
+  const initialSessionForProvider = sessionInfo.user ? sessionInfo : null;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -51,7 +52,7 @@ export default async function RootLayout({
           <AppKit>
             <TooltipProvider>
               <TRPCReactProvider cookies={cookies().toString()}>
-                <AuthProvider initialSession={sessionInfo}>
+                <AuthProvider initialSession={initialSessionForProvider}>
                   {children}
                 </AuthProvider>
               </TRPCReactProvider>

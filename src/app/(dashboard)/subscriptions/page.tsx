@@ -1,15 +1,10 @@
 import { PageDescription, PageTitle } from "@/components/page-elements";
-import { getCurrentSession } from "@/server/auth";
+import { requireAuth } from "@/lib/auth";
 import { api } from "@/trpc/server";
-import { redirect } from "next/navigation";
 import { SubscriptionPlansList } from "./_components/subscription-plans-list";
 
 export default async function ManagePlansPage() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
+  await requireAuth();
 
   const subscriptionPlans = await api.subscriptionPlan.getAll.query();
 

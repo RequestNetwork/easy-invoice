@@ -1,16 +1,10 @@
 import { InvoiceCreator } from "@/components/invoice/invoice-creator";
 import { PageDescription, PageTitle } from "@/components/page-elements";
+import { requireAuth } from "@/lib/auth";
 import { getInvoiceCount } from "@/lib/helpers/invoice";
-import { getCurrentSession } from "@/server/auth";
-import { redirect } from "next/navigation";
 
 export default async function CreateInvoicePage() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
-
+  const user = await requireAuth();
   const invoiceCount = await getInvoiceCount(user.id);
 
   return (

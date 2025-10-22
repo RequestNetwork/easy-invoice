@@ -1,6 +1,7 @@
 import { PageDescription, PageTitle } from "@/components/page-elements";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { requireAuth } from "@/lib/auth";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { formatDate } from "@/lib/date-utils";
 import { api } from "@/trpc/server";
@@ -26,6 +27,7 @@ export default async function PaymentPage({
 }: {
   params: { ID: string };
 }) {
+  await requireAuth();
   const invoice = await getInvoice(params.ID);
 
   if (!invoice) {

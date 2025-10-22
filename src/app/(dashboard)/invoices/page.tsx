@@ -1,15 +1,10 @@
 import { PageDescription, PageTitle } from "@/components/page-elements";
-import { getCurrentSession } from "@/server/auth";
+import { requireAuth } from "@/lib/auth";
 import { api } from "@/trpc/server";
-import { redirect } from "next/navigation";
 import { InvoicesTabs } from "./_components/invoices-tabs";
 
 export default async function InvoicesPage() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
+  await requireAuth();
 
   const [sentInvoices, receivedInvoices] = await Promise.all([
     api.invoice.getAllIssuedByMe.query(),

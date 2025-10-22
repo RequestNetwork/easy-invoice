@@ -18,6 +18,10 @@ export default async function LoginPage() {
     return redirect("/home");
   }
 
+  const termsUrl =
+    process.env.NEXT_PUBLIC_API_TERMS_CONDITIONS ||
+    "https://request.network/api-terms";
+
   return (
     <>
       <Header />
@@ -52,7 +56,7 @@ export default async function LoginPage() {
             <p className="text-center text-sm text-zinc-500">
               By continuing, you agree to our{" "}
               <Link
-                href={process.env.NEXT_PUBLIC_API_TERMS_CONDITIONS as string}
+                href={termsUrl}
                 className="underline hover:text-zinc-900"
                 target="_blank"
                 rel="noopener noreferrer"

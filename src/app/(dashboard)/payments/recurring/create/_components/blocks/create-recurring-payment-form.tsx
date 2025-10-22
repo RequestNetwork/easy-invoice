@@ -63,7 +63,7 @@ export function CreateRecurringPaymentForm() {
   const { createRecurringPayment, paymentStatus } = useCreateRecurringPayment({
     onSuccess: () => {
       setTimeout(() => {
-        router.push("/payouts/recurring");
+        router.push("/payments/recurring");
       }, 3000);
     },
     onError: (error) => {

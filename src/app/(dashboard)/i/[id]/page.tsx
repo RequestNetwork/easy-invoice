@@ -1,7 +1,7 @@
 import { InvoiceCreator } from "@/components/invoice/invoice-creator";
 import { PageTitle } from "@/components/page-elements";
+import { requireAuth } from "@/lib/auth";
 import { getInvoiceCount } from "@/lib/helpers/invoice";
-import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getInvoiceMeLink } from "./helpers";
@@ -16,15 +16,14 @@ export default async function InvoiceMePage({
 }: {
   params: { id: string };
 }) {
-  // TODO solve unauthenticated access
-  const currentUser = await api.auth.getSessionInfo.query();
+  const user = await requireAuth();
   const invoiceMeLink = await getInvoiceMeLink(params.id);
 
   if (!invoiceMeLink) {
     notFound();
   }
 
-  if (currentUser.user && currentUser.user.id === invoiceMeLink.user.id) {
+  if (user.id === invoiceMeLink.user.id) {
     redirect("/home");
   }
 
@@ -42,11 +41,11 @@ export default async function InvoiceMePage({
           userId: invoiceMeLink.user.id,
         }}
         currentUser={
-          currentUser.user
+          user
             ? {
-                id: currentUser.user.id,
-                name: currentUser.user.name ?? "",
-                email: currentUser.user.email ?? "",
+                id: user.id,
+                name: user.name ?? "",
+                email: user.email ?? "",
               }
             : undefined
         }

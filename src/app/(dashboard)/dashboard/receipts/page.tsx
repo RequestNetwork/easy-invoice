@@ -1,14 +1,9 @@
-import { getCurrentSession } from "@/server/auth";
+import { requireAuth } from "@/lib/auth";
 import { api } from "@/trpc/server";
-import { redirect } from "next/navigation";
 import { DashboardReceipts } from "./_components/receipts";
 
 export default async function ReceiptsPage() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
+  await requireAuth();
 
   const clientPayments = await api.ecommerce.getAllUserReceipts.query();
 

@@ -19,7 +19,7 @@ export function DashboardNavigation() {
 
   return (
     <Tabs value={activeTab} className="w-full mb-8">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="subscriptions" asChild>
           <Link href="/dashboard/subscriptions">Subscriptions</Link>
         </TabsTrigger>

@@ -1,6 +1,5 @@
-import { getCurrentSession } from "@/server/auth";
+import { requireAuth } from "@/lib/auth";
 import { api } from "@/trpc/server";
-import { redirect } from "next/navigation";
 import { ViewRecurringPayments } from "./_components/view-recurring-payments";
 
 export const metadata = {
@@ -8,11 +7,7 @@ export const metadata = {
   description: "Manage your recurring payments using Easy Invoice",
 };
 export default async function RecurringPaymentsSlot() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
+  await requireAuth();
 
   const recurringPayments =
     await api.recurringPayment.getNonSubscriptionRecurringPayments.query();

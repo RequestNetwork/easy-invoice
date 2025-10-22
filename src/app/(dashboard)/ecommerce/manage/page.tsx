@@ -1,15 +1,10 @@
 import { PageDescription, PageTitle } from "@/components/page-elements";
-import { getCurrentSession } from "@/server/auth";
+import { requireAuth } from "@/lib/auth";
 import { api } from "@/trpc/server";
-import { redirect } from "next/navigation";
 import { EcommerceManage } from "./_components/index";
 
 export default async function ManagePage() {
-  const { user } = await getCurrentSession();
-
-  if (!user) {
-    redirect("/signin");
-  }
+  await requireAuth();
 
   const ecommerceClients = await api.ecommerce.getAll.query();
 

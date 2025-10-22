@@ -1,7 +1,7 @@
 import { PageTitle } from "@/components/page-elements";
-import { getCurrentSession } from "@/server/auth";
+import { requireAuth } from "@/lib/auth";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { SubscriptionPlanPreview } from "./_components/subscription-plan-preview";
 import { getSubscriptionPlan } from "./helpers";
 
@@ -15,8 +15,7 @@ export default async function SubscriptionPlanPage({
 }: {
   params: { id: string };
 }) {
-  const { user } = await getCurrentSession();
-  if (!user) redirect("/signin");
+  await requireAuth();
 
   const subscriptionPlan = await getSubscriptionPlan(params.id);
 
