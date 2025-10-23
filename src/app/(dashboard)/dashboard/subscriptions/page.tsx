@@ -5,8 +5,7 @@ import { Subscriptions } from "./_components/subscriptions";
 export default async function SubscriptionsPage() {
   await requireAuth();
 
-  const subscriptions =
-    await api.subscriptionPlan.getUserActiveSubscriptions.query();
+  const subscriptions = await api.subscriptionPlan.getUserActiveSubscriptions();
 
   return <Subscriptions initialSubscriptions={subscriptions} />;
 }

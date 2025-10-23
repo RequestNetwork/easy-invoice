@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { truncateEmail } from "@/lib/utils";
+import { truncateEmail } from "@/lib/helpers";
 import type { User } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { CopyIcon, LogOut } from "lucide-react";

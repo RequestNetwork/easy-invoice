@@ -36,7 +36,7 @@ export interface ReceiptData {
   };
 }
 
-export const generateReceiptNumber = (prefix: string = "REC"): string => {
+export const generateReceiptNumber = (prefix = "REC"): string => {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000)
     .toString()
@@ -45,7 +45,7 @@ export const generateReceiptNumber = (prefix: string = "REC"): string => {
 };
 
 export const formatUSDAmount = (amount: string): string => {
-  const numericAmount = parseFloat(amount);
+  const numericAmount = Number.parseFloat(amount);
 
   if (Number.isNaN(numericAmount)) {
     return "$0.00";

@@ -80,33 +80,36 @@ export function ComplianceForm({ user }: { user: User }) {
   }, []);
 
   // Fetch compliance status when component mounts
-  const { isLoading: isLoadingStatus, refetch: getComplianceStatus } =
-    api.compliance.getComplianceStatus.useQuery(
-      { clientUserId: user?.email ?? "" },
-      {
-        // Only fetch if we have a user email
-        enabled: !!user?.email,
-        // Use the configurable constant for polling interval
-        refetchInterval: COMPLIANCE_STATUS_POLLING_INTERVAL,
-        // Also refetch when the window regains focus
-        refetchOnWindowFocus: true,
-        onSuccess: (data) => {
-          // If the user is already compliant, we can skip the form
-          if (data.success) {
-            // Set compliance data with status from the API
-            setComplianceData({
-              agreementUrl: (data.data.agreementUrl as string) ?? null,
-              kycUrl: (data.data.kycUrl as string) ?? null,
-              status: {
-                agreementStatus: data.data.agreementStatus as StatusType,
-                kycStatus: data.data.kycStatus as StatusType,
-                isCompliant: data.data.isCompliant,
-              },
-            });
-          }
+  const {
+    isLoading: isLoadingStatus,
+    data: complianceApiData,
+    refetch: getComplianceStatus,
+    isSuccess: isComplianceSuccess,
+  } = api.compliance.getComplianceStatus.useQuery(
+    { clientUserId: user?.email ?? "" },
+    {
+      // Only fetch if we have a user email
+      enabled: !!user?.email,
+      // Use the configurable constant for polling interval
+      refetchInterval: COMPLIANCE_STATUS_POLLING_INTERVAL,
+      // Also refetch when the window regains focus
+      refetchOnWindowFocus: true,
+    },
+  );
+
+  useEffect(() => {
+    if (isComplianceSuccess) {
+      setComplianceData({
+        agreementUrl: (complianceApiData.data.agreementUrl as string) ?? null,
+        kycUrl: (complianceApiData.data.kycUrl as string) ?? null,
+        status: {
+          agreementStatus: complianceApiData.data.agreementStatus as StatusType,
+          kycStatus: complianceApiData.data.kycStatus as StatusType,
+          isCompliant: complianceApiData.data.isCompliant,
         },
-      },
-    );
+      });
+    }
+  }, [complianceApiData, isComplianceSuccess]);
 
   const submitComplianceMutation =
     api.compliance.submitComplianceInfo.useMutation({
@@ -681,9 +684,9 @@ export function ComplianceForm({ user }: { user: User }) {
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={submitComplianceMutation.isLoading}
+                      disabled={submitComplianceMutation.isPending}
                     >
-                      {submitComplianceMutation.isLoading
+                      {submitComplianceMutation.isPending
                         ? "Submitting..."
                         : "Submit Compliance Information"}
                     </Button>

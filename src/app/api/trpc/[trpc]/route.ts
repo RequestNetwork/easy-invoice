@@ -57,7 +57,6 @@ const handler = (req: NextRequest) =>
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    // @ts-expect-error: This works , no need to fix
     createContext: () => createContext(req),
     onError:
       process.env.NODE_ENV === "development"

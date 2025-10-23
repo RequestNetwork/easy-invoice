@@ -26,7 +26,7 @@ export function EditEcommerceClient({
   const [isOpen, setIsOpen] = useState(false);
   const utils = api.useUtils();
 
-  const { mutate: editEcommerceClientMutation, isLoading } =
+  const { mutate: editEcommerceClientMutation, isPending } =
     api.ecommerce.edit.useMutation({
       onSuccess: () => {
         toast.success("Client ID updated successfully");
@@ -56,7 +56,7 @@ export function EditEcommerceClient({
           <EcommerceClientForm
             key={ecommerceClient.id}
             onSubmit={handleSubmit}
-            isLoading={isLoading}
+            isLoading={isPending}
             defaultValues={{
               label: ecommerceClient.label,
               domain: ecommerceClient.domain,

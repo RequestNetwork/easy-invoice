@@ -30,7 +30,7 @@ export function DeleteEcommerceClient({
 
   const {
     mutate: deleteEcommerceClientMutation,
-    isLoading: isDeletingEcommerceClient,
+    isPending: isDeletingEcommerceClient,
   } = api.ecommerce.delete.useMutation({
     onSuccess: () => {
       toast.success("Client ID deleted successfully");

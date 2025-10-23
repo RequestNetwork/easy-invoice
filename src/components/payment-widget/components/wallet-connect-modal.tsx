@@ -75,7 +75,6 @@ export function WalletConnectModal({
                 className="w-full justify-start h-14"
               >
                 <div className="flex items-center space-x-3">
-                  {/** biome-ignore lint/performance/noImgElement: This is a ShadCN library, we can't enforce next syntax on everybody */}
                   <img
                     src={getWalletIcon(connector.name)}
                     alt={`${connector.name} icon`}

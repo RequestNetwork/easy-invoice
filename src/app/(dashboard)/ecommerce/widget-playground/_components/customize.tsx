@@ -51,11 +51,11 @@ export const CustomizeForm = () => {
     const item = items[index];
     const quantity =
       typeof item.quantity === "string"
-        ? parseFloat(item.quantity) || 0
+        ? Number.parseFloat(item.quantity) || 0
         : item.quantity;
     const unitPrice =
       typeof item.unitPrice === "string"
-        ? parseFloat(item.unitPrice) || 0
+        ? Number.parseFloat(item.unitPrice) || 0
         : item.unitPrice;
     const total = quantity * unitPrice;
     setValue(`receiptInfo.items.${index}.total`, total.toString());
@@ -67,7 +67,7 @@ export const CustomizeForm = () => {
     const subtotal = items.reduce((sum, item) => {
       const total =
         typeof item.total === "string"
-          ? parseFloat(item.total) || 0
+          ? Number.parseFloat(item.total) || 0
           : item.total;
       return sum + total;
     }, 0);
@@ -76,7 +76,7 @@ export const CustomizeForm = () => {
       if (item.discount) {
         const discount =
           typeof item.discount === "string"
-            ? parseFloat(item.discount) || 0
+            ? Number.parseFloat(item.discount) || 0
             : item.discount;
         return sum + discount;
       }
@@ -86,7 +86,7 @@ export const CustomizeForm = () => {
     const totalTax = items.reduce((sum, item) => {
       if (item.tax) {
         const tax =
-          typeof item.tax === "string" ? parseFloat(item.tax) || 0 : item.tax;
+          typeof item.tax === "string" ? Number.parseFloat(item.tax) || 0 : item.tax;
         return sum + tax;
       }
       return sum;
@@ -269,7 +269,7 @@ export const CustomizeForm = () => {
                 readOnly
                 value={
                   typeof item.total === "string"
-                    ? parseFloat(item.total) || 0
+                    ? Number.parseFloat(item.total) || 0
                     : item.total
                 }
                 className="bg-gray-50"
@@ -323,7 +323,7 @@ export const CustomizeForm = () => {
             <span>Subtotal:</span>
             <span>
               $
-              {(parseFloat(formValues.receiptInfo.totals.total) || 0).toFixed(
+              {(Number.parseFloat(formValues.receiptInfo.totals.total) || 0).toFixed(
                 2,
               )}
             </span>
@@ -333,7 +333,7 @@ export const CustomizeForm = () => {
             <span>
               -$
               {(
-                parseFloat(formValues.receiptInfo.totals.totalDiscount) || 0
+                Number.parseFloat(formValues.receiptInfo.totals.totalDiscount) || 0
               ).toFixed(2)}
             </span>
           </div>
@@ -342,7 +342,7 @@ export const CustomizeForm = () => {
             <span>
               $
               {(
-                parseFloat(formValues.receiptInfo.totals.totalTax) || 0
+                Number.parseFloat(formValues.receiptInfo.totals.totalTax) || 0
               ).toFixed(2)}
             </span>
           </div>
@@ -351,7 +351,7 @@ export const CustomizeForm = () => {
             <span>
               $
               {(
-                parseFloat(formValues.receiptInfo.totals.totalUSD) || 0
+                Number.parseFloat(formValues.receiptInfo.totals.totalUSD) || 0
               ).toFixed(2)}
             </span>
           </div>
