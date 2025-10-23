@@ -1,0 +1,243 @@
+.receipt-container {
+  background-color: #ffffff;
+  padding: 32px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #2d3748;
+
+  .receipt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .company-info {
+    flex: 1;
+  }
+
+  .company-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 8px 0;
+  }
+
+  .company-details {
+    font-size: 11px;
+    color: #4a5568;
+    line-height: 1.3;
+  }
+
+  .company-details > div {
+    margin-bottom: 2px;
+  }
+
+  .receipt-title-section {
+    text-align: right;
+  }
+
+  .receipt-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 4px 0;
+  }
+
+  .receipt-number {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 4px;
+  }
+
+  .receipt-date {
+    font-size: 11px;
+    color: #718096;
+  }
+
+  .party-info-section {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+
+  .info-box {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px;
+    background-color: #f7fafc;
+  }
+
+  .info-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #2d3748;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px 0;
+  }
+
+  .party-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a202c;
+    margin-bottom: 4px;
+  }
+
+  .wallet-address {
+    font-size: 10px;
+    color: #718096;
+    font-family: "Monaco", "Courier New", monospace;
+    margin-bottom: 6px;
+    word-break: break-all;
+  }
+
+  .email {
+    font-size: 11px;
+    color: #4a5568;
+    margin-bottom: 4px;
+  }
+
+  .address-info {
+    font-size: 11px;
+    color: #4a5568;
+    line-height: 1.3;
+  }
+
+  .address-info > div {
+    margin-bottom: 2px;
+  }
+
+  .payment-info {
+    background-color: #edf2f7;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 11px;
+    color: #2d3748;
+  }
+
+  .payment-info > div {
+    margin-bottom: 2px;
+  }
+
+  .payment-info > div:last-child {
+    margin-bottom: 0;
+  }
+
+  .transaction-hash {
+    font-family: "Monaco", "Courier New", monospace;
+    word-break: break-all;
+  }
+
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+    font-size: 11px;
+  }
+
+  .items-table th {
+    background-color: #edf2f7;
+    border: 1px solid #e2e8f0;
+    padding: 8px 6px;
+    font-weight: 600;
+    text-align: left;
+    color: #2d3748;
+  }
+
+  .items-table th.center {
+    text-align: center;
+    width: 40px;
+  }
+
+  .items-table th.right {
+    text-align: right;
+    width: 80px;
+  }
+
+  .items-table td {
+    border: 1px solid #e2e8f0;
+    padding: 6px;
+    vertical-align: top;
+  }
+
+  .items-table td.center {
+    text-align: center;
+  }
+
+  .items-table td.right {
+    text-align: right;
+    font-family: "Monaco", "Courier New", monospace;
+  }
+
+  .items-table .row-even {
+    background-color: #ffffff;
+  }
+
+  .items-table .row-odd {
+    background-color: #f7fafc;
+  }
+
+  .items-table .amount {
+    font-weight: 600;
+  }
+
+  .totals-section {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+
+  .totals-box {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px;
+    min-width: 240px;
+  }
+
+  .total-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .total-line.subtotal {
+    padding-top: 6px;
+    border-top: 1px solid #e2e8f0;
+    font-weight: 600;
+  }
+
+  .total-line.final {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a202c;
+    padding-top: 6px;
+    border-top: 2px solid #2d3748;
+  }
+
+  .total-amount {
+    font-family: "Monaco", "Courier New", monospace;
+    font-size: inherit;
+  }
+
+  .notes-section {
+    border-top: 1px solid #e2e8f0;
+    font-size: 11px;
+    color: #4a5568;
+    background-color: #f7fafc;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+}

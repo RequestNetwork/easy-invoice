@@ -171,6 +171,10 @@ const FormMessage = React.forwardRef<
 });
 FormMessage.displayName = "FormMessage";
 
+const FormError = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-destructive-foreground text-sm">{children}</p>
+);
+
 export {
   useFormField,
   Form,
@@ -180,4 +184,5 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  FormError,
 };
