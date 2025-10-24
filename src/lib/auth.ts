@@ -1,12 +1,8 @@
 import { getCurrentSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 
-export default async function RootPage() {
+export async function requireAuth() {
   const { user } = await getCurrentSession();
-
-  if (user) {
-    return redirect("/home");
-  }
-
-  return redirect("/signin");
+  if (!user) redirect("/signin");
+  return user;
 }
