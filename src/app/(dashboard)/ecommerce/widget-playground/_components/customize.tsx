@@ -16,10 +16,9 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+import { ClientIdSelect } from "./clientid-select";
 import { CurrencyCombobox } from "./currency-combobox";
 import type { PlaygroundFormData } from "./validation";
-
-const EASY_INVOICE_URL = process.env.NEXT_PUBLIC_APP_URL;
 
 export const CustomizeForm = () => {
   const {
@@ -135,33 +134,31 @@ export const CustomizeForm = () => {
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label className="flex items-center">
-          Request Network API Client ID
-          <span className="text-destructive ml-1">*</span>
-        </Label>
-        <Input
-          placeholder="your-api-client-id"
-          {...register("paymentConfig.rnApiClientId")}
-          className={cn(
-            errors.paymentConfig?.rnApiClientId && "border-destructive",
-          )}
-        />
-        {errors.paymentConfig?.rnApiClientId?.message && (
-          <FormError>{errors.paymentConfig.rnApiClientId.message}</FormError>
+      <FormField
+        control={control}
+        name="paymentConfig.rnApiClientId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="flex items-center">
+              Request Network API Client ID
+              <span className="text-destructive ml-1">*</span>
+            </FormLabel>
+            <FormControl>
+              <ClientIdSelect value={field.value} onChange={field.onChange} />
+            </FormControl>
+            <FormDescription>
+              Select your Client ID.{" "}
+              <a
+                href="/ecommerce/manage"
+                className="text-primary hover:underline"
+              >
+                Manage Client IDs
+              </a>
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
         )}
-        <p className="text-sm text-muted-foreground">
-          Get your Client ID on{" "}
-          <a
-            href={`${EASY_INVOICE_URL}/ecommerce/manage`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            EasyInvoice
-          </a>
-        </p>
-      </div>
+      />
 
       <div className="flex flex-col gap-2">
         <Label>WalletConnect Project ID (Optional)</Label>
@@ -179,31 +176,25 @@ export const CustomizeForm = () => {
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label className="flex items-center">
-          Supported Currencies
-          <span className="text-destructive ml-1">*</span>
-        </Label>
-        <FormField
-          control={control}
-          name="paymentConfig.supportedCurrencies"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Accepted Currencies</FormLabel>
-              <FormControl>
-                <CurrencyCombobox
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              </FormControl>
-              <FormDescription>
-                Select which currencies you want to accept for payments
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <FormField
+        control={control}
+        name="paymentConfig.supportedCurrencies"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="flex items-center">
+              Supported Currencies
+              <span className="text-destructive ml-1">*</span>
+            </FormLabel>
+            <FormControl>
+              <CurrencyCombobox value={field.value} onChange={field.onChange} />
+            </FormControl>
+            <FormDescription>
+              Select which currencies you want to accept for payments
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       <div className="flex flex-col gap-2">
         <Label>Fee Address</Label>
