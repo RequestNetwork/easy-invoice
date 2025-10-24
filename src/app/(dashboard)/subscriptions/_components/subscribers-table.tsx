@@ -1,7 +1,7 @@
 "use client";
 
-import { CompletedPayments } from "@/app/(dashboard)/payments/recurring/_components/blocks/completed-payments";
-import { FrequencyBadge } from "@/app/(dashboard)/payments/recurring/_components/blocks/frequency-badge";
+import { CompletedPayments } from "@/app/(dashboard)/payouts/recurring/_components/blocks/completed-payments";
+import { FrequencyBadge } from "@/app/(dashboard)/payouts/recurring/_components/blocks/frequency-badge";
 import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
 import { ShortAddress } from "@/components/short-address";
 import { StatCard } from "@/components/stat-card";

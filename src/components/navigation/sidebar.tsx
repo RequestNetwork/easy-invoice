@@ -237,7 +237,7 @@ export function Sidebar() {
           >
             <div className="flex items-center space-x-3">
               <DollarSign className="h-5 w-5" />
-              <span className="font-medium">Payments</span>
+              <span className="font-medium">Payouts</span>
             </div>
             {expandedSections.payouts ? (
               <ChevronDown className="h-4 w-4" />
@@ -248,9 +248,9 @@ export function Sidebar() {
           {expandedSections.payouts && (
             <div className="ml-8 mt-1 space-y-1">
               <Link
-                href="/payments/direct"
+                href="/payouts/direct"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payments/direct"
+                  pathname === "/payouts/direct"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -258,24 +258,24 @@ export function Sidebar() {
                 Pay
               </Link>
               <Link
-                href="/payments/batch"
+                href="/payouts/batch"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payments/batch"
+                  pathname === "/payouts/batch"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                Batch Payments
+                Batch Payouts
               </Link>
               <Link
-                href="/payments/recurring"
+                href="/payouts/recurring"
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname.startsWith("/payments/recurring")
+                  pathname.startsWith("/payouts/recurring")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                Recurring Payments
+                Recurring Payouts
               </Link>
             </div>
           )}

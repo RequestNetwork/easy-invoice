@@ -8,9 +8,9 @@ export default function RecurringLayout({
 }) {
   return (
     <>
-      <PageTitle>Recurring Payments</PageTitle>
+      <PageTitle>Recurring Payouts</PageTitle>
       <PageDescription>
-        Manage and create your recurring payments
+        Manage and create your recurring payouts
       </PageDescription>
       <RecurringPaymentsNavigation />
       <div className="mt-8">{children}</div>

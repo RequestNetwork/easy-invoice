@@ -11,9 +11,9 @@ export default async function BatchPayoutSlot() {
 
   return (
     <>
-      <PageTitle>Batch Payments</PageTitle>
+      <PageTitle>Batch Payouts</PageTitle>
       <PageDescription>
-        Make payments to multiple recipients of your choice
+        Make payouts to multiple recipients of your choice
       </PageDescription>
       <BatchPayout />
     </>

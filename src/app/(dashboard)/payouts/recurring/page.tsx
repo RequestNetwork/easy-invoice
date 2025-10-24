@@ -3,10 +3,10 @@ import { api } from "@/trpc/server";
 import { ViewRecurringPayments } from "./_components/view-recurring-payments";
 
 export const metadata = {
-  title: "Recurring Payments | Easy Invoice",
-  description: "Manage your recurring payments using Easy Invoice",
+  title: "Recurring Payouts | Easy Invoice",
+  description: "Manage your recurring payouts using Easy Invoice",
 };
-export default async function RecurringPaymentsSlot() {
+export default async function RecurringPayoutsSlot() {
   await requireAuth();
 
   const recurringPayments =
