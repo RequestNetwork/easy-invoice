@@ -1,20 +1,29 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useFormContext } from "react-hook-form";
-import type { PlaygroundFormData } from "./validation";
-import { useEffect } from "react";
-import { CurrencyCombobox } from "../../ui/combobox";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { FormError } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import {
+  FormControl,
+  FormDescription,
+  FormError,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import { useFormContext } from "react-hook-form";
+import { CurrencyCombobox } from "./currency-combobox";
+import type { PlaygroundFormData } from "./validation";
 
 const EASY_INVOICE_URL = process.env.NEXT_PUBLIC_APP_URL;
 
 export const CustomizeForm = () => {
   const {
+    control,
     register,
     formState: { errors },
     setValue,
@@ -86,7 +95,9 @@ export const CustomizeForm = () => {
     const totalTax = items.reduce((sum, item) => {
       if (item.tax) {
         const tax =
-          typeof item.tax === "string" ? Number.parseFloat(item.tax) || 0 : item.tax;
+          typeof item.tax === "string"
+            ? Number.parseFloat(item.tax) || 0
+            : item.tax;
         return sum + tax;
       }
       return sum;
@@ -107,22 +118,17 @@ export const CustomizeForm = () => {
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-xl font-semibold text-foreground">
-        Payment Configuration
-      </h2>
+      <h2 className="text-xl font-semibold">Payment Configuration</h2>
 
       <div className="flex flex-col gap-2">
         <Label className="flex items-center">
           Recipient Wallet Address
-          <span className="text-red-500 ml-1">*</span>
+          <span className="text-destructive ml-1">*</span>
         </Label>
         <Input
           placeholder="0x1234567890123456789012345678901234567890"
           {...register("recipientWallet")}
-          className={cn(
-            "border-2",
-            errors.recipientWallet ? "border-red-500" : "border-gray-200",
-          )}
+          className={cn(errors.recipientWallet && "border-destructive")}
         />
         {errors.recipientWallet?.message && (
           <FormError>{errors.recipientWallet.message}</FormError>
@@ -132,28 +138,25 @@ export const CustomizeForm = () => {
       <div className="flex flex-col gap-2">
         <Label className="flex items-center">
           Request Network API Client ID
-          <span className="text-red-500 ml-1">*</span>
+          <span className="text-destructive ml-1">*</span>
         </Label>
         <Input
           placeholder="your-api-client-id"
           {...register("paymentConfig.rnApiClientId")}
           className={cn(
-            "border-2",
-            errors.paymentConfig?.rnApiClientId
-              ? "border-red-500"
-              : "border-gray-200",
+            errors.paymentConfig?.rnApiClientId && "border-destructive",
           )}
         />
         {errors.paymentConfig?.rnApiClientId?.message && (
           <FormError>{errors.paymentConfig.rnApiClientId.message}</FormError>
         )}
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Get your Client ID on{" "}
           <a
             href={`${EASY_INVOICE_URL}/ecommerce/manage`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-green hover:text-dark-green underline"
+            className="text-primary hover:underline"
           >
             EasyInvoice
           </a>
@@ -179,23 +182,27 @@ export const CustomizeForm = () => {
       <div className="flex flex-col gap-2">
         <Label className="flex items-center">
           Supported Currencies
-          <span className="text-red-500 ml-1">*</span>
+          <span className="text-destructive ml-1">*</span>
         </Label>
-        <CurrencyCombobox
-          register={register}
+        <FormField
+          control={control}
           name="paymentConfig.supportedCurrencies"
-          className={cn(
-            "border-2",
-            errors.paymentConfig?.supportedCurrencies
-              ? "border-red-500"
-              : "border-gray-200",
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Accepted Currencies</FormLabel>
+              <FormControl>
+                <CurrencyCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormDescription>
+                Select which currencies you want to accept for payments
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
         />
-        {errors.paymentConfig?.supportedCurrencies?.message && (
-          <FormError>
-            {errors.paymentConfig.supportedCurrencies.message}
-          </FormError>
-        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -216,7 +223,10 @@ export const CustomizeForm = () => {
       </h2>
 
       {formValues.receiptInfo.items.map((item, index) => (
-        <div key={item.id} className="border rounded-lg p-4 space-y-4">
+        <div
+          key={item.id}
+          className="border border-border rounded-lg p-4 space-y-4"
+        >
           <div className="flex justify-between items-center">
             <h4 className="font-medium">Item {index + 1}</h4>
             {formValues.receiptInfo.items.length > 1 && (
@@ -272,7 +282,7 @@ export const CustomizeForm = () => {
                     ? Number.parseFloat(item.total) || 0
                     : item.total
                 }
-                className="bg-gray-50"
+                className="bg-muted text-muted-foreground"
               />
             </div>
           </div>
@@ -317,27 +327,29 @@ export const CustomizeForm = () => {
       </div>
 
       {/* Totals Display */}
-      <div className="border-t pt-4">
-        <div className="space-y-2">
-          <div className="flex justify-between">
+      <div className="border-t border-border pt-4">
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between text-muted-foreground">
             <span>Subtotal:</span>
             <span>
               $
-              {(Number.parseFloat(formValues.receiptInfo.totals.total) || 0).toFixed(
-                2,
-              )}
+              {(
+                Number.parseFloat(formValues.receiptInfo.totals.total) || 0
+              ).toFixed(2)}
             </span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between text-muted-foreground">
             <span>Discount:</span>
             <span>
               -$
               {(
-                Number.parseFloat(formValues.receiptInfo.totals.totalDiscount) || 0
+                Number.parseFloat(
+                  formValues.receiptInfo.totals.totalDiscount,
+                ) || 0
               ).toFixed(2)}
             </span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between text-muted-foreground">
             <span>Tax:</span>
             <span>
               $
@@ -346,7 +358,7 @@ export const CustomizeForm = () => {
               ).toFixed(2)}
             </span>
           </div>
-          <div className="flex justify-between font-bold text-lg border-t pt-2">
+          <div className="flex justify-between font-bold text-lg border-t border-border pt-2">
             <span>Total:</span>
             <span>
               $

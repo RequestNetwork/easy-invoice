@@ -1,17 +1,17 @@
 "use client";
 
-import { PlaygroundValidation } from "./validation";
+import { PaymentWidget } from "@/components/payment-widget/payment-widget";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CopyIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import type { z } from "zod";
+import { BuyerForm } from "./buyer-info";
 import { CustomizeForm } from "./customize";
 import { SellerForm } from "./seller-info";
-import { BuyerForm } from "./buyer-info";
-import { PaymentWidget } from "@/components/payment-widget/payment-widget";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlaygroundValidation } from "./validation";
 
 export const Playground = () => {
   const methods = useForm<z.infer<typeof PlaygroundValidation>>({
@@ -72,6 +72,7 @@ export const Playground = () => {
 
   const formValues = methods.watch();
   const [copied, setCopied] = useState(false);
+  const [copiedInstall, setCopiedInstall] = useState(false);
   const codeRef = useRef<HTMLPreElement>(null);
 
   const generateIntegrationCode = () => {
@@ -168,6 +169,7 @@ export const Playground = () => {
   };
 
   const integrationCode = generateIntegrationCode();
+  const installCommand = "npx shadcn add @requestnetwork/payment-widget";
 
   const copyToClipboard = () => {
     navigator.clipboard
@@ -175,6 +177,18 @@ export const Playground = () => {
       .then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+      });
+  };
+
+  const copyInstallCommand = () => {
+    navigator.clipboard
+      .writeText(installCommand)
+      .then(() => {
+        setCopiedInstall(true);
+        setTimeout(() => setCopiedInstall(false), 2000);
       })
       .catch((err) => {
         console.error("Failed to copy text: ", err);
@@ -203,7 +217,7 @@ export const Playground = () => {
               </TabsContent>
             </Tabs>
           </div>
-          <div className="w-full lg:w-1/2 flex flex-col gap-4">
+          <div className="w-full lg:w-1/2 flex flex-col items-start gap-4">
             <h2 className="font-semibold">Preview</h2>
             <PaymentWidget
               amountInUsd={formValues.amountInUsd}
@@ -223,49 +237,55 @@ export const Playground = () => {
                 Pay with crypto
               </div>
             </PaymentWidget>
+
+            <div className="mt-8 w-full space-y-4">
+              <h2 className="font-semibold">Integration Code</h2>
+
+              {/* Install Command */}
+              <div className="relative">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 h-8 px-2 z-10"
+                  onClick={copyInstallCommand}
+                >
+                  <CopyIcon className="h-4 w-4" />
+                  <span className="ml-2 text-xs">
+                    {copiedInstall ? "Copied!" : "Copy"}
+                  </span>
+                </Button>
+                <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto pr-24">
+                  <code className="language-bash text-sm">
+                    {installCommand}
+                  </code>
+                </pre>
+              </div>
+
+              {/* Integration Code */}
+              <div className="relative">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 h-8 px-2 z-10"
+                  onClick={copyToClipboard}
+                >
+                  <CopyIcon className="h-4 w-4" />
+                  <span className="ml-2 text-xs">
+                    {copied ? "Copied!" : "Copy"}
+                  </span>
+                </Button>
+                <pre
+                  ref={codeRef}
+                  className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto pr-24"
+                >
+                  <code className="language-jsx text-sm">
+                    {integrationCode}
+                  </code>
+                </pre>
+              </div>
+            </div>
           </div>
         </section>
-
-        {/* Integration Code */}
-        <div className="mt-8 w-full">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-bold text-2xl my-4">Integration Code:</h3>
-          </div>
-          <div className="flex justify-end my-4">
-            <Button
-              className="gap-2 bg-[#4AC2A1] hover:bg-[#4AC2A1]/70 justify-self-end"
-              onClick={() => {
-                navigator.clipboard.writeText(
-                  "npx shadcn add @requestnetwork/payment-widget",
-                );
-              }}
-            >
-              <CopyIcon size={16} />
-              Copy
-            </Button>
-          </div>
-          <pre className="bg-gray-100 text-gray-800 p-4 rounded-lg overflow-x-auto">
-            <code className="language-jsx">
-              npx shadcn add @requestnetwork/payment-widget
-            </code>
-          </pre>
-
-          <div className="flex justify-end my-4">
-            <Button
-              className="gap-2 bg-[#4AC2A1] hover:bg-[#4AC2A1]/70 justify-self-end"
-              onClick={copyToClipboard}
-            >
-              <CopyIcon size={16} />
-              {copied ? "Copied!" : "Copy"}
-            </Button>
-          </div>
-          <pre
-            ref={codeRef}
-            className="bg-gray-100 text-gray-800 p-4 rounded-lg overflow-x-auto"
-          >
-            <code className="language-jsx">{integrationCode}</code>
-          </pre>
-        </div>
       </div>
     </FormProvider>
   );

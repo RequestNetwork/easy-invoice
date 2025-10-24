@@ -1,11 +1,11 @@
 "use client";
 
+import { FormError } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
 import type { PlaygroundFormData } from "./validation";
-import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { FormError } from "@/components/ui/form";
 
 export const SellerForm = () => {
   const {
@@ -35,16 +35,13 @@ export const SellerForm = () => {
       <div className="flex flex-col gap-2">
         <Label className="flex items-center">
           Company Name
-          <span className="text-red-500 ml-1">*</span>
+          <span className="text-destructive ml-1">*</span>
         </Label>
         <Input
           placeholder="ACME Corp"
           {...register("receiptInfo.companyInfo.name")}
           className={cn(
-            "border-2",
-            errors.receiptInfo?.companyInfo?.name
-              ? "border-red-500"
-              : "border-gray-200",
+            errors.receiptInfo?.companyInfo?.name && "border-destructive",
           )}
         />
         {errors.receiptInfo?.companyInfo?.name?.message && (
@@ -91,7 +88,9 @@ export const SellerForm = () => {
       <div className="flex flex-col gap-2">
         <Label>
           Street Address
-          {hasAnyAddressField && <span className="text-red-500 ml-1">*</span>}
+          {hasAnyAddressField && (
+            <span className="text-destructive ml-1">*</span>
+          )}
         </Label>
         <Input
           placeholder="123 Main St"
@@ -101,10 +100,8 @@ export const SellerForm = () => {
               : false,
           })}
           className={cn(
-            "border-2",
-            errors.receiptInfo?.companyInfo?.address?.street
-              ? "border-red-500"
-              : "border-gray-200",
+            errors.receiptInfo?.companyInfo?.address?.street &&
+              "border-destructive",
           )}
         />
         {errors.receiptInfo?.companyInfo?.address?.street?.message && (
@@ -118,7 +115,9 @@ export const SellerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             City
-            {hasAnyAddressField && <span className="text-red-500 ml-1">*</span>}
+            {hasAnyAddressField && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </Label>
           <Input
             placeholder="New York"
@@ -128,10 +127,8 @@ export const SellerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.companyInfo?.address?.city
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.companyInfo?.address?.city &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.companyInfo?.address?.city?.message && (
@@ -143,7 +140,9 @@ export const SellerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             State/Province
-            {hasAnyAddressField && <span className="text-red-500 ml-1">*</span>}
+            {hasAnyAddressField && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </Label>
           <Input
             placeholder="NY"
@@ -153,10 +152,8 @@ export const SellerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.companyInfo?.address?.state
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.companyInfo?.address?.state &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.companyInfo?.address?.state?.message && (
@@ -171,7 +168,9 @@ export const SellerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             Zip Code
-            {hasAnyAddressField && <span className="text-red-500 ml-1">*</span>}
+            {hasAnyAddressField && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </Label>
           <Input
             placeholder="10001"
@@ -181,10 +180,8 @@ export const SellerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.companyInfo?.address?.postalCode
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.companyInfo?.address?.postalCode &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.companyInfo?.address?.postalCode?.message && (
@@ -196,7 +193,9 @@ export const SellerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             Country
-            {hasAnyAddressField && <span className="text-red-500 ml-1">*</span>}
+            {hasAnyAddressField && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </Label>
           <Input
             placeholder="USA"
@@ -206,10 +205,8 @@ export const SellerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.companyInfo?.address?.country
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.companyInfo?.address?.country &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.companyInfo?.address?.country?.message && (

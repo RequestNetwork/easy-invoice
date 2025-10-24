@@ -1,11 +1,11 @@
 "use client";
 
+import { FormError } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
 import type { PlaygroundFormData } from "./validation";
-import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { FormError } from "@/components/ui/form";
 
 export const BuyerForm = () => {
   const {
@@ -63,10 +63,7 @@ export const BuyerForm = () => {
           placeholder="buyer@example.com"
           {...register("receiptInfo.buyerInfo.email")}
           className={cn(
-            "border-2",
-            errors.receiptInfo?.buyerInfo?.email
-              ? "border-red-500"
-              : "border-gray-200",
+            errors.receiptInfo?.buyerInfo?.email && "border-destructive",
           )}
         />
         {errors.receiptInfo?.buyerInfo?.email?.message && (
@@ -89,7 +86,7 @@ export const BuyerForm = () => {
       <div className="flex flex-col gap-2">
         <Label>
           Street Address
-          {hasAnyAddressField && <span className="text-red-500">*</span>}
+          {hasAnyAddressField && <span className="text-destructive">*</span>}
         </Label>
         <Input
           placeholder="456 Elm St"
@@ -99,10 +96,8 @@ export const BuyerForm = () => {
               : false,
           })}
           className={cn(
-            "border-2",
-            errors.receiptInfo?.buyerInfo?.address?.street
-              ? "border-red-500"
-              : "border-gray-200",
+            errors.receiptInfo?.buyerInfo?.address?.street &&
+              "border-destructive",
           )}
         />
         {errors.receiptInfo?.buyerInfo?.address?.street?.message && (
@@ -116,7 +111,7 @@ export const BuyerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             City
-            {hasAnyAddressField && <span className="text-red-500">*</span>}
+            {hasAnyAddressField && <span className="text-destructive">*</span>}
           </Label>
           <Input
             placeholder="Los Angeles"
@@ -126,10 +121,8 @@ export const BuyerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.buyerInfo?.address?.city
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.buyerInfo?.address?.city &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.buyerInfo?.address?.city?.message && (
@@ -141,7 +134,7 @@ export const BuyerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             State/Province
-            {hasAnyAddressField && <span className="text-red-500">*</span>}
+            {hasAnyAddressField && <span className="text-destructive">*</span>}
           </Label>
           <Input
             placeholder="CA"
@@ -151,10 +144,8 @@ export const BuyerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.buyerInfo?.address?.state
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.buyerInfo?.address?.state &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.buyerInfo?.address?.state?.message && (
@@ -169,7 +160,7 @@ export const BuyerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             Postal Code
-            {hasAnyAddressField && <span className="text-red-500">*</span>}
+            {hasAnyAddressField && <span className="text-destructive">*</span>}
           </Label>
           <Input
             placeholder="90001"
@@ -179,10 +170,8 @@ export const BuyerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.buyerInfo?.address?.postalCode
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.buyerInfo?.address?.postalCode &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.buyerInfo?.address?.postalCode?.message && (
@@ -194,7 +183,7 @@ export const BuyerForm = () => {
         <div className="flex flex-col gap-2 w-1/2">
           <Label>
             Country
-            {hasAnyAddressField && <span className="text-red-500">*</span>}
+            {hasAnyAddressField && <span className="text-destructive">*</span>}
           </Label>
           <Input
             placeholder="USA"
@@ -204,10 +193,8 @@ export const BuyerForm = () => {
                 : false,
             })}
             className={cn(
-              "border-2",
-              errors.receiptInfo?.buyerInfo?.address?.country
-                ? "border-red-500"
-                : "border-gray-200",
+              errors.receiptInfo?.buyerInfo?.address?.country &&
+                "border-destructive",
             )}
           />
           {errors.receiptInfo?.buyerInfo?.address?.country?.message && (
