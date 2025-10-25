@@ -35,7 +35,7 @@ export default async function PaymentPage({
   }
 
   const paymentDetailsData = invoice.paymentDetailsId
-    ? await api.compliance.getPaymentDetailsById.query(invoice.paymentDetailsId)
+    ? await api.compliance.getPaymentDetailsById(invoice.paymentDetailsId)
     : null;
 
   return (

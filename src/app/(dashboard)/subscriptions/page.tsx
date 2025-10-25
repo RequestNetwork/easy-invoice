@@ -6,7 +6,7 @@ import { SubscriptionPlansList } from "./_components/subscription-plans-list";
 export default async function ManagePlansPage() {
   await requireAuth();
 
-  const subscriptionPlans = await api.subscriptionPlan.getAll.query();
+  const subscriptionPlans = await api.subscriptionPlan.getAll();
 
   return (
     <>

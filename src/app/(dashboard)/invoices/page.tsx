@@ -7,8 +7,8 @@ export default async function InvoicesPage() {
   await requireAuth();
 
   const [sentInvoices, receivedInvoices] = await Promise.all([
-    api.invoice.getAllIssuedByMe.query(),
-    api.invoice.getAllIssuedToMe.query(),
+    api.invoice.getAllIssuedByMe(),
+    api.invoice.getAllIssuedToMe(),
   ]);
 
   return (

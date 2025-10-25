@@ -6,7 +6,7 @@ import { InvoiceMeLinks } from "./_components/invoice-me-links";
 export default async function InvoiceMePage() {
   await requireAuth();
 
-  const links = await api.invoiceMe.getAll.query();
+  const links = await api.invoiceMe.getAll();
 
   return (
     <>

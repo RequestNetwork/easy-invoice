@@ -19,7 +19,7 @@ export function CreateEcommerceClient() {
   const [isOpen, setIsOpen] = useState(false);
   const utils = api.useUtils();
 
-  const { mutate: createEcommerceClientMutation, isLoading } =
+  const { mutate: createEcommerceClientMutation, isPending } =
     api.ecommerce.create.useMutation({
       onSuccess: () => {
         toast.success("Client ID created successfully");
@@ -50,7 +50,7 @@ export function CreateEcommerceClient() {
         {isOpen && (
           <EcommerceClientForm
             onSubmit={handleSubmit}
-            isLoading={isLoading}
+            isLoading={isPending}
             submitButtonText="Create Client"
             onCancel={() => setIsOpen(false)}
           />

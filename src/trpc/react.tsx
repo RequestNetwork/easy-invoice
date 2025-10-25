@@ -30,7 +30,6 @@ export function TRPCReactProvider(props: {
 
   const [trpcClient] = useState(() =>
     api.createClient({
-      transformer: superjson,
       links: [
         loggerLink({
           enabled: (op) =>
@@ -38,6 +37,7 @@ export function TRPCReactProvider(props: {
             (op.direction === "down" && op.result instanceof Error),
         }),
         httpBatchLink({
+          transformer: superjson,
           url: getUrl(),
           headers() {
             return {

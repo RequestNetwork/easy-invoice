@@ -173,6 +173,16 @@ export function Sidebar() {
               >
                 Sales
               </Link>
+              <Link
+                href="/ecommerce/widget-playground"
+                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                  pathname === "/ecommerce/widget-playground"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Widget Playground
+              </Link>
             </div>
           )}
         </div>

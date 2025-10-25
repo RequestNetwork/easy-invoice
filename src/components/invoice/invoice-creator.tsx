@@ -38,7 +38,7 @@ export function InvoiceCreator({
   const isInvoiceMe = !!recipientDetails?.userId;
   const utils = api.useUtils();
 
-  const { mutateAsync: createInvoice, isLoading } = isInvoiceMe
+  const { mutateAsync: createInvoice, isPending } = isInvoiceMe
     ? api.invoice.createFromInvoiceMe.useMutation({
         onSuccess: async () => {
           if (!currentUser) {
@@ -127,7 +127,7 @@ export function InvoiceCreator({
             }
             form={form}
             onSubmit={onSubmit}
-            isLoading={isLoading}
+            isLoading={isPending}
             recipientDetails={recipientDetails}
             complianceUserId={
               isInvoiceMe

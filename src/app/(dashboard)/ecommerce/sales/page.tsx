@@ -6,7 +6,7 @@ import { EcommerceSales } from "./_components/index";
 export default async function SalesPage() {
   await requireAuth();
 
-  const clientPayments = await api.ecommerce.getAllClientPayments.query();
+  const clientPayments = await api.ecommerce.getAllClientPayments();
 
   return (
     <>

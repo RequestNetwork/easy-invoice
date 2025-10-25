@@ -5,7 +5,7 @@ import { DashboardReceipts } from "./_components/receipts";
 export default async function ReceiptsPage() {
   await requireAuth();
 
-  const clientPayments = await api.ecommerce.getAllUserReceipts.query();
+  const clientPayments = await api.ecommerce.getAllUserReceipts();
 
   return <DashboardReceipts initialClientPayments={clientPayments} />;
 }

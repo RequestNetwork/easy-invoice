@@ -129,12 +129,12 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
                   variant="outline"
                   size="icon"
                   onClick={() => setIsStopRecurrenceDialogOpen(true)}
-                  disabled={stopRecurrenceMutation.isLoading}
+                  disabled={stopRecurrenceMutation.isPending}
                   className="h-8 w-8"
                 >
                   <Ban className="h-4 w-4 text-muted-foreground" />
                   <span className="sr-only">
-                    {stopRecurrenceMutation.isLoading
+                    {stopRecurrenceMutation.isPending
                       ? "Stopping..."
                       : "Stop Recurring"}
                   </span>
@@ -164,9 +164,9 @@ export const InvoiceRow = ({ invoice, type, children }: InvoiceRowProps) => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleStopRecurrence}
-              disabled={stopRecurrenceMutation.isLoading}
+              disabled={stopRecurrenceMutation.isPending}
             >
-              {stopRecurrenceMutation.isLoading
+              {stopRecurrenceMutation.isPending
                 ? "Stopping..."
                 : "Stop Recurring"}
             </AlertDialogAction>

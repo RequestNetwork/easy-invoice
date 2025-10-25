@@ -123,18 +123,22 @@ export function PaymentSection({ serverInvoice }: PaymentSectionProps) {
   const [polling, setPolling] = useState(paymentStatus !== "paid");
 
   // Poll the invoice status every 3 seconds until it's paid
-  api.invoice.getById.useQuery(serverInvoice.id, {
-    refetchInterval: polling ? 3000 : false,
-    onSuccess: (data) => {
-      setInvoice(data);
-      if (data.status !== "pending") {
-        setPaymentStatus(data.status);
+  const { data: invoiceData, isSuccess: isInvoiceDataSuccess } =
+    api.invoice.getById.useQuery(serverInvoice.id, {
+      refetchInterval: polling ? 3000 : false,
+    });
+
+  useEffect(() => {
+    if (isInvoiceDataSuccess && invoiceData) {
+      setInvoice(invoiceData);
+      if (invoiceData.status !== "pending") {
+        setPaymentStatus(invoiceData.status);
       }
-      if (data.status === "paid") {
+      if (invoiceData.status === "paid") {
         setPolling(false);
       }
-    },
-  });
+    }
+  }, [isInvoiceDataSuccess, invoiceData]);
 
   const [paymentProgress, setPaymentProgress] = useState("idle");
   const [currentStep, setCurrentStep] = useState(1);

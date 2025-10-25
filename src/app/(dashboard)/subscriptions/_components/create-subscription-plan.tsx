@@ -56,7 +56,7 @@ export function CreateSubscriptionPlan({
   const trpcContext = api.useUtils();
   const { address } = useAppKitAccount();
 
-  const { mutateAsync: createSubscriptionPlan, isLoading } =
+  const { mutateAsync: createSubscriptionPlan, isPending } =
     api.subscriptionPlan.create.useMutation({
       onSuccess: () => {
         toast.success("Subscription plan created successfully!");
@@ -114,7 +114,7 @@ export function CreateSubscriptionPlan({
                   <FormControl>
                     <Input
                       placeholder="e.g. Monthly Update"
-                      disabled={isLoading}
+                      disabled={isPending}
                       {...field}
                     />
                   </FormControl>
@@ -132,7 +132,7 @@ export function CreateSubscriptionPlan({
                   <FormControl>
                     <Input
                       placeholder="0x..."
-                      disabled={isLoading}
+                      disabled={isPending}
                       {...field}
                     />
                   </FormControl>
@@ -151,7 +151,7 @@ export function CreateSubscriptionPlan({
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
-                      disabled={isLoading}
+                      disabled={isPending}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select frequency" />
@@ -185,7 +185,7 @@ export function CreateSubscriptionPlan({
                         max="256"
                         value={field.value}
                         onChange={(e) => field.onChange(Number(e.target.value))}
-                        disabled={isLoading}
+                        disabled={isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -205,7 +205,7 @@ export function CreateSubscriptionPlan({
                         min="0"
                         value={field.value}
                         onChange={(e) => field.onChange(Number(e.target.value))}
-                        disabled={isLoading}
+                        disabled={isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -229,7 +229,7 @@ export function CreateSubscriptionPlan({
                         min="0"
                         value={field.value}
                         onChange={(e) => field.onChange(Number(e.target.value))}
-                        disabled={isLoading}
+                        disabled={isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -246,7 +246,7 @@ export function CreateSubscriptionPlan({
                       <Select
                         value={field.value}
                         onValueChange={field.onChange}
-                        disabled={isLoading}
+                        disabled={isPending}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select currency" />
@@ -269,8 +269,8 @@ export function CreateSubscriptionPlan({
             <PaymentSecuredUsingRequest />
 
             <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
                   "Creating..."
                 ) : (
                   <>

@@ -1,6 +1,6 @@
 "use client";
 
-import { getCanCancelPayment } from "@/lib/utils";
+import { getCanCancelPayment } from "@/lib/helpers";
 import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
@@ -93,7 +93,7 @@ export function useCancelRecurringPayment({
   return {
     cancelRecurringPayment,
     isLoading:
-      updateRecurringPaymentMutation.isLoading ||
-      updateRecurringPaymentForSubscriptionMutation.isLoading,
+      updateRecurringPaymentMutation.isPending ||
+      updateRecurringPaymentForSubscriptionMutation.isPending,
   };
 }

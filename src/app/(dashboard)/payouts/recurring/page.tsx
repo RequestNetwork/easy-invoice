@@ -10,7 +10,7 @@ export default async function RecurringPayoutsSlot() {
   await requireAuth();
 
   const recurringPayments =
-    await api.recurringPayment.getNonSubscriptionRecurringPayments.query();
+    await api.recurringPayment.getNonSubscriptionRecurringPayments();
 
   return <ViewRecurringPayments initialRecurringPayments={recurringPayments} />;
 }

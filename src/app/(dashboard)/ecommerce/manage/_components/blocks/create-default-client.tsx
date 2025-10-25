@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export function CreateDefaultEcommerceClient() {
   const utils = api.useUtils();
 
-  const { mutate: createEcommerceClientMutation, isLoading } =
+  const { mutate: createEcommerceClientMutation, isPending } =
     api.ecommerce.create.useMutation({
       onSuccess: () => {
         toast.success("Default client created successfully");
@@ -30,10 +30,10 @@ export function CreateDefaultEcommerceClient() {
   return (
     <Button
       onClick={handleCreateDefault}
-      disabled={isLoading}
+      disabled={isPending}
       variant="default"
     >
-      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       Create Default Client
     </Button>
   );

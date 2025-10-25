@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/table/table";
 import { formatDate } from "@/lib/date-utils";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
-import { getCanCancelPayment } from "@/lib/utils";
+import { getCanCancelPayment } from "@/lib/helpers";
 import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, Ban, Eye, Loader2, RefreshCw } from "lucide-react";
