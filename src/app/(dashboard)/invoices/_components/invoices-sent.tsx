@@ -1,6 +1,5 @@
 "use client";
 
-import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,10 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table/table";
 import { TableHeadCell } from "@/components/ui/table/table-head-cell";
-import {
-  calculateTotalsByCurrency,
-  formatCurrencyTotals,
-} from "@/lib/helpers/currency";
+import { consolidateRequestUsdValues } from "@/lib/helpers/conversion";
 import type { Request } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, DollarSign, FileText, Plus } from "lucide-react";
@@ -54,14 +50,9 @@ export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
     refetchInterval: RETRIEVE_ALL_INVOICES_POLLING_INTERVAL,
   });
 
-  const invoiceItems =
-    invoices?.map((invoice) => ({
-      amount: invoice.amount,
-      currency: invoice.paymentCurrency,
-    })) || [];
-
-  const totalsByCurrency = calculateTotalsByCurrency(invoiceItems);
-  const totalValues = formatCurrencyTotals(totalsByCurrency);
+  const { totalInUsd, hasNonUsdValues } = consolidateRequestUsdValues(
+    invoices || [],
+  );
 
   const outstanding =
     invoices?.filter((inv) => inv.status !== "paid").length || 0;
@@ -79,11 +70,20 @@ export const InvoicesSent = ({ initialSentInvoices }: InvoicesSentProps) => {
           value={outstanding}
           icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}
         />
-        <MultiCurrencyStatCard
-          title="Total Payments"
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          values={totalValues}
-        />
+        <div className="relative">
+          <StatCard
+            title="Total Payments"
+            value={`$${Number(totalInUsd).toLocaleString()}`}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          />
+          {hasNonUsdValues && (
+            <div className="absolute -bottom-5 left-0 right-0 text-center">
+              <p className="text-xs text-muted-foreground">
+                * Excludes non-USD invoices without conversion info
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card className="border border-border">

@@ -1,9 +1,8 @@
 "use client";
 
-import { CompletedPayments } from "@/app/(dashboard)/payouts/recurring/_components/blocks/completed-payments";
-import { FrequencyBadge } from "@/app/(dashboard)/payouts/recurring/_components/blocks/frequency-badge";
-import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
 import { RecurringPaymentStatusBadge } from "@/components/recurring-payment-status-badge";
+import { CompletedPayments } from "@/components/recurring-payments/completed-payments";
+import { FrequencyBadge } from "@/components/recurring-payments/frequency-badge";
 import { ShortAddress } from "@/components/short-address";
 import { StatCard } from "@/components/stat-card";
 import {
@@ -29,10 +28,7 @@ import {
 } from "@/components/ui/table/table";
 import { TableHeadCell } from "@/components/ui/table/table-head-cell";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
-import {
-  calculateTotalsByCurrency,
-  formatCurrencyTotals,
-} from "@/lib/helpers/currency";
+import { consolidateRecurringPaymentUsdValues } from "@/lib/helpers/conversion";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import type { SubscriptionWithDetails } from "@/lib/types";
 import { getCanCancelPayment } from "@/lib/helpers";
@@ -62,7 +58,9 @@ const SubscriptionTableColumns = () => (
 
 const SubscriptionRow = ({
   subscription,
-}: { subscription: SubscriptionWithDetails }) => {
+}: {
+  subscription: SubscriptionWithDetails;
+}) => {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const utils = api.useUtils();
 
@@ -79,7 +77,6 @@ const SubscriptionRow = ({
     try {
       await cancelRecurringPayment(subscription);
     } catch (error) {
-      // Error is already handled by the hook, but we need to catch it here
       console.error("Failed to cancel subscription:", error);
     }
   };
@@ -209,49 +206,83 @@ export const Subscriptions = ({ initialSubscriptions }: SubscriptionProps) => {
       initialData: initialSubscriptions,
     });
 
-  const commitmentItems =
-    subscriptions
-      ?.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
-      .map((sub) => ({
-        amount: sub.totalAmount,
-        currency: sub.paymentCurrency,
-      })) || [];
+  const activeSubscriptions =
+    subscriptions?.filter((sub) => ACTIVE_STATUSES.includes(sub.status)) || [];
 
-  const spentItems =
-    subscriptions
-      ?.filter((sub) => (sub?.payments ? sub.payments.length > 0 : false))
-      .flatMap((sub) => ({
-        amount: sub.totalAmount,
-        currency: sub.paymentCurrency,
-      })) || [];
+  const paidSubscriptions =
+    subscriptions?.filter((sub) => sub.payments && sub.payments.length > 0) ||
+    [];
 
-  const commitmentTotals = calculateTotalsByCurrency(commitmentItems);
-  const spentTotals = calculateTotalsByCurrency(spentItems);
+  let commitmentTotal = 0;
+  let hasNonUsdCommitments = false;
 
-  const commitmentValues = formatCurrencyTotals(commitmentTotals);
-  const spentValues = formatCurrencyTotals(spentTotals);
+  for (const sub of activeSubscriptions) {
+    if (!sub.payments || sub.payments.length === 0) continue;
+    const { totalInUsd, hasNonUsdValues } =
+      consolidateRecurringPaymentUsdValues(
+        sub.totalAmount,
+        sub.paymentCurrency,
+        sub.payments,
+      );
+    commitmentTotal += Number(totalInUsd);
+    if (hasNonUsdValues) {
+      hasNonUsdCommitments = true;
+    }
+  }
+
+  let spentTotal = 0;
+  let hasNonUsdSpent = false;
+
+  for (const sub of paidSubscriptions) {
+    if (!sub.payments || sub.payments.length === 0) continue;
+    const { totalInUsd, hasNonUsdValues } =
+      consolidateRecurringPaymentUsdValues(
+        sub.totalAmount,
+        sub.paymentCurrency,
+        sub.payments,
+      );
+    spentTotal += Number(totalInUsd);
+    if (hasNonUsdValues) {
+      hasNonUsdSpent = true;
+    }
+  }
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Active Subscriptions"
-          value={
-            subscriptions?.filter((sub) => ACTIVE_STATUSES.includes(sub.status))
-              .length || 0
-          }
+          value={activeSubscriptions.length}
           icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
         />
-        <MultiCurrencyStatCard
-          title="Subscription Commitments"
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          values={commitmentValues}
-        />
-        <MultiCurrencyStatCard
-          title="Total Spent"
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          values={spentValues}
-        />
+        <div className="relative">
+          <StatCard
+            title="Subscription Commitments"
+            value={`$${commitmentTotal.toLocaleString()}`}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          />
+          {hasNonUsdCommitments && (
+            <div className="absolute -bottom-5 left-0 right-0 text-center">
+              <p className="text-xs text-muted-foreground">
+                * Excludes non-USD denominated subscriptions
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="relative">
+          <StatCard
+            title="Total Spent"
+            value={`$${spentTotal.toLocaleString()}`}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          />
+          {hasNonUsdSpent && (
+            <div className="absolute -bottom-5 left-0 right-0 text-center">
+              <p className="text-xs text-muted-foreground">
+                * Excludes non-USD denominated payments
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card className="border border-border">

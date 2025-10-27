@@ -1,6 +1,8 @@
 "use client";
 
 import { RecurringPaymentStatusBadge } from "@/components/recurring-payment-status-badge";
+import { CompletedPayments } from "@/components/recurring-payments/completed-payments";
+import { FrequencyBadge } from "@/components/recurring-payments/frequency-badge";
 import { ShortAddress } from "@/components/short-address";
 import {
   AlertDialog,
@@ -29,8 +31,6 @@ import type { RecurringPayment } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 import { AlertCircle, Ban, Eye, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { CompletedPayments } from "./blocks/completed-payments";
-import { FrequencyBadge } from "./blocks/frequency-badge";
 
 const ITEMS_PER_PAGE = 10;
 
