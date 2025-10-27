@@ -106,7 +106,7 @@ export const InvoicesReceived = ({
       setLastSelectedNetwork(invoiceNetwork);
     } else {
       setSelectedInvoices(selectedInvoices.filter((i) => i.id !== invoice.id));
-      if (selectedInvoices.length === 1) {
+      if (selectedInvoices.length === 0) {
         setLastSelectedNetwork(null);
       }
     }

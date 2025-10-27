@@ -53,6 +53,7 @@ const SubscriptionTableColumns = () => (
     <TableHeadCell>Chain</TableHeadCell>
     <TableHeadCell>Recipient</TableHeadCell>
     <TableHeadCell>Payment History</TableHeadCell>
+    <TableHeadCell>Actions</TableHeadCell>
   </TableRow>
 );
 
