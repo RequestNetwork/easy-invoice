@@ -3,12 +3,12 @@
 import { ShortAddress } from "@/components/short-address";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date-utils";
-import type { RecurringPayment } from "@/server/db/schema";
+import type { RecurringPaymentInstallment } from "@/server/db/schema";
 import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 interface CompletedPaymentsProps {
-  payments: RecurringPayment["payments"];
+  payments: RecurringPaymentInstallment[];
 }
 
 export function CompletedPayments({ payments }: CompletedPaymentsProps) {

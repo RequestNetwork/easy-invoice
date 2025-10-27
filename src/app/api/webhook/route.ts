@@ -2,13 +2,16 @@ import crypto from "node:crypto";
 import { ResourceNotFoundError } from "@/lib/errors";
 import { generateInvoiceNumber } from "@/lib/helpers/client";
 import { getInvoiceCount } from "@/lib/helpers/invoice";
+import type { ConversionInfo } from "@/lib/types";
 import { db } from "@/server/db";
 import {
+  type ClientPayment,
+  type RecurringPaymentInstallment,
+  type Request as RequestModel,
   clientPaymentTable,
   ecommerceClientTable,
   paymentDetailsPayersTable,
   recurringPaymentTable,
-  type requestStatusEnum,
   requestTable,
   userTable,
 } from "@/server/db/schema";
@@ -16,32 +19,60 @@ import { and, eq, not } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ulid } from "ulid";
 
-async function addClientPayment(webhookBody: any) {
+type ClientPaymentBody = Omit<
+  ClientPayment,
+  "id" | "userId" | "ecommerceClientId" | "createdAt"
+>;
+
+function getClientPaymentBody(
+  webhookBody: any,
+  conversionInfo: ConversionInfo | null,
+): ClientPaymentBody {
+  const requiredFields = [
+    "requestId",
+    "currency",
+    "paymentCurrency",
+    "txHash",
+    "network",
+    "amount",
+  ];
+
+  const missingFields = requiredFields.filter((field) => !webhookBody[field]);
+  if (missingFields.length > 0) {
+    throw new Error(
+      `Missing required webhook fields: ${missingFields.join(", ")}`,
+    );
+  }
+  const clientPaymentBody: ClientPaymentBody = {
+    requestId: webhookBody.requestId,
+    invoiceCurrency: webhookBody.currency,
+    paymentCurrency: webhookBody.paymentCurrency,
+    txHash: webhookBody.txHash,
+    network: webhookBody.network,
+    amount: webhookBody.amount,
+    customerInfo: webhookBody.customerInfo || null,
+    reference: webhookBody.reference || null,
+    origin: webhookBody.origin,
+    conversionInfo,
+  };
+
+  return clientPaymentBody;
+}
+
+async function addClientPayment(
+  clientPaymentBody: ClientPaymentBody,
+  clientId: string,
+) {
   await db.transaction(async (tx) => {
     const ecommerceClient = await tx
       .select()
       .from(ecommerceClientTable)
-      .where(eq(ecommerceClientTable.rnClientId, webhookBody.clientId))
+      .where(eq(ecommerceClientTable.rnClientId, clientId))
       .limit(1);
 
     if (!ecommerceClient.length) {
       throw new ResourceNotFoundError(
-        `No ecommerce client found with client ID: ${webhookBody.clientId}`,
-      );
-    }
-    const requiredFields = [
-      "requestId",
-      "currency",
-      "paymentCurrency",
-      "txHash",
-      "network",
-      "amount",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !webhookBody[field]);
-    if (missingFields.length > 0) {
-      throw new Error(
-        `Missing required webhook fields: ${missingFields.join(", ")}`,
+        `No ecommerce client found with client ID: ${clientId}`,
       );
     }
 
@@ -53,15 +84,7 @@ async function addClientPayment(webhookBody: any) {
         id: ulid(),
         userId: client.userId,
         ecommerceClientId: client.id,
-        requestId: webhookBody.requestId,
-        invoiceCurrency: webhookBody.currency,
-        paymentCurrency: webhookBody.paymentCurrency,
-        txHash: webhookBody.txHash,
-        network: webhookBody.network,
-        amount: webhookBody.amount,
-        customerInfo: webhookBody.customerInfo || null,
-        reference: webhookBody.reference || null,
-        origin: webhookBody.origin,
+        ...clientPaymentBody,
       })
       .onConflictDoNothing({
         target: [clientPaymentTable.requestId, clientPaymentTable.txHash],
@@ -70,7 +93,7 @@ async function addClientPayment(webhookBody: any) {
 
     if (!inserted.length) {
       console.warn(
-        `Duplicate client payment detected for requestId: ${webhookBody.requestId} and txHash: ${webhookBody.txHash}`,
+        `Duplicate client payment detected for requestId: ${clientPaymentBody.requestId} and txHash: ${clientPaymentBody.txHash}`,
       );
       return;
     }
@@ -80,14 +103,14 @@ async function addClientPayment(webhookBody: any) {
 /**
  * Updates the request status in the database
  */
-async function updateRequestStatus(
+async function updateRequest(
   requestId: string,
-  status: (typeof requestStatusEnum.enumValues)[number],
+  requestData: Partial<RequestModel>,
 ) {
   await db.transaction(async (tx) => {
     const result = await tx
       .update(requestTable)
-      .set({ status })
+      .set({ ...requestData })
       .where(eq(requestTable.requestId, requestId))
       .returning({ id: requestTable.id });
 
@@ -104,11 +127,7 @@ async function updateRequestStatus(
  */
 async function addPaymentToRecurringPayment(
   externalPaymentId: string,
-  payment: {
-    date: string;
-    txHash: string;
-    requestScanUrl?: string;
-  },
+  payment: RecurringPaymentInstallment,
 ) {
   await db.transaction(async (tx) => {
     const recurringPayments = await tx
@@ -145,6 +164,28 @@ async function addPaymentToRecurringPayment(
   });
 }
 
+function getConversionInfo(webhookBody: any): ConversionInfo | null {
+  if (
+    !webhookBody.conversionRate ||
+    !webhookBody.convertedAmountSource ||
+    !webhookBody.convertedAmountDestination ||
+    !webhookBody.conversionRateSource ||
+    !webhookBody.conversionRateDestination ||
+    !webhookBody.rateProvider
+  ) {
+    return null;
+  }
+
+  return {
+    conversionRate: webhookBody.conversionRate,
+    convertedAmountSource: webhookBody.convertedAmountSource,
+    convertedAmountDestination: webhookBody.convertedAmountDestination,
+    conversionRateSource: webhookBody.conversionRateSource,
+    conversionRateDestination: webhookBody.conversionRateDestination,
+    rateProvider: webhookBody.rateProvider,
+  };
+}
+
 export async function POST(req: Request) {
   let webhookData: Record<string, unknown> = {};
 
@@ -177,6 +218,8 @@ export async function POST(req: Request) {
       subStatus,
     } = body;
 
+    const conversionInfo = getConversionInfo(body);
+
     switch (event) {
       case "payment.confirmed":
         // if this is defined, it's a payment that's part of a recurring payment
@@ -194,32 +237,33 @@ export async function POST(req: Request) {
             date: body.timestamp,
             txHash: body.txHash,
             requestScanUrl: body.explorer,
+            conversionInfo,
           });
         } else if (body.clientId) {
-          await addClientPayment(body);
+          const clientPaymentBody = getClientPaymentBody(body, conversionInfo);
+          await addClientPayment(clientPaymentBody, body.clientId);
         } else {
-          await updateRequestStatus(
-            requestId,
-            isCryptoToFiat ? "crypto_paid" : "paid",
-          );
+          await updateRequest(requestId, {
+            status: isCryptoToFiat ? "crypto_paid" : "paid",
+          });
         }
         break;
       case "payment.processing":
         switch (subStatus) {
           case "initiated":
-            await updateRequestStatus(requestId, "offramp_initiated");
+            await updateRequest(requestId, { status: "offramp_initiated" });
             break;
           case "failed":
           case "bounced":
-            await updateRequestStatus(requestId, "offramp_failed");
+            await updateRequest(requestId, { status: "offramp_failed" });
             break;
           case "pending_internal_assessment":
           case "ongoing_checks":
           case "sending_fiat":
-            await updateRequestStatus(requestId, "offramp_pending");
+            await updateRequest(requestId, { status: "offramp_pending" });
             break;
           case "fiat_sent":
-            await updateRequestStatus(requestId, "paid");
+            await updateRequest(requestId, { status: "paid" });
             break;
           default: {
             console.error(
