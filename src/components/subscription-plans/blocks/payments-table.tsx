@@ -1,7 +1,7 @@
 "use client";
 
-import { MultiCurrencyStatCard } from "@/components/multi-currency-stat-card";
 import { ShortAddress } from "@/components/short-address";
+import { StatCard } from "@/components/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -19,10 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table/table";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
-import {
-  calculateTotalsByCurrency,
-  formatCurrencyTotals,
-} from "@/lib/helpers/currency";
+import { consolidateSubscriptionPaymentUsdValues } from "@/lib/helpers/conversion";
 import type { SubscriptionPayment } from "@/lib/types";
 import type { SubscriptionPlan } from "@/server/db/schema";
 import { api } from "@/trpc/react";
@@ -36,7 +33,6 @@ import {
   Receipt,
 } from "lucide-react";
 import { useState } from "react";
-import { StatCard } from "../../stat-card";
 import { EmptyState } from "../../ui/table/empty-state";
 import { Pagination } from "../../ui/table/pagination";
 import { TableHeadCell } from "../../ui/table/table-head-cell";
@@ -133,10 +129,10 @@ export function PaymentsTable({
             value="--"
             icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
           />
-          <MultiCurrencyStatCard
+          <StatCard
             title="Total Revenue"
+            value="--"
             icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-            values={[]}
           />
         </div>
         <ErrorState
@@ -152,13 +148,8 @@ export function PaymentsTable({
     ? payments.filter((payment) => payment.planId === activePlan)
     : payments;
 
-  const paymentItems = filteredPayments.map((payment) => ({
-    amount: payment.amount,
-    currency: payment.currency,
-  }));
-
-  const revenueTotal = calculateTotalsByCurrency(paymentItems);
-  const revenueValues = formatCurrencyTotals(revenueTotal);
+  const { totalInUsd, hasNonUsdValues } =
+    consolidateSubscriptionPaymentUsdValues(filteredPayments);
 
   const paginatedPayments = filteredPayments.slice(
     (page - 1) * ITEMS_PER_PAGE,
@@ -178,11 +169,20 @@ export function PaymentsTable({
           value={filteredPayments.length}
           icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
         />
-        <MultiCurrencyStatCard
-          title="Total Revenue"
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          values={revenueValues}
-        />
+        <div className="relative">
+          <StatCard
+            title="Total Revenue"
+            value={`$${Number(totalInUsd).toLocaleString()}`}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          />
+          {hasNonUsdValues && (
+            <div className="absolute -bottom-5 left-0 right-0 text-center">
+              <p className="text-xs text-muted-foreground">
+                * Excludes non-USD invoices without conversion info
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-4 mb-6">
