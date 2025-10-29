@@ -31,7 +31,7 @@ import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { consolidateRecurringPaymentUsdValues } from "@/lib/helpers/conversion";
 import { useCancelRecurringPayment } from "@/lib/hooks/use-cancel-recurring-payment";
 import type { SubscriptionWithDetails } from "@/lib/types";
-import { getCanCancelPayment } from "@/lib/utils";
+import { getCanCancelPayment } from "@/lib/helpers";
 import { api } from "@/trpc/react";
 import { addDays, format } from "date-fns";
 import { Ban, CreditCard, DollarSign, Loader2 } from "lucide-react";

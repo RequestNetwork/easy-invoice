@@ -4,7 +4,7 @@ import { Gender } from "@/lib/constants/compliance";
 import { toTRPCError } from "@/lib/errors";
 import { bankAccountSchema } from "@/lib/schemas/bank-account";
 import { complianceFormSchema } from "@/lib/schemas/compliance";
-import { filterDefinedValues } from "@/lib/utils";
+import { filterDefinedValues } from "@/lib/helpers";
 import { TRPCError } from "@trpc/server";
 import { AxiosError, type AxiosResponse } from "axios";
 import { eq, inArray } from "drizzle-orm";

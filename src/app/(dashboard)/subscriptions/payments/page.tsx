@@ -7,8 +7,8 @@ export default async function SubscriptionPaymentsPage() {
   await requireAuth();
 
   const [allPayments, subscriptionPlans] = await Promise.all([
-    api.subscriptionPlan.getAllPayments.query(),
-    api.subscriptionPlan.getAll.query(),
+    api.subscriptionPlan.getAllPayments(),
+    api.subscriptionPlan.getAll(),
   ]);
 
   return (

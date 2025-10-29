@@ -27,7 +27,7 @@ export function InvoiceMeLinks({ initialLinks }: InvoiceMeLinksProps) {
 
   const {
     mutateAsync: createInvoiceMeLink,
-    isLoading: isCreatingInvoiceMeLink,
+    isPending: isCreatingInvoiceMeLink,
   } = api.invoiceMe.create.useMutation({
     onSuccess: () => {
       trpcContext.invoiceMe.getAll.invalidate();

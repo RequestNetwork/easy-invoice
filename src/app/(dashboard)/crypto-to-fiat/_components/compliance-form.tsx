@@ -31,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { COMPLIANCE_COUNTRIES } from "@/lib/constants/compliance";
 import {
   BeneficiaryType,
@@ -80,33 +79,39 @@ export function ComplianceForm({ user }: { user: User }) {
   }, []);
 
   // Fetch compliance status when component mounts
-  const { isLoading: isLoadingStatus, refetch: getComplianceStatus } =
-    api.compliance.getComplianceStatus.useQuery(
-      { clientUserId: user?.email ?? "" },
-      {
-        // Only fetch if we have a user email
-        enabled: !!user?.email,
-        // Use the configurable constant for polling interval
-        refetchInterval: COMPLIANCE_STATUS_POLLING_INTERVAL,
-        // Also refetch when the window regains focus
-        refetchOnWindowFocus: true,
-        onSuccess: (data) => {
-          // If the user is already compliant, we can skip the form
-          if (data.success) {
-            // Set compliance data with status from the API
-            setComplianceData({
-              agreementUrl: (data.data.agreementUrl as string) ?? null,
-              kycUrl: (data.data.kycUrl as string) ?? null,
-              status: {
-                agreementStatus: data.data.agreementStatus as StatusType,
-                kycStatus: data.data.kycStatus as StatusType,
-                isCompliant: data.data.isCompliant,
-              },
-            });
-          }
+  const {
+    isLoading: isLoadingStatus,
+    data: complianceApiData,
+    refetch: getComplianceStatus,
+    isSuccess: isComplianceSuccess,
+  } = api.compliance.getComplianceStatus.useQuery(
+    { clientUserId: user?.email ?? "" },
+    {
+      // Only fetch if we have a user email
+      enabled: !!user?.email,
+      // Use the configurable constant for polling interval
+      refetchInterval: complianceData?.status?.isCompliant
+        ? false
+        : COMPLIANCE_STATUS_POLLING_INTERVAL,
+      // Also refetch when the window regains focus
+      refetchOnWindowFocus: true,
+    },
+  );
+
+  useEffect(() => {
+    const complianceData = complianceApiData?.data;
+    if (isComplianceSuccess && complianceData) {
+      setComplianceData({
+        agreementUrl: (complianceData.agreementUrl as string) ?? null,
+        kycUrl: (complianceData.kycUrl as string) ?? null,
+        status: {
+          agreementStatus: complianceData.agreementStatus as StatusType,
+          kycStatus: complianceData.kycStatus as StatusType,
+          isCompliant: complianceData.isCompliant,
         },
-      },
-    );
+      });
+    }
+  }, [complianceApiData, isComplianceSuccess]);
 
   const submitComplianceMutation =
     api.compliance.submitComplianceInfo.useMutation({
@@ -213,14 +218,7 @@ export function ComplianceForm({ user }: { user: User }) {
   }, [handleAgreementUpdate, complianceData?.agreementUrl, TRUSTED_ORIGINS]);
 
   async function onSubmit(values: ComplianceFormValues) {
-    try {
-      await submitComplianceMutation.mutateAsync(values);
-      toast.success("Compliance information submitted successfully!");
-    } catch (error) {
-      toast.error(
-        `Failed to submit compliance information${error instanceof Error ? `. Error: ${error.message}` : ". Please try again."}`,
-      );
-    }
+    await submitComplianceMutation.mutateAsync(values);
   }
 
   return (
@@ -241,12 +239,8 @@ export function ComplianceForm({ user }: { user: User }) {
             </Alert>
           )}
 
-          {isLoadingStatus && !complianceData ? (
-            <div className="w-full">
-              <Skeleton className="w-full h-40" />
-            </div>
-          ) : complianceData?.status.kycStatus !== "not_started" ||
-            complianceData?.status.agreementStatus !== "not_started" ? (
+          {complianceData?.status.kycStatus !== "not_started" ||
+          complianceData?.status.agreementStatus !== "not_started" ? (
             <div className="flex flex-col gap-6 w-full">
               <div>
                 <ComplianceStatus
@@ -291,7 +285,11 @@ export function ComplianceForm({ user }: { user: User }) {
                           className="w-full"
                           onClick={() => {
                             if (complianceData?.kycUrl) {
-                              window.open(complianceData.kycUrl, "_blank");
+                              window.open(
+                                complianceData.kycUrl,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
                             }
                           }}
                           disabled={!complianceData?.kycUrl}
@@ -681,9 +679,9 @@ export function ComplianceForm({ user }: { user: User }) {
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={submitComplianceMutation.isLoading}
+                      disabled={submitComplianceMutation.isPending}
                     >
-                      {submitComplianceMutation.isLoading
+                      {submitComplianceMutation.isPending
                         ? "Submitting..."
                         : "Submit Compliance Information"}
                     </Button>
