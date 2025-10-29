@@ -5,7 +5,7 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_REOWN_PROJECT_ID: z
     .string()
     .min(1, "NEXT_PUBLIC_REOWN_PROJECT_ID is required"),
-  NEXT_PUBLIC_GTM_ID: z.string().min(1, "NEXT_PUBLIC_GTM_ID is required"),
+  NEXT_PUBLIC_GTM_ID: z.string().optional(),
   NEXT_PUBLIC_DEMO_MEETING: z.string().url().optional(),
   NEXT_PUBLIC_API_TERMS_CONDITIONS: z.string().url().optional(),
   NEXT_PUBLIC_CRYPTO_TO_FIAT_TRUSTED_ORIGINS: z.string().optional(),
