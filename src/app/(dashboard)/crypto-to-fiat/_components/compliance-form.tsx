@@ -98,14 +98,15 @@ export function ComplianceForm({ user }: { user: User }) {
   );
 
   useEffect(() => {
-    if (isComplianceSuccess) {
+    const complianceData = complianceApiData?.data;
+    if (isComplianceSuccess && complianceData) {
       setComplianceData({
-        agreementUrl: (complianceApiData.data.agreementUrl as string) ?? null,
-        kycUrl: (complianceApiData.data.kycUrl as string) ?? null,
+        agreementUrl: (complianceData.agreementUrl as string) ?? null,
+        kycUrl: (complianceData.kycUrl as string) ?? null,
         status: {
-          agreementStatus: complianceApiData.data.agreementStatus as StatusType,
-          kycStatus: complianceApiData.data.kycStatus as StatusType,
-          isCompliant: complianceApiData.data.isCompliant,
+          agreementStatus: complianceData.agreementStatus as StatusType,
+          kycStatus: complianceData.kycStatus as StatusType,
+          isCompliant: complianceData.isCompliant,
         },
       });
     }
@@ -216,14 +217,7 @@ export function ComplianceForm({ user }: { user: User }) {
   }, [handleAgreementUpdate, complianceData?.agreementUrl, TRUSTED_ORIGINS]);
 
   async function onSubmit(values: ComplianceFormValues) {
-    try {
-      await submitComplianceMutation.mutateAsync(values);
-      toast.success("Compliance information submitted successfully!");
-    } catch (error) {
-      toast.error(
-        `Failed to submit compliance information${error instanceof Error ? `. Error: ${error.message}` : ". Please try again."}`,
-      );
-    }
+    await submitComplianceMutation.mutateAsync(values);
   }
 
   return (
@@ -294,7 +288,11 @@ export function ComplianceForm({ user }: { user: User }) {
                           className="w-full"
                           onClick={() => {
                             if (complianceData?.kycUrl) {
-                              window.open(complianceData.kycUrl, "_blank");
+                              window.open(
+                                complianceData.kycUrl,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
                             }
                           }}
                           disabled={!complianceData?.kycUrl}

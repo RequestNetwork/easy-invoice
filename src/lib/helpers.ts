@@ -1,11 +1,5 @@
 import { TRPCClientError } from "@trpc/client";
 import { TRPCError } from "@trpc/server";
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 /**
  * Removes undefined and null values from an object

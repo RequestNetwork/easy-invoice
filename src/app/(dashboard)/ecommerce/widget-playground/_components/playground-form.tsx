@@ -25,10 +25,7 @@ export const Playground = () => {
         walletConnectProjectId: undefined,
         rnApiClientId: "YOUR_CLIENT_ID_HERE",
         supportedCurrencies: [],
-        feeInfo: {
-          feePercentage: "0",
-          feeAddress: "",
-        },
+        feeInfo: undefined,
       },
       uiConfig: {
         showRequestScanUrl: true,

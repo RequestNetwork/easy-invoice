@@ -65,9 +65,10 @@ export function CurrencyCombobox({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          // biome-ignore lint/a11y/useSemanticElements: <explanation>
+          // biome-ignore lint/a11y/useSemanticElements: It suggests select, but that's not suitable here
           role="combobox"
           aria-expanded={open}
+          aria-controls="currency-combobox-list"
           className={cn("w-full justify-between", className)}
         >
           {selectedCurrencies.length === 0 ? (
@@ -77,13 +78,13 @@ export function CurrencyCombobox({
               {selectedCurrencies.map((currency) => (
                 <Badge key={currency} variant="secondary" className="mr-1">
                   {formatCurrencyLabel(currency)}
-                  <button
-                    type="button"
+                  <span
+                    aria-label={`Remove ${formatCurrencyLabel(currency)}`}
                     className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     onMouseDown={(e) => handleRemove(currency, e)}
                   >
                     <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                  </button>
+                  </span>
                 </Badge>
               ))}
             </div>
@@ -91,7 +92,11 @@ export function CurrencyCombobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent
+        className="w-full p-0"
+        align="start"
+        id="currency-combobox-list"
+      >
         <Command>
           <CommandInput placeholder="Search currency..." />
           <CommandList>

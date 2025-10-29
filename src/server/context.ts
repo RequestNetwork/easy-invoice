@@ -1,4 +1,3 @@
-import type * as trpcNext from "@trpc/server/adapters/next";
 import { getCurrentSession } from "./auth";
 import { db } from "./db";
 
@@ -15,9 +14,6 @@ export async function createContext() {
 }
 
 export type Context = {
-  headers?: Headers;
-  req?: trpcNext.CreateNextContextOptions["req"];
-  res?: trpcNext.CreateNextContextOptions["res"];
   session: Awaited<ReturnType<typeof getCurrentSession>>["session"];
   user: Awaited<ReturnType<typeof getCurrentSession>>["user"];
   db: typeof db;
