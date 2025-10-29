@@ -16,8 +16,17 @@ export function filterDefinedValues<T extends Record<string, unknown>>(
 
 export function truncateEmail(email: string, maxLength = 20): string {
   if (email.length <= maxLength) return email;
+
+  if (!email.includes("@")) return email;
+
   const [user, domain] = email.split("@");
-  const keep = maxLength - domain.length - 4;
+
+  if (maxLength <= domain.length + 4) {
+    return email; // Fall back to original email
+  }
+
+  const keep = Math.max(1, maxLength - domain.length - 4);
+
   return `${user.slice(0, keep)}...@${domain}`;
 }
 
@@ -59,6 +68,10 @@ export async function retry<T>(
     onSuccess,
     onRetry,
   } = options;
+
+  if (retries < 1) {
+    throw new Error("retries must be at least 1");
+  }
 
   let lastError: unknown;
 

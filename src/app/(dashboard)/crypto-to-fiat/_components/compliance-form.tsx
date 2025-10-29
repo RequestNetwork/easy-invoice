@@ -91,7 +91,9 @@ export function ComplianceForm({ user }: { user: User }) {
       // Only fetch if we have a user email
       enabled: !!user?.email,
       // Use the configurable constant for polling interval
-      refetchInterval: COMPLIANCE_STATUS_POLLING_INTERVAL,
+      refetchInterval: complianceData?.status?.isCompliant
+        ? false
+        : COMPLIANCE_STATUS_POLLING_INTERVAL,
       // Also refetch when the window regains focus
       refetchOnWindowFocus: true,
     },

@@ -123,8 +123,8 @@ export const Playground = () => {
         ? paymentConfig.supportedCurrencies
         : undefined,
       feeInfo:
-        paymentConfig.feeInfo?.feeAddress ||
-        paymentConfig.feeInfo?.feePercentage !== "0"
+        paymentConfig.feeInfo?.feeAddress &&
+        paymentConfig.feeInfo?.feePercentage
           ? paymentConfig.feeInfo
           : undefined,
     };
