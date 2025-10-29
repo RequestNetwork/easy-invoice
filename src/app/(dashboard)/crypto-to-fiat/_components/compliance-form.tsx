@@ -31,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { COMPLIANCE_COUNTRIES } from "@/lib/constants/compliance";
 import {
   BeneficiaryType,
@@ -240,12 +239,8 @@ export function ComplianceForm({ user }: { user: User }) {
             </Alert>
           )}
 
-          {isLoadingStatus && !complianceData ? (
-            <div className="w-full">
-              <Skeleton className="w-full h-40" />
-            </div>
-          ) : complianceData?.status.kycStatus !== "not_started" ||
-            complianceData?.status.agreementStatus !== "not_started" ? (
+          {complianceData?.status.kycStatus !== "not_started" ||
+          complianceData?.status.agreementStatus !== "not_started" ? (
             <div className="flex flex-col gap-6 w-full">
               <div>
                 <ComplianceStatus

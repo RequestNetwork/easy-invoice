@@ -129,13 +129,23 @@ export const Playground = () => {
           : undefined,
     };
 
+    const buyer = formValues.receiptInfo.buyerInfo || {};
+    const hasDirectFields = [
+      buyer.email,
+      buyer.firstName,
+      buyer.lastName,
+      buyer.businessName,
+      buyer.phone,
+    ].some((v) => v);
+    const hasAddress =
+      buyer.address && Object.values(buyer.address).some((v) => v);
+
     const cleanedreceiptInfo = {
       ...formValues.receiptInfo,
-      buyerInfo: Object.values(formValues.receiptInfo.buyerInfo || {}).some(
-        (val) => val,
-      )
-        ? formValues.receiptInfo.buyerInfo
-        : undefined,
+      buyerInfo:
+        hasDirectFields || hasAddress
+          ? formValues.receiptInfo.buyerInfo
+          : undefined,
     };
 
     return `<PaymentWidget
