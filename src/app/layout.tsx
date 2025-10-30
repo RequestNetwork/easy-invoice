@@ -41,7 +41,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
+        {process.env.NEXT_PUBLIC_GTM_ID && (
+          <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+        )}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
