@@ -77,13 +77,15 @@ npm run dev
 yarn dev
 ```
 
-> **Note:** If the PostgreSQL database container does not exist, it will be created automatically when you start the development server.
+> [!Note]
+> If the PostgreSQL database container does not exist, it will be created automatically when you start the development server.
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
 #### 3. Set Up the Database
 
-> **Note:** Ensure the database container is running before interacting with the database. The container starts automatically when you run `npm run dev` or `yarn dev`.
+> [!Note]
+> Ensure the database container is running before interacting with the database. The container starts automatically when you run `npm run dev` or `yarn dev`.
 
 ```bash
 # For development:
