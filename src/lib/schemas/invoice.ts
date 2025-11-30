@@ -58,7 +58,7 @@ export const invoiceFormSchema = z
       if (!data.walletAddress) {
         ctx.addIssue({
           code: "custom",
-          message: "Wallet address is required for recurring invoices",
+          message: "Wallet address is required",
           path: ["walletAddress"],
         });
       }
@@ -66,7 +66,7 @@ export const invoiceFormSchema = z
       if (!data.paymentDetailsId) {
         ctx.addIssue({
           code: "custom",
-          message: "Payment details are required for recurring invoices",
+          message: "Payment details are required for crypto-to-fiat payments",
           path: ["paymentDetailsId"],
         });
       }
