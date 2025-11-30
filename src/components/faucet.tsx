@@ -120,7 +120,7 @@ export const FaucetTokens = () => {
 
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild={true}>
         <Button
           variant="outline"
           size="icon"
