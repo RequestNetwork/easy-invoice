@@ -173,8 +173,8 @@ export const FaucetTokens = () => {
                 value={amount}
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (Number.isNaN(val)) setAmount(0);
-                  setAmount(Number(val));
+                  const parsed = Number(val);
+                  setAmount(Number.isNaN(parsed) ? 0 : parsed);
                 }}
               />
             </div>
