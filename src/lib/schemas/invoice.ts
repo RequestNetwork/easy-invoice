@@ -19,7 +19,7 @@ export const invoiceFormSchema = z
         z.object({
           description: z.string().min(1, "Description is required"),
           quantity: z.number().min(1, "Quantity must be at least 1"),
-          price: z.number().min(0, "Price must be positive"),
+          price: z.number().positive("Price must be greater than 0"),
         }),
       )
       .min(1, "At least one item is required"),
@@ -52,24 +52,34 @@ export const invoiceFormSchema = z
           path: ["frequency"],
         });
       }
+    }
 
-      if (!data.isCryptoToFiatAvailable) {
-        if (!data.walletAddress) {
-          ctx.addIssue({
-            code: "custom",
-            message: "Wallet address is required for recurring invoices",
-            path: ["walletAddress"],
-          });
-        }
-      } else {
-        if (!data.paymentDetailsId) {
-          ctx.addIssue({
-            code: "custom",
-            message: "Payment details are required for recurring invoices",
-            path: ["paymentDetailsId"],
-          });
-        }
+    if (!data.isCryptoToFiatAvailable) {
+      if (!data.walletAddress) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Wallet address is required for recurring invoices",
+          path: ["walletAddress"],
+        });
       }
+    } else {
+      if (!data.paymentDetailsId) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Payment details are required for recurring invoices",
+          path: ["paymentDetailsId"],
+        });
+      }
+    }
+
+    const dueDate = new Date(data.dueDate).getTime();
+    const now = new Date().getTime();
+    if (dueDate < now) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Due date must be in future",
+        path: ["dueDate"],
+      });
     }
   });
 
