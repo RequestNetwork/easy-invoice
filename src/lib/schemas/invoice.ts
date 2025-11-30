@@ -1,6 +1,9 @@
 import { INVOICE_CURRENCIES } from "@/lib/constants/currencies";
-import { isEthereumAddress } from "validator";
 import { z } from "zod";
+
+export const AddressSchema = z
+  .string()
+  .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address");
 
 export const invoiceFormSchema = z
   .object({
@@ -25,51 +28,49 @@ export const invoiceFormSchema = z
       required_error: "Please select an invoice currency",
     }),
     paymentCurrency: z.string().min(1, "Payment currency is required"),
-    walletAddress: z.string().optional(),
+    walletAddress: AddressSchema.optional(),
     isRecurring: z.boolean().default(false),
     startDate: z.string().optional(),
     frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
     isCryptoToFiatAvailable: z.boolean().default(false),
     paymentDetailsId: z.string().optional(),
   })
-  .refine(
-    (data) => {
-      // If invoice is recurring, startDate and frequency must be provided
-      if (data.isRecurring) {
-        return !!data.startDate && !!data.frequency;
+  .superRefine((data, ctx) => {
+    if (data.isRecurring) {
+      if (!data.startDate) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Start date is required for recurring invoices",
+          path: ["startDate"],
+        });
       }
-      return true;
-    },
-    {
-      message: "Start date and frequency are required for recurring invoices",
-      path: ["isRecurring"],
-    },
-  )
-  .refine(
-    (data) => {
-      // Wallet address is required when crypto-to-fiat is not enabled
+
+      if (!data.frequency) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Frequency is required for recurring invoices",
+          path: ["frequency"],
+        });
+      }
+
       if (!data.isCryptoToFiatAvailable) {
-        return !!data.walletAddress && isEthereumAddress(data.walletAddress);
+        if (!data.walletAddress) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Wallet address is required for recurring invoices",
+            path: ["walletAddress"],
+          });
+        }
+      } else {
+        if (!data.paymentDetailsId) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Payment details are required for recurring invoices",
+            path: ["paymentDetailsId"],
+          });
+        }
       }
-      return true;
-    },
-    {
-      message: "Valid wallet address is required for direct crypto payments",
-      path: ["walletAddress"],
-    },
-  )
-  .refine(
-    (data) => {
-      // Payment details are required when crypto-to-fiat is enabled
-      if (data.isCryptoToFiatAvailable) {
-        return !!data.paymentDetailsId;
-      }
-      return true;
-    },
-    {
-      message: "Please select a payment method for Crypto-to-fiat payment",
-      path: ["paymentDetailsId"],
-    },
-  );
+    }
+  });
 
 export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
