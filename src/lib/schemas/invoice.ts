@@ -1,9 +1,10 @@
 import { INVOICE_CURRENCIES } from "@/lib/constants/currencies";
+import { isEthereumAddress } from "validator";
 import { z } from "zod";
 
 export const AddressSchema = z
   .string()
-  .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address");
+  .refine(isEthereumAddress, "Invalid Ethereum Address");
 
 export const invoiceFormSchema = z
   .object({
