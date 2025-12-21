@@ -33,7 +33,9 @@ import type {
   User,
 } from "@/server/db/schema";
 import { api } from "@/trpc/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Terminal, Trash2 } from "lucide-react";
+import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
@@ -41,6 +43,53 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "../../ui/alert";
 import { BankAccountForm } from "./blocks/bank-account-form";
 import { PaymentCurrencySelector } from "./blocks/payment-currency-selector";
+
+const AnimatedSection = ({
+  show,
+  children,
+  className = "",
+}: {
+  show: boolean;
+  children: React.ReactNode;
+  className?: string;
+}): React.JSX.Element => {
+  return (
+    <AnimatePresence initial={false}>
+      {show && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{
+            height: {
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            },
+            opacity: {
+              duration: 0.2,
+              ease: [0.4, 0, 0.2, 1],
+            },
+          }}
+          style={{ overflow: "hidden" }}
+          className={className}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{
+              duration: 0.2,
+              delay: 0.05,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          >
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 // Constants
 const PAYMENT_DETAILS_POLLING_INTERVAL = 30000; // 30 seconds in milliseconds
@@ -645,8 +694,8 @@ export function InvoiceForm({
           <Label htmlFor="isRecurring">Recurring Invoice</Label>
         </div>
 
-        {form.watch("isRecurring") && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AnimatedSection show={form.watch("isRecurring")}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input {...form.register("startDate")} type="date" />
@@ -682,7 +731,7 @@ export function InvoiceForm({
               )}
             </div>
           </div>
-        )}
+        </AnimatedSection>
 
         {recipientDetails ? (
           // Show creator fields when we have recipient details (invoice-me flow)
@@ -866,9 +915,11 @@ export function InvoiceForm({
             </p>
           )}
         </div>
-        {MAINNET_CURRENCIES.includes(
-          form.watch("invoiceCurrency") as MainnetCurrency,
-        ) && (
+        <AnimatedSection
+          show={MAINNET_CURRENCIES.includes(
+            form.watch("invoiceCurrency") as MainnetCurrency,
+          )}
+        >
           <div className="space-y-2">
             <Alert variant="warning">
               <Terminal className="h-4 w-4" />
@@ -892,11 +943,11 @@ export function InvoiceForm({
               </AlertDescription>
             </Alert>
           </div>
-        )}
+        </AnimatedSection>
 
         {/* Only show payment currency selector for USD invoices */}
-        {form.watch("invoiceCurrency") === "USD" && (
-          <div className="space-y-2">
+        <AnimatedSection show={form.watch("invoiceCurrency") === "USD"}>
+          <div className="space-y-2 pt-4">
             <PaymentCurrencySelector
               onChange={(value) => form.setValue("paymentCurrency", value)}
               targetCurrency="USD"
@@ -908,9 +959,15 @@ export function InvoiceForm({
               </p>
             )}
           </div>
-        )}
+        </AnimatedSection>
 
-        <div className="flex items-center space-x-2">
+        <div
+          className={`flex items-center space-x-2 ${
+            form.watch("paymentCurrency") !== "fUSDC-sepolia"
+              ? "opacity-60"
+              : ""
+          }`}
+        >
           <Checkbox
             id="isCryptoToFiatAvailable"
             checked={form.watch("isCryptoToFiatAvailable")}
@@ -928,17 +985,12 @@ export function InvoiceForm({
               }
             }}
             disabled={form.watch("paymentCurrency") !== "fUSDC-sepolia"}
-            className={
-              form.watch("paymentCurrency") !== "fUSDC-sepolia"
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            }
           />
           <Label
             htmlFor="isCryptoToFiatAvailable"
             className={
               form.watch("paymentCurrency") !== "fUSDC-sepolia"
-                ? "opacity-50 cursor-not-allowed"
+                ? "text-muted-foreground cursor-not-allowed"
                 : ""
             }
           >
@@ -959,69 +1011,63 @@ export function InvoiceForm({
             </p>
           )}
 
-        {form.watch("isCryptoToFiatAvailable") &&
-          (clientUserData?.isCompliant ? (
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="paymentDetailsId">Payment Method</Label>
-                {linkedPaymentDetails.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowBankAccountModal(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" /> Add New
-                  </Button>
-                )}
+        <AnimatedSection show={form.watch("isCryptoToFiatAvailable")}>
+          <div className="pt-4">
+            {clientUserData?.isCompliant ? (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="paymentDetailsId">Payment Method</Label>
+                  {linkedPaymentDetails.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowBankAccountModal(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" /> Add New
+                    </Button>
+                  )}
+                </div>
+                <PaymentDetailsSection
+                  clientEmail={clientEmail}
+                  isLoadingUser={isLoadingUser}
+                  clientUserData={clientUserData}
+                  linkedPaymentDetails={linkedPaymentDetails}
+                  onAddBankAccount={() => setShowBankAccountModal(true)}
+                  onSelectPaymentDetails={(value) => {
+                    form.setValue("paymentDetailsId", value);
+                    // Clear the error when a payment method is selected
+                    form.clearErrors("paymentDetailsId");
+                  }}
+                  selectedPaymentDetailsId={form.getValues("paymentDetailsId")}
+                  error={form.formState.errors.paymentDetailsId?.message}
+                />
               </div>
-              <PaymentDetailsSection
-                clientEmail={clientEmail}
-                isLoadingUser={isLoadingUser}
-                clientUserData={clientUserData}
-                linkedPaymentDetails={linkedPaymentDetails}
-                onAddBankAccount={() => setShowBankAccountModal(true)}
-                onSelectPaymentDetails={(value) => {
-                  form.setValue("paymentDetailsId", value);
-                  // Clear the error when a payment method is selected
-                  form.clearErrors("paymentDetailsId");
-                }}
-                selectedPaymentDetailsId={form.getValues("paymentDetailsId")}
-                error={form.formState.errors.paymentDetailsId?.message}
-              />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label htmlFor="paymentDetailsId">Payment Method</Label>
-              <p className="text-sm text-red-500">
-                Client has not completed KYC. Please use a verified client.
-              </p>
-            </div>
-          ))}
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="paymentDetailsId">Payment Method</Label>
+                <p className="text-sm text-red-500">
+                  Client has not completed KYC. Please use a verified client.
+                </p>
+              </div>
+            )}
+          </div>
+        </AnimatedSection>
 
-        <div className="space-y-2">
-          <Label htmlFor="walletAddress">Your Wallet Address</Label>
-          <Input
-            {...form.register("walletAddress")}
-            placeholder="Enter your wallet address"
-            disabled={form.watch("isCryptoToFiatAvailable")}
-            className={
-              form.watch("isCryptoToFiatAvailable")
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            }
-          />
-          {form.watch("isCryptoToFiatAvailable") && (
-            <p className="text-xs text-gray-500">
-              Wallet address not required when using Crypto-to-fiat payment
-            </p>
-          )}
-          {form.formState.errors.walletAddress && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.walletAddress.message}
-            </p>
-          )}
-        </div>
+        <AnimatedSection show={!form.watch("isCryptoToFiatAvailable")}>
+          <div className="space-y-2 pt-4">
+            <Label htmlFor="walletAddress">Your Wallet Address</Label>
+            <Input
+              {...form.register("walletAddress")}
+              placeholder="Enter your wallet address"
+            />
+            {form.formState.errors.walletAddress && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.walletAddress.message}
+              </p>
+            )}
+          </div>
+        </AnimatedSection>
 
         <div className="flex justify-end">
           <Button
