@@ -61,7 +61,7 @@ export function ModeToggle() {
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Moon className="h-4 w-4 text-white-400" />
+                <Moon className="h-4 w-4 text-foreground" />
               </motion.div>
             ) : (
               <motion.div
@@ -72,7 +72,7 @@ export function ModeToggle() {
                 transition={{ duration: 0.2 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Sun className="h-4 w-4 text-white-500" />
+                <Sun className="h-4 w-4 text-foreground" />
               </motion.div>
             )}
           </AnimatePresence>
