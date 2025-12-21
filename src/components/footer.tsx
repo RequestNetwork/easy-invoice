@@ -7,7 +7,10 @@ export function Footer() {
         <div>
           © {new Date().getFullYear()} EasyInvoice. All rights reserved. Built
           by{" "}
-          <Link href="https://request.network" className="underline">
+          <Link
+            href="https://request.network"
+            className="underline hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+          >
             Request Network
           </Link>
         </div>

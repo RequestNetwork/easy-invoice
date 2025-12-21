@@ -57,7 +57,7 @@ export default async function LoginPage() {
               By continuing, you agree to our{" "}
               <Link
                 href={termsUrl}
-                className="underline hover:text-zinc-900"
+                className="underline hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
