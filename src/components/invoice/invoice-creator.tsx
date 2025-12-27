@@ -49,7 +49,7 @@ export function InvoiceCreator({
           }
           toast.success("Invoice created successfully");
           await utils.invoice.getAll.invalidate();
-          router.push("/dashboard");
+          router.push("/invoices");
         },
         onError: (error) => {
           toast.error("Failed to create invoice", {
@@ -64,7 +64,7 @@ export function InvoiceCreator({
         onSuccess: async () => {
           toast.success("Invoice created successfully");
           await utils.invoice.getAll.invalidate();
-          router.push("/dashboard");
+          router.push("/invoices");
         },
         onError: (error) => {
           toast.error("Failed to create invoice", {

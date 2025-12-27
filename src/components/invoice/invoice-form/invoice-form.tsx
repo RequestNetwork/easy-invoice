@@ -363,19 +363,7 @@ export function InvoiceForm({
     async (data: InvoiceFormValues) => {
       // Prevent multiple submissions
       if (isSubmitting) return;
-
       setIsSubmitting(true);
-
-      // If Crypto-to-fiat is enabled but no payment details are linked, show error
-      if (data.isCryptoToFiatAvailable && !data.paymentDetailsId) {
-        // Set form error for paymentDetailsId
-        form.setError("paymentDetailsId", {
-          type: "required",
-          message: "Please select a payment method for Crypto-to-fiat payment",
-        });
-        setIsSubmitting(false);
-        return;
-      }
 
       // Check if payment details have approved status
       if (data.isCryptoToFiatAvailable && data.paymentDetailsId) {
@@ -429,13 +417,7 @@ export function InvoiceForm({
         setIsSubmitting(false);
       }
     },
-    [
-      linkedPaymentDetails,
-      onSubmit,
-      form.setError,
-      isSubmitting,
-      handleBankAccountSuccess,
-    ],
+    [linkedPaymentDetails, onSubmit, isSubmitting, handleBankAccountSuccess],
   );
 
   // Add timeout effect for pending approval modal
@@ -755,7 +737,7 @@ export function InvoiceForm({
             <div />
           </div>
           {fields.map((field, index) => (
-            <div key={field.id} className="flex items-end gap-4">
+            <div key={field.id} className="flex items-start gap-4">
               <div className="flex-grow">
                 <Input
                   {...form.register(`items.${index}.description`)}
