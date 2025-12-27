@@ -1,8 +1,8 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeftRight,
-  ChevronDown,
   ChevronRight,
   DollarSign,
   FileText,
@@ -93,46 +93,57 @@ export function Sidebar() {
               <FileText className="h-5 w-5" />
               <span className="font-medium">Billing</span>
             </div>
-            {expandedSections.billing ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
+            <motion.div
+              animate={{ rotate: expandedSections.billing ? 90 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <ChevronRight className="h-4 w-4" />
-            )}
+            </motion.div>
           </button>
-          {expandedSections.billing && (
-            <div className="ml-8 mt-1 space-y-1">
-              <Link
-                href="/invoices"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoices"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
+          <AnimatePresence>
+            {expandedSections.billing && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
               >
-                View Invoices
-              </Link>
-              <Link
-                href="/invoices/create"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoices/create"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Create Invoice
-              </Link>
-              <Link
-                href="/invoices/me"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/invoices/me"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                InvoiceMe Link
-              </Link>
-            </div>
-          )}
+                <div className="ml-8 mt-1 space-y-1">
+                  <Link
+                    href="/invoices"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/invoices"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    View Invoices
+                  </Link>
+                  <Link
+                    href="/invoices/create"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/invoices/create"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Create Invoice
+                  </Link>
+                  <Link
+                    href="/invoices/me"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/invoices/me"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    InvoiceMe Link
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div>
@@ -145,46 +156,57 @@ export function Sidebar() {
               <ShoppingCart className="h-5 w-5" />
               <span className="font-medium">Ecommerce</span>
             </div>
-            {expandedSections.ecommerce ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
+            <motion.div
+              animate={{ rotate: expandedSections.ecommerce ? 90 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <ChevronRight className="h-4 w-4" />
-            )}
+            </motion.div>
           </button>
-          {expandedSections.ecommerce && (
-            <div className="ml-8 mt-1 space-y-1">
-              <Link
-                href="/ecommerce/manage"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/ecommerce/manage"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
+          <AnimatePresence>
+            {expandedSections.ecommerce && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
               >
-                Clients
-              </Link>
-              <Link
-                href="/ecommerce/sales"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/ecommerce/sales"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Sales
-              </Link>
-              <Link
-                href="/ecommerce/widget-playground"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/ecommerce/widget-playground"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Widget Playground
-              </Link>
-            </div>
-          )}
+                <div className="ml-8 mt-1 space-y-1">
+                  <Link
+                    href="/ecommerce/manage"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/ecommerce/manage"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Clients
+                  </Link>
+                  <Link
+                    href="/ecommerce/sales"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/ecommerce/sales"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Sales
+                  </Link>
+                  <Link
+                    href="/ecommerce/widget-playground"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/ecommerce/widget-playground"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Widget Playground
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div>
@@ -197,46 +219,57 @@ export function Sidebar() {
               <Repeat className="h-5 w-5" />
               <span className="font-medium">Subscriptions</span>
             </div>
-            {expandedSections.subscriptions ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
+            <motion.div
+              animate={{ rotate: expandedSections.subscriptions ? 90 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <ChevronRight className="h-4 w-4" />
-            )}
+            </motion.div>
           </button>
-          {expandedSections.subscriptions && (
-            <div className="ml-8 mt-1 space-y-1">
-              <Link
-                href="/subscriptions"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/subscriptions"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
+          <AnimatePresence>
+            {expandedSections.subscriptions && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
               >
-                Manage Plans
-              </Link>
-              <Link
-                href="/subscriptions/subscribers"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/subscriptions/subscribers"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Subscribers
-              </Link>
-              <Link
-                href="/subscriptions/payments"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/subscriptions/payments"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Payments
-              </Link>
-            </div>
-          )}
+                <div className="ml-8 mt-1 space-y-1">
+                  <Link
+                    href="/subscriptions"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/subscriptions"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Manage Plans
+                  </Link>
+                  <Link
+                    href="/subscriptions/subscribers"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/subscriptions/subscribers"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Subscribers
+                  </Link>
+                  <Link
+                    href="/subscriptions/payments"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/subscriptions/payments"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Payments
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div>
@@ -249,46 +282,57 @@ export function Sidebar() {
               <DollarSign className="h-5 w-5" />
               <span className="font-medium">Payouts</span>
             </div>
-            {expandedSections.payouts ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
+            <motion.div
+              animate={{ rotate: expandedSections.payouts ? 90 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <ChevronRight className="h-4 w-4" />
-            )}
+            </motion.div>
           </button>
-          {expandedSections.payouts && (
-            <div className="ml-8 mt-1 space-y-1">
-              <Link
-                href="/payouts/direct"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payouts/direct"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
+          <AnimatePresence>
+            {expandedSections.payouts && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
               >
-                Pay
-              </Link>
-              <Link
-                href="/payouts/batch"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname === "/payouts/batch"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Batch Payouts
-              </Link>
-              <Link
-                href="/payouts/recurring"
-                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                  pathname.startsWith("/payouts/recurring")
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Recurring Payouts
-              </Link>
-            </div>
-          )}
+                <div className="ml-8 mt-1 space-y-1">
+                  <Link
+                    href="/payouts/direct"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/payouts/direct"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Pay
+                  </Link>
+                  <Link
+                    href="/payouts/batch"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname === "/payouts/batch"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Batch Payouts
+                  </Link>
+                  <Link
+                    href="/payouts/recurring"
+                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                      pathname.startsWith("/payouts/recurring")
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Recurring Payouts
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </nav>
     </aside>
