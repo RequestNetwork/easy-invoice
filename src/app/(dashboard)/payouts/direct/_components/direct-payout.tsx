@@ -239,6 +239,10 @@ export function DirectPayment() {
         handleConfirmPayment(data, paymentData);
       });
 
+      dialogRef.current?.onCancel(() => {
+        setPaymentStatus("idle");
+      });
+
       setPaymentStatus("confirming");
     } catch (error) {
       console.error("Failed to prepare payment:", error);
