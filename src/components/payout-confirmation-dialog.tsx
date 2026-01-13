@@ -6,7 +6,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrencyLabel } from "@/lib/constants/currencies";
 import { CheckCircle, Info, ShieldCheck, Wallet } from "lucide-react";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
 export interface PayoutConfirmationData {
   mode: "direct" | "batch";
@@ -37,9 +37,7 @@ export const PayoutConfirmationDialog = forwardRef<
 >(function PayoutConfirmationDialog(_, ref) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<PayoutConfirmationData | null>(null);
-  const [confirmCallback, setConfirmCallback] = useState<(() => void) | null>(
-    null,
-  );
+  const confirmCallbackRef = useRef<(() => void) | null>(null);
 
   useImperativeHandle(ref, () => ({
     show: (newData: PayoutConfirmationData) => {
@@ -50,7 +48,7 @@ export const PayoutConfirmationDialog = forwardRef<
       setOpen(false);
     },
     onConfirm: (callback: () => void) => {
-      setConfirmCallback(() => callback);
+      confirmCallbackRef.current = callback;
     },
   }));
 
@@ -118,7 +116,7 @@ export const PayoutConfirmationDialog = forwardRef<
   const handleConfirm = () => {
     if (!canConfirm) return;
     setOpen(false);
-    confirmCallback?.();
+    confirmCallbackRef.current?.();
   };
 
   const renderFeeRow = (amountValue: number, currencyKey: string) => {
