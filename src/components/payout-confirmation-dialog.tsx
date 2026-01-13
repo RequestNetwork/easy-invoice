@@ -29,6 +29,7 @@ export interface PayoutConfirmationDialogRef {
   show: (data: PayoutConfirmationData) => void;
   close: () => void;
   onConfirm: (callback: () => void) => void;
+  onCancel: (callback: () => void) => void;
 }
 
 export const PayoutConfirmationDialog = forwardRef<
@@ -38,10 +39,21 @@ export const PayoutConfirmationDialog = forwardRef<
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<PayoutConfirmationData | null>(null);
   const confirmCallbackRef = useRef<(() => void) | null>(null);
+  const cancelCallbackRef = useRef<(() => void) | null>(null);
+  const confirmedRef = useRef(false);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && !confirmedRef.current) {
+      cancelCallbackRef.current?.();
+    }
+    confirmedRef.current = false;
+    setOpen(isOpen);
+  };
 
   useImperativeHandle(ref, () => ({
     show: (newData: PayoutConfirmationData) => {
       setData(newData);
+      confirmedRef.current = false;
       setOpen(true);
     },
     close: () => {
@@ -49,6 +61,9 @@ export const PayoutConfirmationDialog = forwardRef<
     },
     onConfirm: (callback: () => void) => {
       confirmCallbackRef.current = callback;
+    },
+    onCancel: (callback: () => void) => {
+      cancelCallbackRef.current = callback;
     },
   }));
 
@@ -115,6 +130,7 @@ export const PayoutConfirmationDialog = forwardRef<
 
   const handleConfirm = () => {
     if (!canConfirm) return;
+    confirmedRef.current = true;
     setOpen(false);
     confirmCallbackRef.current?.();
   };
@@ -252,11 +268,6 @@ export const PayoutConfirmationDialog = forwardRef<
       };
     });
 
-    const totalProtocolFee = totalsByCurrency.reduce(
-      (sum, item) => sum + item.protocolFeeAmount,
-      0,
-    );
-
     return (
       <div className="space-y-4">
         <div className="rounded-lg border bg-muted/30 p-3">
@@ -385,13 +396,6 @@ export const PayoutConfirmationDialog = forwardRef<
                 ))}
               </div>
             </div>
-            <div className="flex justify-between items-center pt-2 border-t">
-              <span className="font-medium">Total to pay</span>
-              <span className="text-lg font-semibold">
-                {totalProtocolFee > 0 ? "+" : ""}
-                {formatAmountRaw(totalProtocolFee)}
-              </span>
-            </div>
           </div>
         )}
       </div>
@@ -411,7 +415,7 @@ export const PayoutConfirmationDialog = forwardRef<
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-xl p-0 overflow-hidden [&>button]:hidden">
         <div className="bg-muted/50 px-6 py-4 border-b flex items-center justify-between">
           <div className="flex items-center gap-3">
