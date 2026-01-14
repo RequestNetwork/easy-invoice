@@ -20,9 +20,14 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+
+import {
+  PayoutConfirmationDialog,
+  type PayoutConfirmationDialogRef,
+} from "@/components/payout-confirmation-dialog";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,10 +85,12 @@ export function BatchPayout() {
   const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
-    "idle" | "processing" | "success" | "error"
+    "idle" | "processing" | "confirming" | "success" | "error"
   >("idle");
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
+
+  const dialogRef = useRef<PayoutConfirmationDialogRef>(null);
 
   const form = useForm<BatchPaymentFormValues>({
     resolver: zodResolver(batchPaymentFormSchema),
@@ -193,39 +200,47 @@ export function BatchPayout() {
       }
     }
 
-    const humanReadableTotals: Record<string, string> = {};
+    const humanReadableTotals: Record<string, number> = {};
     for (const [currency, bigNumberTotal] of Object.entries(totals)) {
-      humanReadableTotals[currency] = ethers.utils.formatUnits(
-        bigNumberTotal,
-        18,
+      humanReadableTotals[currency] = Number.parseFloat(
+        ethers.utils.formatUnits(bigNumberTotal, 18),
       );
     }
 
     return humanReadableTotals;
   };
 
-  const onSubmit = async (data: BatchPaymentFormValues) => {
-    if (!isConnected) {
-      toast.error("Please connect your wallet first");
+  const handleConfirmBatchPayment = async (
+    data: BatchPaymentFormValues,
+    batchPaymentData: Awaited<ReturnType<typeof batchPay>>,
+  ) => {
+    try {
+      await switchToPaymentNetwork(data.payouts[0].paymentCurrency);
+    } catch (networkError) {
+      console.error("Network switch error:", networkError);
+      toast.error("Failed to switch network", {
+        description: "Please switch to the correct network and try again.",
+      });
+      setPaymentStatus("idle");
       return;
     }
 
     if (!walletProvider) {
-      toast.error("Please connect your wallet first");
+      toast.error("Wallet disconnected", {
+        description: "Please reconnect your wallet and try again.",
+      });
+      setPaymentStatus("idle");
       return;
     }
 
-    await switchToPaymentNetwork(data.payouts[0].paymentCurrency);
-
     try {
-      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
+      setPaymentStatus("processing");
+
+      const ethersProvider = new ethers.providers.Web3Provider(
+        walletProvider as ethers.providers.ExternalProvider,
+      );
 
       const signer = ethersProvider.getSigner();
-
-      const batchPaymentData = await batchPay({
-        ...data,
-        payer: address,
-      });
 
       const result = await handleBatchPayment({
         signer,
@@ -247,6 +262,10 @@ export function BatchPayout() {
           setPaymentStatus("idle");
         },
         onError: () => {
+          toast.error("Batch payment failed", {
+            description:
+              "There was an error processing your batch payment. Please try again.",
+          });
           setPaymentStatus("error");
         },
         onStatusChange: setPaymentStatus,
@@ -257,6 +276,59 @@ export function BatchPayout() {
       }
     } catch (error) {
       console.error("Failed to initiate batch payment:", error);
+      toast.error("Batch payment failed", {
+        description:
+          "There was an error processing your batch payment. Please try again.",
+      });
+      setPaymentStatus("error");
+    }
+  };
+
+  const onSubmit = async (data: BatchPaymentFormValues) => {
+    if (!isConnected) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    if (!walletProvider) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    try {
+      setPaymentStatus("processing");
+
+      toast.info("Preparing batch payment...");
+
+      const batchPaymentData = await batchPay({
+        ...data,
+        payer: address,
+      });
+
+      const totalsByCurrency = getTotalsByCurrency();
+
+      dialogRef.current?.show({
+        mode: "batch",
+        currencyTotals: totalsByCurrency,
+        platformFee: batchPaymentData.platformFee,
+        protocolFee: batchPaymentData.protocolFee,
+        walletAddress: address,
+      });
+
+      dialogRef.current?.onConfirm(() => {
+        handleConfirmBatchPayment(data, batchPaymentData);
+      });
+
+      dialogRef.current?.onCancel(() => {
+        setPaymentStatus("idle");
+      });
+
+      setPaymentStatus("confirming");
+    } catch (error) {
+      console.error("Failed to prepare batch payment:", error);
+      toast.error("Failed to prepare batch payment", {
+        description: "Please try again.",
+      });
       setPaymentStatus("error");
     }
   };
@@ -297,7 +369,6 @@ export function BatchPayout() {
         ) : (
           <>
             <CardContent className="pt-6 pb-2 space-y-6">
-              {/* Payment steps indicator */}
               <div className="flex justify-center mb-6">
                 <div className="flex items-center space-x-4">
                   <div
@@ -352,7 +423,6 @@ export function BatchPayout() {
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-6"
                 >
-                  {/* Excel-like table */}
                   <div className="border rounded-lg overflow-hidden border-border">
                     <Table>
                       <TableHeader>
@@ -393,7 +463,10 @@ export function BatchPayout() {
                                 <Input
                                   placeholder="0x..."
                                   {...form.register(`payouts.${index}.payee`)}
-                                  disabled={paymentStatus === "processing"}
+                                  disabled={
+                                    paymentStatus === "processing" ||
+                                    paymentStatus === "confirming"
+                                  }
                                   className="font-mono text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-border"
                                 />
                               </TableCell>
@@ -406,7 +479,10 @@ export function BatchPayout() {
                                   {...form.register(`payouts.${index}.amount`, {
                                     valueAsNumber: true,
                                   })}
-                                  disabled={paymentStatus === "processing"}
+                                  disabled={
+                                    paymentStatus === "processing" ||
+                                    paymentStatus === "confirming"
+                                  }
                                   className="text-sm border-0 shadow-none focus-visible:ring-1 focus-visible:ring-border"
                                 />
                               </TableCell>
@@ -416,7 +492,10 @@ export function BatchPayout() {
                                   onValueChange={(value) =>
                                     handleInvoiceCurrencyChange(value, index)
                                   }
-                                  disabled={paymentStatus === "processing"}
+                                  disabled={
+                                    paymentStatus === "processing" ||
+                                    paymentStatus === "confirming"
+                                  }
                                 >
                                   <SelectTrigger className="text-sm border-0 shadow-none focus:ring-1 focus:ring-border">
                                     <SelectValue />
@@ -447,7 +526,10 @@ export function BatchPayout() {
                                         value as PayoutCurrency,
                                       )
                                     }
-                                    disabled={paymentStatus === "processing"}
+                                    disabled={
+                                      paymentStatus === "processing" ||
+                                      paymentStatus === "confirming"
+                                    }
                                   >
                                     <SelectTrigger className="text-sm border-0 shadow-none focus:ring-1 focus:ring-border">
                                       <SelectValue />
@@ -503,7 +585,6 @@ export function BatchPayout() {
                     </Table>
                   </div>
 
-                  {/* Add payment button */}
                   <Button
                     type="button"
                     variant="outline"
@@ -518,7 +599,6 @@ export function BatchPayout() {
                     Add Payment Row ({fields.length}/{MAX_PAYMENTS})
                   </Button>
 
-                  {/* Enhanced Summary */}
                   <Card className="bg-muted border border-border">
                     <CardContent className="p-4">
                       <h3 className="font-medium text-foreground mb-3">
@@ -594,13 +674,19 @@ export function BatchPayout() {
                       className="relative"
                       disabled={
                         paymentStatus === "processing" ||
+                        paymentStatus === "confirming" ||
                         getValidPaymentsCount() === 0
                       }
                     >
                       {paymentStatus === "processing" ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Processing Batch...
+                          Preparing...
+                        </>
+                      ) : paymentStatus === "confirming" ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Awaiting Confirmation...
                         </>
                       ) : paymentStatus === "success" ? (
                         <>
@@ -625,13 +711,13 @@ export function BatchPayout() {
             </CardContent>
 
             {currentStep === 2 && !form.formState.isSubmitSuccessful && (
-              <CardFooter className="pt-2 pb-6">
-                {/* Empty footer for spacing when form is displayed */}
-              </CardFooter>
+              <CardFooter className="pt-2 pb-6" />
             )}
           </>
         )}
       </Card>
+
+      <PayoutConfirmationDialog ref={dialogRef} />
     </div>
   );
 }
