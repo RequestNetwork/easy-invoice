@@ -224,7 +224,10 @@ export function DirectPayment() {
 
       toast.info("Preparing payment...");
 
-      const paymentData = await pay(data);
+      const paymentData = await pay({
+        payerWallet: address,
+        ...data,
+      });
 
       dialogRef.current?.show({
         mode: "direct",
