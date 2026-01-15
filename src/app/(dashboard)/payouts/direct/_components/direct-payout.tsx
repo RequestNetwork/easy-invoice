@@ -17,9 +17,14 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+
+import {
+  PayoutConfirmationDialog,
+  type PayoutConfirmationDialogRef,
+} from "@/components/payout-confirmation-dialog";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -63,10 +68,12 @@ export function DirectPayment() {
   const { switchToPaymentNetwork } = useSwitchNetwork();
 
   const [paymentStatus, setPaymentStatus] = useState<
-    "idle" | "processing" | "success" | "error"
+    "idle" | "processing" | "confirming" | "success" | "error"
   >("idle");
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [isAppKitReady, setIsAppKitReady] = useState(false);
+
+  const dialogRef = useRef<PayoutConfirmationDialogRef>(null);
 
   const form = useForm<DirectPaymentFormValues>({
     resolver: zodResolver(directPaymentFormSchema),
@@ -116,25 +123,41 @@ export function DirectPayment() {
     }
   };
 
-  const onSubmit = async (data: DirectPaymentFormValues) => {
-    if (!isConnected) {
-      toast.error("Please connect your wallet first");
+  const handleConfirmPayment = async (
+    data: DirectPaymentFormValues,
+    paymentData: Awaited<ReturnType<typeof pay>>,
+  ) => {
+    try {
+      await switchToPaymentNetwork(data.paymentCurrency);
+    } catch (networkError) {
+      console.error("Network switch error:", networkError);
+      toast.error("Failed to switch network", {
+        description: "Please switch to the correct network and try again.",
+      });
+      setPaymentStatus("idle");
       return;
     }
 
-    await switchToPaymentNetwork(data.paymentCurrency);
-    setPaymentStatus("processing");
+    if (!walletProvider) {
+      toast.error("Wallet disconnected", {
+        description: "Please reconnect your wallet and try again.",
+      });
+      setPaymentStatus("idle");
+      return;
+    }
 
     try {
+      setPaymentStatus("processing");
+
       const ethersProvider = new ethers.providers.Web3Provider(
         walletProvider as ethers.providers.ExternalProvider,
       );
 
       const signer = ethersProvider.getSigner();
 
-      toast.info("Initiating payment...");
-
-      const paymentData = await pay(data);
+      toast.info("Sending payment", {
+        description: "Please confirm the transaction in your wallet",
+      });
 
       const isApprovalNeeded = paymentData.metadata?.needsApproval;
 
@@ -143,21 +166,20 @@ export function DirectPayment() {
           description: "Please approve the transaction in your wallet",
         });
 
-        const approvalIndex = paymentData.metadata.approvalTransactionIndex;
-
         const approvalTransaction = await signer.sendTransaction(
-          paymentData.transactions[approvalIndex],
+          paymentData.transactions[
+            paymentData.metadata.approvalTransactionIndex
+          ],
         );
 
         await approvalTransaction.wait();
       }
 
-      toast.info("Sending payment", {
-        description: "Please confirm the transaction in your wallet",
-      });
+      const paymentTransactionIndex =
+        paymentData.metadata?.paymentTransactionIndex ?? 0;
 
       const paymentTransaction = await signer.sendTransaction(
-        paymentData.transactions[isApprovalNeeded ? 1 : 0],
+        paymentData.transactions[paymentTransactionIndex],
       );
 
       await paymentTransaction.wait();
@@ -172,7 +194,6 @@ export function DirectPayment() {
 
       setPaymentStatus("success");
 
-      // Reset form after successful payment
       setTimeout(() => {
         form.reset({
           payee: "",
@@ -187,6 +208,46 @@ export function DirectPayment() {
       toast.error("Payment failed", {
         description:
           "There was an error processing your payment. Please try again.",
+      });
+      setPaymentStatus("error");
+    }
+  };
+
+  const onSubmit = async (data: DirectPaymentFormValues) => {
+    if (!isConnected) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    try {
+      setPaymentStatus("processing");
+
+      toast.info("Preparing payment...");
+
+      const paymentData = await pay(data);
+
+      dialogRef.current?.show({
+        mode: "direct",
+        amount: data.amount,
+        currency: data.invoiceCurrency,
+        platformFee: paymentData.metadata?.platformFee,
+        protocolFee: paymentData.metadata?.protocolFee,
+        walletAddress: address,
+      });
+
+      dialogRef.current?.onConfirm(() => {
+        handleConfirmPayment(data, paymentData);
+      });
+
+      dialogRef.current?.onCancel(() => {
+        setPaymentStatus("idle");
+      });
+
+      setPaymentStatus("confirming");
+    } catch (error) {
+      console.error("Failed to prepare payment:", error);
+      toast.error("Failed to prepare payment", {
+        description: "Please try again.",
       });
       setPaymentStatus("error");
     }
@@ -214,7 +275,6 @@ export function DirectPayment() {
         ) : (
           <>
             <CardContent className="pt-6 pb-2 space-y-6">
-              {/* Payment steps indicator */}
               <div className="flex justify-center mb-6">
                 <div className="flex items-center space-x-4">
                   <div
@@ -278,7 +338,6 @@ export function DirectPayment() {
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
-                  {/* Payment form */}
                   <div className="space-y-4">
                     <div
                       className={`grid ${
@@ -294,7 +353,10 @@ export function DirectPayment() {
                         <Select
                           value={invoiceCurrency}
                           onValueChange={handleInvoiceCurrencyChange}
-                          disabled={paymentStatus === "processing"}
+                          disabled={
+                            paymentStatus === "processing" ||
+                            paymentStatus === "confirming"
+                          }
                         >
                           <SelectTrigger id="invoiceCurrency">
                             <SelectValue placeholder="Select currency" />
@@ -327,7 +389,10 @@ export function DirectPayment() {
                                 value as PayoutCurrency,
                               )
                             }
-                            disabled={paymentStatus === "processing"}
+                            disabled={
+                              paymentStatus === "processing" ||
+                              paymentStatus === "confirming"
+                            }
                           >
                             <SelectTrigger id="paymentCurrency">
                               <SelectValue placeholder="Select payment currency" />
@@ -363,7 +428,10 @@ export function DirectPayment() {
                           valueAsNumber: true,
                         })}
                         className="pr-12"
-                        disabled={paymentStatus === "processing"}
+                        disabled={
+                          paymentStatus === "processing" ||
+                          paymentStatus === "confirming"
+                        }
                       />
                       {form.formState.errors.amount && (
                         <p className="text-sm text-destructive">
@@ -378,7 +446,10 @@ export function DirectPayment() {
                         id="payee"
                         placeholder="0x..."
                         {...form.register("payee")}
-                        disabled={paymentStatus === "processing"}
+                        disabled={
+                          paymentStatus === "processing" ||
+                          paymentStatus === "confirming"
+                        }
                         className="font-mono"
                       />
                       {form.formState.errors.payee && (
@@ -404,12 +475,20 @@ export function DirectPayment() {
                     <Button
                       type="submit"
                       className="relative"
-                      disabled={paymentStatus === "processing"}
+                      disabled={
+                        paymentStatus === "processing" ||
+                        paymentStatus === "confirming"
+                      }
                     >
                       {paymentStatus === "processing" ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Processing...
+                          Preparing...
+                        </>
+                      ) : paymentStatus === "confirming" ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Awaiting Confirmation...
                         </>
                       ) : paymentStatus === "success" ? (
                         <>
@@ -434,13 +513,13 @@ export function DirectPayment() {
             </CardContent>
 
             {currentStep === 2 && !form.formState.isSubmitSuccessful && (
-              <CardFooter className="pt-2 pb-6">
-                {/* Empty footer for spacing when form is displayed */}
-              </CardFooter>
+              <CardFooter className="pt-2 pb-6" />
             )}
           </>
         )}
       </Card>
+
+      <PayoutConfirmationDialog ref={dialogRef} />
     </div>
   );
 }
