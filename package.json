@@ -1,7 +1,7 @@
 {
   "name": "easy-invoice",
   "description": "A Request Network demo app for easy invoice creation using Request API",
-  "version": "0.13.0",
+  "version": "0.15.0",
   "license": "MIT",
   "scripts": {
     "dev": "chmod +x dev/dev-startup.sh && ./dev/dev-startup.sh ",
@@ -58,7 +58,7 @@
     "ioredis": "^5.4.1",
     "jspdf": "^3.0.3",
     "lucide-react": "^0.542.0",
-    "next": "14.2.16",
+    "next": "14.2.35",
     "next-themes": "^0.4.4",
     "pg": "^8.13.1",
     "react": "^18",

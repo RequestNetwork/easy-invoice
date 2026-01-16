@@ -13,7 +13,7 @@ export interface PaymentRoute {
   isCryptoToFiat?: boolean;
   platformFee?: number;
   feeBreakdown?: {
-    type: "gas" | "crosschain" | "platform";
+    type: "gas" | "crosschain" | "platform" | "protocol";
     stage: "sending" | "overall";
     provider: string;
     amount: string;

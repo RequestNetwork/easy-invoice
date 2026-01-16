@@ -39,3 +39,5 @@ next-env.d.ts
 
 postgres-data
 !.env.example
+.ignore/
+.github/copilot-instructions.md

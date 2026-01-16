@@ -30,8 +30,13 @@ export const paymentRouter = router({
           recurrence: input.recurrence ?? undefined,
           ...(feePercentage && feeAddress
             ? {
-                feePercentage: feePercentage,
-                feeAddress: feeAddress,
+                feePercentage,
+                feeAddress,
+              }
+            : {}),
+          ...(input.payerWallet
+            ? {
+                payerWallet: input.payerWallet,
               }
             : {}),
         });
@@ -57,6 +62,9 @@ export const paymentRouter = router({
           });
         }
 
+        const feePercentage = process.env.FEE_PERCENTAGE_FOR_PAYMENT;
+        const feeAddress = process.env.FEE_ADDRESS_FOR_PAYMENT;
+
         const response = await apiClient.post("v2/payouts/batch", {
           requests: input.payouts
             ? input.payouts.map((payout) => ({
@@ -64,12 +72,16 @@ export const paymentRouter = router({
                 payee: payout.payee,
                 invoiceCurrency: payout.invoiceCurrency,
                 paymentCurrency: payout.paymentCurrency,
-                feePercentage: process.env.FEE_PERCENTAGE_FOR_PAYMENT,
-                feeAddress: process.env.FEE_ADDRESS_FOR_PAYMENT,
               }))
             : undefined,
           requestIds: input.requestIds,
           payer: input.payer,
+          ...(feePercentage && feeAddress
+            ? {
+                feePercentage,
+                feeAddress,
+              }
+            : {}),
         });
 
         return response.data;

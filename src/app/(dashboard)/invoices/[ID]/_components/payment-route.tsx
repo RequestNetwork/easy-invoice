@@ -1,5 +1,6 @@
 import { Tooltip } from "@/components/ui/tooltip";
 import type { PaymentRoute as PaymentRouteType } from "@/lib/types";
+import { utils } from "ethers";
 import { ArrowRight, Globe, Info, Zap } from "lucide-react";
 import Image from "next/image";
 
@@ -89,12 +90,26 @@ export function PaymentRoute({
                   ? "Gas Fee"
                   : fee.type === "crosschain"
                     ? "Crosschain Fee"
-                    : "Platform Fee"}
+                    : fee.type === "protocol"
+                      ? "Protocol Fee"
+                      : "Platform Fee"}
               </div>
             </div>
             <div className="text-right ml-2">
               <div className="font-medium">
-                {Number(fee.amountInUSD).toFixed(6)} USD
+                {fee.amountInUSD != null
+                  ? `${Number(fee.amountInUSD).toFixed(6)} USD`
+                  : (() => {
+                      const amount = fee.amount;
+                      const currency = fee.currency?.toUpperCase() || "";
+                      if (amount.includes(".")) {
+                        return `${Number(amount).toFixed(6)} ${currency}`;
+                      }
+                      if (currency === "ETH") {
+                        return `${utils.formatUnits(amount, 18)} ETH`;
+                      }
+                      return `${Number(amount).toFixed(4)} ${currency}`;
+                    })()}
               </div>
             </div>
           </div>

@@ -75,7 +75,7 @@ export function Header({ user }: { user?: User | undefined }) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Book A Demo
+                  Get in touch
                 </Link>
               )}
               <UserMenu user={user} />
@@ -92,7 +92,7 @@ export function Header({ user }: { user?: User | undefined }) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Book A Demo
+                Get in touch
               </Link>
             </Button>
           )}
