@@ -34,6 +34,11 @@ export const paymentRouter = router({
                 feeAddress,
               }
             : {}),
+          ...(input.payerWallet
+            ? {
+                payerWallet: input.payerWallet,
+              }
+            : {}),
         });
 
         return response.data;

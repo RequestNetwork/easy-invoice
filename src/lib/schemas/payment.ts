@@ -44,6 +44,11 @@ export const paymentApiSchema = z.object({
         .describe("The wallet address of the payer"),
     })
     .optional(),
+  payerWallet: z
+    .string()
+    .refine(isEthereumAddress, "Invalid Ethereum wallet address")
+    .optional()
+    .describe("The connect wallet address of the payer"),
 });
 
 export type PaymentAPIValues = z.infer<typeof paymentApiSchema>;
