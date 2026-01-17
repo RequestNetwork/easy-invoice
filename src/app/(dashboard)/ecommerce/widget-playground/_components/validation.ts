@@ -1,5 +1,5 @@
-import z from "zod";
 import isEthereumAddress from "validator/lib/isEthereumAddress";
+import z from "zod";
 
 export const PlaygroundValidation = z.object({
   // Payment basics

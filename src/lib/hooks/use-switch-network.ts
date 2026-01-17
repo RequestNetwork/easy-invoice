@@ -1,8 +1,8 @@
 import { useAppKitNetwork } from "@reown/appkit/react";
 import type { Chain } from "viem";
 import { ID_TO_APPKIT_NETWORK } from "../constants/chains";
-import { getChainFromPaymentCurrency } from "../helpers/chain";
 import { type RetryHooks, retry } from "../helpers";
+import { getChainFromPaymentCurrency } from "../helpers/chain";
 
 export const useSwitchNetwork = () => {
   const { switchNetwork, chainId } = useAppKitNetwork();
