@@ -54,6 +54,7 @@
     "drizzle-kit": "^0.28.1",
     "drizzle-orm": "^0.36.3",
     "ethers": "^5.7.2",
+    "framer-motion": "^12.23.26",
     "html2canvas-pro": "^1.5.12",
     "ioredis": "^5.4.1",
     "jspdf": "^3.0.3",
