@@ -16,6 +16,15 @@ export const CHAIN_TO_ID = {
   POLYGON: 137,
 };
 
+export const ID_TO_NETWORK: Record<number, string> = {
+  137: "matic",
+  8453: "base",
+  42161: "arbitrum-one",
+  10: "optimism",
+  1: "mainnet",
+  11155111: "sepolia",
+};
+
 export const NETWORK_TO_ID = {
   matic: 137,
   base: 8453,

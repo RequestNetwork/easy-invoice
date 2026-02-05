@@ -14,6 +14,7 @@ export type ConversionCurrency = {
   network: string;
 };
 
+// TODO: Rename this to just Currency as it's used for both conversion routes and general currencies
 export interface GetConversionCurrenciesResponse {
   currencyId: string;
   network: string;
@@ -58,6 +59,43 @@ export const currencyRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch conversion currencies",
+        });
+      }
+    }),
+  getCurrenciesByNetwork: publicProcedure
+    .input(
+      z.object({
+        network: z.string(),
+      }),
+    )
+    .query(async ({ input }): Promise<GetConversionCurrenciesResponse> => {
+      const { network } = input;
+
+      try {
+        const response: AxiosResponse<GetConversionCurrenciesResponse> =
+          await apiClient.get(`v2/currencies?network=${network}`);
+
+        return response.data;
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const statusCode = error.response?.status;
+          const code =
+            statusCode === 404
+              ? "NOT_FOUND"
+              : statusCode === 400
+                ? "BAD_REQUEST"
+                : "INTERNAL_SERVER_ERROR";
+
+          throw new TRPCError({
+            code,
+            message: error.response?.data?.message || error.message,
+            cause: error,
+          });
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch currencies",
         });
       }
     }),
