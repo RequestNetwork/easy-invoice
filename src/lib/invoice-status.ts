@@ -55,12 +55,16 @@ export const getInvoiceTableStatusClass = (
     return "bg-green-50 text-green-700";
   }
 
-  if (status.includes("offramp_failed")) {
+  if (status === "offramp_failed") {
     return "bg-red-50 text-red-700";
   }
 
-  if (status.includes("offramp") || status === "processing") {
-    return "bg-orange-50 text-orange-700";
+  if (
+    status === "offramp_pending" ||
+    status === "offramp_initiated" ||
+    status === "processing"
+  ) {
+   return "bg-orange-50 text-orange-700";
   }
 
   return "bg-yellow-50 text-yellow-700";
@@ -82,7 +86,11 @@ export const getPaymentSectionStatusClass = (
     return "bg-destructive/10 text-destructive";
   }
 
-  if (status.includes("offramp") || status === "processing") {
+  if (
+    status === "offramp_pending" ||
+    status === "offramp_initiated" ||
+    status === "processing"
+  ) {
     return "bg-warning/10 text-warning-foreground";
   }
 
